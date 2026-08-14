@@ -122,7 +122,7 @@ export function AppInstallPrompt() {
         }}
       >
         <span aria-hidden="true" style={{ width: 28, height: 28, display: "grid", placeItems: "center", borderRadius: 9, background: "#4d1d2f", color: "#fff", fontFamily: "Georgia, serif", fontSize: 16, letterSpacing: 1 }}>A</span>
-        <span style={{ fontSize: 10, lineHeight: 1, whiteSpace: "nowrap" }}>{isAndroid ? "تنزيل AVEA" : "إضافة AVEA"}</span>
+        <span style={{ fontSize: 10, lineHeight: 1, whiteSpace: "nowrap" }}>تطبيق AVEA</span>
       </button>
 
       {showHelp && (
