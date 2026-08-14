@@ -67,23 +67,8 @@ export function AppInstallPrompt() {
 
   const handleInstall = async () => {
     if (isAndroid) {
-      try {
-        const response = await fetch(ANDROID_APK_URL, { cache: "no-store" });
-        if (!response.ok) throw new Error(`APK download failed (${response.status})`);
-        const blob = await response.blob();
-        const objectUrl = URL.createObjectURL(blob);
-        const link = document.createElement("a");
-        link.href = objectUrl;
-        link.download = "AVEA.apk";
-        link.style.display = "none";
-        document.body.appendChild(link);
-        link.click();
-        link.remove();
-        window.setTimeout(() => URL.revokeObjectURL(objectUrl), 30000);
-      } catch {
-        window.open(ANDROID_APK_URL, "_blank", "noopener,noreferrer");
-        setShowHelp(true);
-      }
+      const chromeIntent = "intent://avea-fashion-web.onrender.com/avea-fashion.apk#Intent;scheme=https;package=com.android.chrome;end";
+      window.location.href = chromeIntent;
       return;
     }
     if (!deferredPrompt) {
@@ -111,31 +96,32 @@ export function AppInstallPrompt() {
         aria-label="حمّلي تطبيق AVEA"
         style={{
           position: "fixed",
-          top: 96,
-          left: 16,
+          top: 72,
+          right: 58,
+          left: "auto",
           zIndex: 9999,
           border: 0,
           borderRadius: 999,
-          padding: "8px 13px 8px 10px",
+          width: 38,
+          height: 38,
+          padding: 0,
           background: "#fff",
           border: "1px solid rgba(77, 29, 47, .16)",
           color: "#4d1d2f",
           boxShadow: "0 10px 24px rgba(77, 29, 47, .14)",
           display: "inline-flex",
           alignItems: "center",
-          gap: 8,
+          gap: 0,
           direction: "rtl",
           fontWeight: 900,
-          fontSize: 13,
+          fontSize: 12,
           letterSpacing: "0.1px",
           cursor: "pointer",
           backdropFilter: "blur(10px)",
           whiteSpace: "nowrap",
         }}
       >
-        <span aria-hidden="true" style={{ width: 30, height: 30, display: "grid", placeItems: "center", borderRadius: 10, background: "#4d1d2f", color: "#fff", fontFamily: "Georgia, serif", fontSize: 17, letterSpacing: 1 }}>A</span>
-        <span style={{ display: "grid", gap: 1, textAlign: "right" }}><strong style={{ fontSize: 12, lineHeight: 1.1 }}>AVEA</strong><small style={{ fontSize: 9, color: "#8c7078", fontWeight: 700 }}>{isAndroid ? "تنزيل التطبيق" : "إضافة للشاشة"}</small></span>
-        <span aria-hidden="true" style={{ fontSize: 18, lineHeight: 1 }}>↓</span>
+        <span aria-hidden="true" style={{ width: 28, height: 28, display: "grid", placeItems: "center", borderRadius: 9, background: "#4d1d2f", color: "#fff", fontFamily: "Georgia, serif", fontSize: 16, letterSpacing: 1 }}>A</span>
       </button>
 
       {showHelp && (
