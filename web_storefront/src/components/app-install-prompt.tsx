@@ -100,8 +100,8 @@ export function AppInstallPrompt() {
           zIndex: 51,
           border: "1px solid rgba(77, 29, 47, .16)",
           borderRadius: 7,
-          width: 26,
-          minWidth: 26,
+          width: 58,
+          minWidth: 58,
           height: 26,
           padding: 0,
           background: "#fff",
@@ -110,13 +110,14 @@ export function AppInstallPrompt() {
           display: "inline-flex",
           alignItems: "center",
           justifyContent: "center",
+          gap: 3,
           direction: "rtl",
           cursor: "pointer",
           backdropFilter: "blur(10px)",
         }}
       >
-        <span aria-hidden="true" style={{ width: 18, height: 18, display: "grid", placeItems: "center", borderRadius: 5, background: "#4d1d2f", color: "#fff", fontFamily: "Georgia, serif", fontSize: 11, letterSpacing: 1 }}>A</span>
-        <span style={{ display: "none" }}>تطبيق AVEA</span>
+        <span aria-hidden="true" style={{ width: 17, height: 17, display: "grid", placeItems: "center", borderRadius: 5, background: "#4d1d2f", color: "#fff", fontFamily: "Georgia, serif", fontSize: 10, letterSpacing: 1 }}>A</span>
+        <span style={{ fontSize: 7, lineHeight: 1, whiteSpace: "nowrap" }}>تطبيق AVEA</span>
       </button>
 
       {showHelp && (

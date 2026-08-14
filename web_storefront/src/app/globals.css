@@ -309,9 +309,9 @@ button { cursor:pointer; }
 }
 
 @media(max-width:560px){
-	.nav-shell .app-install-prompt{position:absolute!important;right:calc(50% + 42px);top:50%;z-index:52;width:26px!important;min-width:26px!important;height:26px!important;padding:0!important;transform:translateY(-50%);border-radius:7px!important;box-shadow:0 2px 7px rgba(77,29,47,.12)!important}
-	.nav-shell .app-install-prompt>span:last-child{display:none!important}
-	.nav-shell .app-install-prompt>span:first-child{width:18px!important;height:18px!important;font-size:11px!important}
+	.nav-shell .app-install-prompt{position:absolute!important;left:calc(50% + 42px);right:auto!important;top:50%;z-index:52;width:58px!important;min-width:58px!important;height:26px!important;padding:0 3px!important;transform:translateY(-50%);border-radius:7px!important;box-shadow:0 2px 7px rgba(77,29,47,.12)!important}
+	.nav-shell .app-install-prompt>span:last-child{display:inline!important;font-size:7px!important}
+	.nav-shell .app-install-prompt>span:first-child{width:17px!important;height:17px!important;font-size:10px!important}
 	.product-grid{gap:27px 10px}
 	.product-card{display:flex;flex-direction:column}
 	.product-media{border-radius:8px;background:#f4efed}
@@ -375,6 +375,7 @@ button { cursor:pointer; }
 	.ambassador-withdrawal-card{padding:14px}
 	.ambassador-orders-panel,.ambassador-order-card{border-radius:8px}
 }
+@media(max-width:350px){.nav-shell .app-install-prompt{left:calc(50% + 37px);width:52px!important;min-width:52px!important}.nav-shell .app-install-prompt>span:last-child{font-size:6px!important}}
 
 /* Fly-to-cart feedback and linked delivery destinations */
 .cart-flight-item{position:fixed;z-index:10000;pointer-events:none;overflow:hidden;display:grid;place-items:center;border:2px solid rgba(255,255,255,.95);border-radius:12px;background:linear-gradient(145deg,#f7e9ed,#e8d5db);box-shadow:0 18px 45px rgba(47,27,35,.32),0 0 0 5px rgba(178,80,120,.1);color:var(--rose-dark);font-size:35px;will-change:transform,opacity;transform-origin:center}
