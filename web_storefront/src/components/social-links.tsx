@@ -1,6 +1,6 @@
 "use client";
 
-import { Facebook, Globe, Instagram, MessageCircle, Music2, Send } from "lucide-react";
+import { Camera, Globe, MessageCircle, Music2, Send, Share2 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { fetchAppContent } from "@/lib/api";
 
@@ -15,8 +15,8 @@ type SocialLinksConfig = {
 };
 
 const items = [
-  { key: "instagram", label: "Instagram", Icon: Instagram },
-  { key: "facebook", label: "Facebook", Icon: Facebook },
+  { key: "instagram", label: "Instagram", Icon: Camera },
+  { key: "facebook", label: "Facebook", Icon: Share2 },
   { key: "whatsapp", label: "WhatsApp", Icon: MessageCircle },
   { key: "telegram", label: "Telegram", Icon: Send },
   { key: "tiktok", label: "TikTok", Icon: Music2 },
@@ -47,3 +47,4 @@ export function SocialLinks() {
     </section>
   );
 }
+
