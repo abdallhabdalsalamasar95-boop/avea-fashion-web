@@ -67,14 +67,23 @@ export function AppInstallPrompt() {
 
   const handleInstall = async () => {
     if (isAndroid) {
-      const link = document.createElement("a");
-      link.href = ANDROID_APK_URL;
-      link.download = "AVEA.apk";
-      link.target = "_blank";
-      link.rel = "noopener";
-      document.body.appendChild(link);
-      link.click();
-      link.remove();
+      try {
+        const response = await fetch(ANDROID_APK_URL, { cache: "no-store" });
+        if (!response.ok) throw new Error(`APK download failed (${response.status})`);
+        const blob = await response.blob();
+        const objectUrl = URL.createObjectURL(blob);
+        const link = document.createElement("a");
+        link.href = objectUrl;
+        link.download = "AVEA.apk";
+        link.style.display = "none";
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+        window.setTimeout(() => URL.revokeObjectURL(objectUrl), 30000);
+      } catch {
+        window.open(ANDROID_APK_URL, "_blank", "noopener,noreferrer");
+        setShowHelp(true);
+      }
       return;
     }
     if (!deferredPrompt) {
