@@ -102,16 +102,16 @@ export function AppInstallPrompt() {
           zIndex: 9999,
           border: 0,
           borderRadius: 999,
-          width: 38,
+          width: "auto",
           height: 38,
-          padding: 0,
+          padding: "0 7px 0 5px",
           background: "#fff",
           border: "1px solid rgba(77, 29, 47, .16)",
           color: "#4d1d2f",
           boxShadow: "0 10px 24px rgba(77, 29, 47, .14)",
           display: "inline-flex",
           alignItems: "center",
-          gap: 0,
+          gap: 6,
           direction: "rtl",
           fontWeight: 900,
           fontSize: 12,
@@ -122,6 +122,7 @@ export function AppInstallPrompt() {
         }}
       >
         <span aria-hidden="true" style={{ width: 28, height: 28, display: "grid", placeItems: "center", borderRadius: 9, background: "#4d1d2f", color: "#fff", fontFamily: "Georgia, serif", fontSize: 16, letterSpacing: 1 }}>A</span>
+        <span style={{ fontSize: 10, lineHeight: 1, whiteSpace: "nowrap" }}>{isAndroid ? "تنزيل AVEA" : "إضافة AVEA"}</span>
       </button>
 
       {showHelp && (
