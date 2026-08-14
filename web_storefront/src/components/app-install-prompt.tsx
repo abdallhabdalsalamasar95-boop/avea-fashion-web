@@ -11,7 +11,7 @@ declare global {
 }
 
 type BrowserLabel = "Chrome" | "Edge" | "Firefox" | "Safari" | "المتصفح";
-const ANDROID_APK_URL = "https://avea-fashion-web.onrender.com/app-debug.apk";
+const ANDROID_APK_URL = "https://avea-fashion-web.onrender.com/avea-fashion.apk";
 
 function detectBrowserLabel(): BrowserLabel {
   const ua = window.navigator.userAgent.toLowerCase();
@@ -67,7 +67,14 @@ export function AppInstallPrompt() {
 
   const handleInstall = async () => {
     if (isAndroid) {
-      window.location.href = ANDROID_APK_URL;
+      const link = document.createElement("a");
+      link.href = ANDROID_APK_URL;
+      link.download = "AVEA.apk";
+      link.target = "_blank";
+      link.rel = "noopener";
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
       return;
     }
     if (!deferredPrompt) {
