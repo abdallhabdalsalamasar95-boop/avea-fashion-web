@@ -11,7 +11,7 @@ declare global {
 }
 
 type BrowserLabel = "Chrome" | "Edge" | "Firefox" | "Safari" | "المتصفح";
-const ANDROID_APK_URL = "/avea-fashion.apk";
+const ANDROID_APK_URL = "/app-debug.apk";
 
 function detectBrowserLabel(): BrowserLabel {
   const ua = window.navigator.userAgent.toLowerCase();
