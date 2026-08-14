@@ -1,295 +1,69 @@
-/* ==========================================================================
-   AVEA FASHION - LUXURY RESPONSIVE STORE DESIGN SYSTEM
-   ========================================================================== */
+@import "tailwindcss";
 
-@import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap');
+@layer base {
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 240 10% 3.9%;
+    --card: 0 0% 100%;
+    --card-foreground: 240 10% 3.9%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 240 10% 3.9%;
+    --primary: 336 41% 51%;
+    --primary-foreground: 0 0% 98%;
+    --secondary: 240 4.8% 95.9%;
+    --secondary-foreground: 240 5.9% 10%;
+    --muted: 240 4.8% 95.9%;
+    --muted-foreground: 240 3.8% 46.1%;
+    --accent: 240 4.8% 95.9%;
+    --accent-foreground: 240 5.9% 10%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 240 5.9% 90%;
+    --input: 240 5.9% 90%;
+    --ring: 336 41% 51%;
+    --radius: 0.5rem;
+  }
 
-:root {
-  --rose-primary: #b25078;
-  --rose-dark: #713047;
-  --gold-accent: #c7a96a;
-  --gold-light: #f7f3eb;
-  --bg-cream: #fbf8f5;
-  --text-main: #211a1d;
-  --text-muted: #666666;
-  --gray-border: #e8e3dd;
-  --white: #ffffff;
-  --safe-bottom: env(safe-area-inset-bottom, 0px);
-}
-
-*, *::before, *::after {
-  box-sizing: border-box;
-  margin: 0;
-  padding: 0;
-}
-
-html {
-  direction: rtl;
-  font-size: 15px;
-  scroll-behavior: smooth;
-}
-
-body {
-  font-family: 'Cairo', sans-serif;
-  background-color: var(--bg-cream);
-  color: var(--text-main);
-  line-height: 1.5;
-  overflow-x: hidden;
-  -webkit-font-smoothing: antialiased;
-}
-
-/* ==========================================================================
-   PRODUCT GRID & CARD ARCHITECTURE (FIXES OVERLAPS & BIG IMAGES)
-   ========================================================================== */
-
-.products-section, 
-main {
-  max-width: 1200px;
-  margin-inline: auto;
-  padding: 16px 12px;
-}
-
-/* شبكة المنتجات - متناسقة تماماً للهواتف والأجهزة */
-.product-grid {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 12px;
-}
-
-@media (min-width: 768px) {
-  .product-grid {
-    grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
-    gap: 20px;
+  .dark {
+    --background: 240 10% 3.9%;
+    --foreground: 0 0% 98%;
+    --card: 240 10% 3.9%;
+    --card-foreground: 0 0% 98%;
+    --popover: 240 10% 3.9%;
+    --popover-foreground: 0 0% 98%;
+    --primary: 336 41% 51%;
+    --primary-foreground: 240 5.9% 10%;
+    --secondary: 240 3.7% 15.9%;
+    --secondary-foreground: 0 0% 98%;
+    --muted: 240 3.7% 15.9%;
+    --muted-foreground: 240 5% 64.9%;
+    --accent: 240 3.7% 15.9%;
+    --accent-foreground: 0 0% 98%;
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 240 3.7% 15.9%;
+    --input: 240 3.7% 15.9%;
+    --ring: 336 41% 51%;
   }
 }
 
-/* كارت المنتج الأنيق */
-.product-card {
-  background: var(--white);
-  border: 1px solid var(--gray-border);
-  border-radius: 12px;
-  overflow: hidden;
-  display: flex;
-  flex-direction: column;
-  position: relative;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03);
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
+@layer base {
+  * {
+    border-color: var(--border);
+  }
+  body {
+    background-color: var(--background);
+    color: var(--foreground);
+    font-family: var(--font-cairo), system-ui, sans-serif;
+  }
 }
 
-.product-card:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
-}
-
-/* 1. ضبط مقاس الصورة - منع التضخم */
-.product-card .image-wrapper,
-.product-card > a:first-child {
-  position: relative;
-  width: 100%;
-  aspect-ratio: 4 / 5; /* نسبة طول متناسقة وأنيقة جداً للملابس */
-  overflow: hidden;
-  background-color: #f4efe9;
-  display: block;
-}
-
-.product-card img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  object-position: top center;
-  transition: transform 0.4s ease;
-}
-
-/* 2. الأوسمة فوق الصورة (شعار الخصم ونفد المخزون) */
-.badge-discount,
-.product-card .badge-sale,
-.product-card [class*="discount"] {
-  position: absolute;
-  top: 8px;
-  inset-inline-start: 8px;
-  background: var(--rose-primary);
-  color: var(--white);
-  font-size: 0.7rem;
-  font-weight: 700;
-  padding: 3px 8px;
-  border-radius: 6px;
-  z-index: 2;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.15);
-}
-
-.badge-out-of-stock,
-.product-card [class*="out-of-stock"] {
-  position: absolute;
-  top: 8px;
-  inset-inline-end: 8px;
-  background: rgba(33, 26, 29, 0.85);
-  color: var(--white);
-  font-size: 0.7rem;
-  font-weight: 600;
-  padding: 3px 8px;
-  border-radius: 6px;
-  z-index: 2;
-}
-
-/* أيقونة المفضلة (القلب) */
-.btn-wishlist,
-.product-card [class*="wishlist"] {
-  position: absolute;
-  bottom: 8px;
-  inset-inline-end: 8px;
-  width: 32px;
-  height: 32px;
-  background: rgba(255, 255, 255, 0.9);
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 3;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.12);
-  cursor: pointer;
-}
-
-/* 3. تفاصيل المنتج (ترتيب مرن بدون تداخل) */
-.product-info,
-.product-card .details {
-  padding: 10px 12px 12px 12px;
-  display: flex;
-  flex-direction: column;
-  flex-grow: 1;
-  gap: 6px;
-}
-
-/* اسم الفستان */
-.product-title,
-.product-card h3,
-.product-card h2 {
-  font-size: 0.95rem;
-  font-weight: 700;
-  color: var(--text-main);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  margin: 0;
-}
-
-/* منطقة السعر */
-.product-price,
-.product-card .price-container {
-  display: flex;
-  align-items: baseline;
-  gap: 6px;
-  margin-top: 2px;
-}
-
-.current-price,
-.product-price .price {
-  font-size: 1.05rem;
-  font-weight: 800;
-  color: var(--rose-dark);
-}
-
-.original-price,
-.product-price .old-price {
-  font-size: 0.8rem;
-  color: var(--text-muted);
-  text-decoration: line-through;
-}
-
-/* شريط عمولة المندوبة (أنظف وأصغر) */
-.commission-tag,
-.product-card [class*="commission"] {
-  background: var(--gold-light);
-  border: 1px dashed var(--gold-accent);
-  color: var(--rose-dark);
-  font-size: 0.75rem;
-  font-weight: 700;
-  padding: 4px 8px;
-  border-radius: 6px;
-  text-align: center;
-  margin-block: 2px;
-  display: inline-block;
-  width: fit-content;
-}
-
-/* 4. الأزرار السفلية (اختاري التفاصيل / نفد المخزون) */
-.btn-action,
-.product-card button,
-.product-card .add-to-cart {
-  width: 100%;
-  padding: 8px 12px;
-  border-radius: 8px;
-  font-size: 0.85rem;
-  font-weight: 700;
-  border: 1px solid var(--rose-primary);
-  background: var(--white);
-  color: var(--rose-primary);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 6px;
-  cursor: pointer;
-  margin-top: auto;
-  min-height: 38px;
-  transition: all 0.2s ease;
-}
-
-.btn-action:hover,
-.product-card button:hover {
-  background: var(--rose-primary);
-  color: var(--white);
-}
-
-/* زر نفد المخزون */
-.btn-action:disabled,
-.product-card button:disabled,
-.btn-action.disabled {
-  background: #f0f0f0 !important;
-  color: #999999 !important;
-  border-color: #e0e0e0 !important;
-  cursor: not-allowed;
-}
-
-/* ==========================================================================
-   MOBILE BOTTOM NAVIGATION & HEADER FIXES
-   ========================================================================== */
-
-.site-header {
-  position: sticky;
-  top: 0;
-  z-index: 1000;
-  background: rgba(251, 248, 245, 0.95);
-  backdrop-filter: blur(10px);
-  border-bottom: 1px solid var(--gray-border);
-  padding: 10px 16px;
-}
-
-.mobile-bottom-nav {
-  position: fixed;
-  bottom: 0;
-  inset-inline: 0;
-  height: calc(56px + var(--safe-bottom));
-  padding-bottom: var(--safe-bottom);
-  background: #ffffff;
-  border-top: 1px solid var(--gray-border);
-  display: flex;
-  justify-content: space-around;
-  align-items: center;
-  z-index: 999;
-  box-shadow: 0 -4px 12px rgba(0,0,0,0.04);
-}
-
-.mobile-bottom-nav a,
-.mobile-bottom-nav button {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  font-size: 0.7rem;
-  font-weight: 600;
-  color: var(--text-main);
-  gap: 2px;
+/* Base custom styles for AVEA Storefront */
+html {
+  scroll-behavior: smooth;
+  direction: rtl;
 }
 
 body {
-  padding-bottom: calc(65px + var(--safe-bottom));
+  overflow-x: hidden;
 }
