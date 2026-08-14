@@ -1,6 +1,6 @@
 .withdrawal-status{display:inline-flex;align-items:center;margin:2px 0 6px;padding:4px 9px;border-radius:999px;background:#fff3cd;color:#765b00;font-size:9px;font-weight:800}.withdrawal-status.approved{background:#dcecff;color:#174f8c}.withdrawal-status.paid{background:#dff5e7;color:#17653a}.withdrawal-status.rejected{background:#fde3e3;color:#9b2424}
 
-:root { --rose:#b25078; --rose-dark:#713047; --rose-light:#f5e4e9; --gold:#c7a96a; --ink:#211a1d; --muted:#75696e; --cream:#fbf8f5; --white:#fff; --line:#e9e0e2; --shadow:0 24px 60px rgba(52,31,39,.11); --font-arabic:Tahoma,"Segoe UI",Arial,sans-serif; }
+:root { --rose:#b25078; --rose-dark:#713047; --rose-light:#f5e4e9; --gold:#c7a96a; --ink:#211a1d; --muted:#75696e; --cream:#f5f2ee; --white:#fff; --line:#e9e0e2; --shadow:0 24px 60px rgba(52,31,39,.11); --font-arabic:Tahoma,"Segoe UI",Arial,sans-serif; }
 * { box-sizing:border-box; }
 html { scroll-behavior:smooth; }
 body { margin:0; background:var(--cream); color:var(--ink); font-family:var(--font-arabic); text-rendering:optimizeLegibility; }
