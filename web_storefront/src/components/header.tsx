@@ -8,6 +8,7 @@ import type { CSSProperties } from "react";
 import { useStore } from "@/components/store-provider";
 import { useAuth } from "@/components/auth-provider";
 import { LocaleToggle } from "@/components/locale-toggle";
+import { AppInstallPrompt } from "@/components/app-install-prompt";
 import { fetchAppContent } from "@/lib/api";
 import { AppContent } from "@/lib/types";
 
@@ -55,6 +56,7 @@ export function Header() {
         <button className="icon-button menu-button" onClick={() => setOpen(!open)} aria-label="القائمة">
           {open ? <X /> : <Menu />}
         </button>
+        <AppInstallPrompt />
         <Link className="brand" href="/" aria-label="أڤيا فاشن الرئيسية">
           <span>AVEA</span>
           <small>FASHION</small>

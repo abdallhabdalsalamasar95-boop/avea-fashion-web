@@ -92,37 +92,31 @@ export function AppInstallPrompt() {
   return (
     <>
       <button
+        className="app-install-prompt"
         onClick={handleInstall}
         aria-label="حمّلي تطبيق AVEA"
         style={{
-          position: "fixed",
-          top: 72,
-          right: 58,
-          left: "auto",
-          zIndex: 9999,
-          border: 0,
-          borderRadius: 999,
-          width: "auto",
-          height: 38,
-          padding: "0 7px 0 5px",
-          background: "#fff",
+          position: "relative",
+          zIndex: 51,
           border: "1px solid rgba(77, 29, 47, .16)",
+          borderRadius: 7,
+          width: 26,
+          minWidth: 26,
+          height: 26,
+          padding: 0,
+          background: "#fff",
           color: "#4d1d2f",
-          boxShadow: "0 10px 24px rgba(77, 29, 47, .14)",
+          boxShadow: "0 2px 7px rgba(77, 29, 47, .12)",
           display: "inline-flex",
           alignItems: "center",
-          gap: 6,
+          justifyContent: "center",
           direction: "rtl",
-          fontWeight: 900,
-          fontSize: 12,
-          letterSpacing: "0.1px",
           cursor: "pointer",
           backdropFilter: "blur(10px)",
-          whiteSpace: "nowrap",
         }}
       >
-        <span aria-hidden="true" style={{ width: 28, height: 28, display: "grid", placeItems: "center", borderRadius: 9, background: "#4d1d2f", color: "#fff", fontFamily: "Georgia, serif", fontSize: 16, letterSpacing: 1 }}>A</span>
-        <span style={{ fontSize: 10, lineHeight: 1, whiteSpace: "nowrap" }}>تطبيق AVEA</span>
+        <span aria-hidden="true" style={{ width: 18, height: 18, display: "grid", placeItems: "center", borderRadius: 5, background: "#4d1d2f", color: "#fff", fontFamily: "Georgia, serif", fontSize: 11, letterSpacing: 1 }}>A</span>
+        <span style={{ display: "none" }}>تطبيق AVEA</span>
       </button>
 
       {showHelp && (
