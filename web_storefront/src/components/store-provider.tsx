@@ -5,6 +5,7 @@ import { CartItem } from "@/lib/types";
 
 type StoreContextValue = {
   cart: CartItem[];
+  storeReady: boolean;
   favorites: string[];
   cartCount: number;
   total: number;
@@ -66,6 +67,7 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
 
   const value = useMemo<StoreContextValue>(() => ({
     cart,
+    storeReady: ready,
     favorites,
     cartCount: cart.reduce((sum, item) => sum + item.quantity, 0),
     total: cart.reduce((sum, item) => sum + item.price * item.quantity, 0),
@@ -97,7 +99,7 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
         ? current.filter((id) => id !== productId)
         : [...current, productId]),
     isFavorite: (productId) => favorites.includes(productId),
-  }), [cart, favorites]);
+  }), [cart, favorites, ready]);
 
   return <StoreContext.Provider value={value}>{children}</StoreContext.Provider>;
 }

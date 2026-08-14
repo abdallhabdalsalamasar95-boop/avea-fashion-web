@@ -4,7 +4,43 @@ import { useEffect, useMemo, useState } from "react";
 import { fetchDeliveryDestinations } from "@/lib/api";
 import { CheckoutCustomer } from "@/lib/types";
 
-const fallbackCities = ["طرابلس", "بنغازي", "مصراتة", "الزاوية", "زليتن", "الخمس", "سرت", "سبها", "البيضاء", "درنة", "طبرق"];
+const fallbackDestinations: Record<string, string[]> = {
+  طرابلس: ["وسط طرابلس", "تاجوراء", "جنزور", "سوق الجمعة", "حي الأندلس", "عين زارة", "أبو سليم"],
+  بنغازي: ["وسط بنغازي", "الحدائق", "الهواري", "سيدي حسين", "الليثي"],
+  مصراتة: ["وسط مصراتة", "الدافنية", "زريق"],
+  الزاوية: ["الزاوية", "الزاوية المركز", "الحرشة"],
+  صرمان: ["صرمان", "الجميل", "العجيلات"],
+  صبراتة: ["صبراتة", "زلطن", "رقدالين"],
+  زوارة: ["زوارة", "أبو كماش"],
+  غريان: ["غريان", "الأصابعة", "ككلة"],
+  الزنتان: ["الزنتان", "يفرن", "الرياينة"],
+  "الجبل الغربي": ["يفرن", "ككلة", "القلعة", "الزنتان", "الرياينة", "وازن", "نالوت", "جادو", "الرجبان", "تيجي", "مزو"],
+  يفرن: ["يفرن", "القواسم", "القلعة", "الحرابة"],
+  ككلة: ["ككلة", "القلعة", "يفرن"],
+  نالوت: ["نالوت", "وازن", "تيجي", "غدامس"],
+  جادو: ["جادو", "تمسين", "فساطو"],
+  غدامس: ["غدامس", "درج", "سيناون"],
+  البيضاء: ["البيضاء", "شحات", "سوسة", "الحمامة"],
+  درنة: ["درنة", "القبة", "التميمي"],
+  طبرق: ["طبرق", "مساعد", "امساعد"],
+  أجدابيا: ["أجدابيا", "البريقة", "العقيلة"],
+  المرج: ["المرج", "الأبيار", "توكرة"],
+  سرت: ["وسط سرت", "هراوة", "بن جواد"],
+  زليتن: ["وسط زليتن", "الجميل", "كعام"],
+  الخمس: ["وسط الخمس", "مسلاتة", "قصر خيار"],
+  ترهونة: ["ترهونة", "مسلاتة", "القربولي"],
+  "بني وليد": ["بني وليد", "وادي دينار", "المردوم"],
+  "القره بوللي": ["القره بوللي", "سيدي خليفة", "القويعة"],
+  سبها: ["وسط سبها", "الجديد", "القرضة"],
+  مرزق: ["مرزق", "القطرون", "تراغن"],
+  أوباري: ["أوباري", "غات", "وادي عتبة"],
+  غات: ["غات", "العوينات", "البركت"],
+  جالو: ["جالو", "أوجلة", "إجخرة"],
+  أوجلة: ["أوجلة", "جالو", "إجخرة"],
+  الكفرة: ["الكفرة", "رُبيانة", "التازربو"],
+};
+
+const fallbackCities = Object.keys(fallbackDestinations);
 
 type Props = {
   value: CheckoutCustomer;
@@ -13,6 +49,8 @@ type Props = {
 
 export function DeliveryLocationFields({ value, onChange }: Props) {
   const [destinations, setDestinations] = useState<Record<string, string[]>>({});
+  const [citySearch, setCitySearch] = useState("");
+  const [areaSearch, setAreaSearch] = useState("");
   const [loading, setLoading] = useState(true);
   const [providerAvailable, setProviderAvailable] = useState(true);
 
@@ -33,11 +71,12 @@ export function DeliveryLocationFields({ value, onChange }: Props) {
   }, []);
 
   const cities = useMemo(() => {
-    const available = Object.keys(destinations);
-    const source = available.length ? available : fallbackCities;
+    const source = Array.from(new Set([...fallbackCities, ...Object.keys(destinations)]));
     return value.city && !source.includes(value.city) ? [value.city, ...source] : source;
   }, [destinations, value.city]);
-  const areas = useMemo(() => destinations[value.city] ?? [], [destinations, value.city]);
+  const filteredCities = useMemo(() => cities.filter((city) => city.includes(citySearch.trim())), [cities, citySearch]);
+  const areas = useMemo(() => Array.from(new Set([...(fallbackDestinations[value.city] ?? []), ...(destinations[value.city] ?? [])])), [destinations, value.city]);
+  const filteredAreas = useMemo(() => areas.filter((area) => area.includes(areaSearch.trim())), [areas, areaSearch]);
 
   useEffect(() => {
     if (areas.length && value.area && !areas.includes(value.area)) {
@@ -46,14 +85,14 @@ export function DeliveryLocationFields({ value, onChange }: Props) {
   }, [areas, onChange, value]);
 
   return <>
-    <label><span>المدينة *</span><select required value={value.city} onChange={(event) => onChange({ ...value, city: event.target.value, area: "" })}>
-      {cities.map((city) => <option key={city} value={city}>{city}</option>)}
+    <label><span>المدينة *</span><input className="location-search-input" type="search" value={citySearch} onChange={(event) => setCitySearch(event.target.value)} placeholder="ابحثي عن مدينة..." /><select required value={value.city} onChange={(event) => { onChange({ ...value, city: event.target.value, area: "" }); setAreaSearch(""); }}>
+      {filteredCities.length ? filteredCities.map((city) => <option key={city} value={city}>{city}</option>) : <option value="">لا توجد مدينة مطابقة</option>}
     </select></label>
     <label><span>المنطقة *</span>{areas.length
-      ? <select required autoComplete="address-level3" value={value.area} onChange={(event) => onChange({ ...value, area: event.target.value })}>
+      ? <><input className="location-search-input" type="search" value={areaSearch} onChange={(event) => setAreaSearch(event.target.value)} placeholder="ابحثي عن منطقة..." /><select required autoComplete="address-level3" value={value.area} onChange={(event) => onChange({ ...value, area: event.target.value })}>
           <option value="">اختاري المنطقة</option>
-          {areas.map((area) => <option key={area} value={area}>{area}</option>)}
-        </select>
+          {filteredAreas.map((area) => <option key={area} value={area}>{area}</option>)}
+        </select></>
       : <input required autoComplete="address-level3" placeholder={loading ? "جاري تحميل المناطق..." : "اكتبي المنطقة"} value={value.area} onChange={(event) => onChange({ ...value, area: event.target.value })} />}
       {!loading && !providerAvailable && <small className="location-provider-note">تعذر تحميل القائمة الآن، يمكنكِ كتابة المنطقة يدويًا.</small>}
     </label>

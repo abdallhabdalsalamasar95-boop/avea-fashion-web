@@ -17,7 +17,7 @@ import { AmbassadorShare, AppContent, CheckoutCustomer } from "@/lib/types";
 
 const shipping: Record<string, number> = { "طرابلس": 10, "بنغازي": 15, "مصراتة": 12, "سبها": 20, "الزاوية": 12, "سرت": 18, "درنة": 18, "طبرق": 20, "أخرى": 25 };
 export default function CheckoutPage() {
-  const { cart, total, clearCart } = useStore();
+  const { cart, total, clearCart, storeReady } = useStore();
   const { user, loading: authLoading } = useAuth();
   const { ambassador, commission, loading: ambassadorLoading } = useAmbassador();
   const appearance = useSiteAppearance();
@@ -130,6 +130,7 @@ export default function CheckoutPage() {
   };
 
   if (orderId) return <div className="container success-page order-success"><div className="success-check"><CheckCircle2 /></div><span>شكرًا لاختياركِ أڤيا</span><h1>تم استلام طلبك بنجاح</h1>{sharedOrder && <div className="success-partner"><BadgeCheck /><span><small>بمساعدة شريكة AVEA المعتمدة</small><strong>{sharedOrder.ambassadorName}</strong></span></div>}<div className="success-order-number"><small>رقم الطلب</small><strong dir="ltr">{orderId}</strong><Clipboard /></div><p>سيتواصل فريقنا معكِ لتأكيد التفاصيل، ويمكنكِ متابعة حالة الطلب في أي وقت.</p><div className="success-actions"><Link className="primary-button" href={ambassador ? "/ambassador/" : "/account/#orders"}><PackageSearch /> {ambassador ? "عرض طلبات عميلاتي" : "تتبع طلبي"}</Link><button className="secondary-button" onClick={shareOrder}>{orderShared ? <Check /> : <Share2 />}{orderShared ? "تمت المشاركة" : "مشاركة رقم الطلب"}</button></div><Link className="success-home-link" href="/">العودة للرئيسية</Link></div>;
+  if (!storeReady) return <div className="container page-loading">جاري تجهيز السلة...</div>;
   if (!cart.length) return <div className="container inner-page"><div className="empty-state"><h3>لا يمكن إتمام طلب فارغ</h3><Link className="primary-button" href="/#collection">العودة للمتجر</Link></div></div>;
 
   return <div className="container inner-page checkout-page"><header className="simple-page-head"><div><span>إتمام الطلب</span><h1>باقي خطوة واحدة</h1><p>أدخلي بيانات التوصيل ثم راجعي الطلب وأكّديه.</p></div><Link href="/cart/">العودة للسلة</Link></header><form className="checkout-layout" onSubmit={submit} autoComplete={ambassador || sharedOrder ? "off" : "on"}>
