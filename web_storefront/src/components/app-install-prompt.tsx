@@ -11,7 +11,7 @@ declare global {
 }
 
 type BrowserLabel = "Chrome" | "Edge" | "Firefox" | "Safari" | "المتصفح";
-const ANDROID_APK_URL = "/app-debug.apk";
+const ANDROID_APK_URL = "https://avea-fashion-web.onrender.com/app-debug.apk";
 
 function detectBrowserLabel(): BrowserLabel {
   const ua = window.navigator.userAgent.toLowerCase();
@@ -100,15 +100,16 @@ export function AppInstallPrompt() {
           zIndex: 9999,
           border: 0,
           borderRadius: 999,
-          padding: "10px 14px",
-          background: "rgba(15, 23, 42, 0.94)",
-          color: "#fff",
-          boxShadow: "0 14px 32px rgba(15, 23, 42, 0.18)",
+          padding: "8px 13px 8px 10px",
+          background: "#fff",
+          border: "1px solid rgba(77, 29, 47, .16)",
+          color: "#4d1d2f",
+          boxShadow: "0 10px 24px rgba(77, 29, 47, .14)",
           display: "inline-flex",
           alignItems: "center",
           gap: 8,
           direction: "rtl",
-          fontWeight: 800,
+          fontWeight: 900,
           fontSize: 13,
           letterSpacing: "0.1px",
           cursor: "pointer",
@@ -116,8 +117,9 @@ export function AppInstallPrompt() {
           whiteSpace: "nowrap",
         }}
       >
-        <span aria-hidden="true">⬇</span>
-        <span>{isAndroid ? "حمّلي تطبيق AVEA" : "أضيفي AVEA"}</span>
+        <span aria-hidden="true" style={{ width: 30, height: 30, display: "grid", placeItems: "center", borderRadius: 10, background: "#4d1d2f", color: "#fff", fontFamily: "Georgia, serif", fontSize: 17, letterSpacing: 1 }}>A</span>
+        <span style={{ display: "grid", gap: 1, textAlign: "right" }}><strong style={{ fontSize: 12, lineHeight: 1.1 }}>AVEA</strong><small style={{ fontSize: 9, color: "#8c7078", fontWeight: 700 }}>{isAndroid ? "تنزيل التطبيق" : "إضافة للشاشة"}</small></span>
+        <span aria-hidden="true" style={{ fontSize: 18, lineHeight: 1 }}>↓</span>
       </button>
 
       {showHelp && (
