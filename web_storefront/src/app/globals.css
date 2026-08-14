@@ -998,6 +998,10 @@ body.category-sheet-open{overflow:hidden}.category-floating-tools{position:fixed
 @media(max-width:850px){.account-address-link{min-height:82px}.address-page{padding-block:24px 58px}}
 @media(max-width:560px){.account-address-link{min-height:72px;grid-template-columns:39px minmax(0,1fr) 16px;gap:9px;padding:10px 12px;border-radius:9px}.account-address-link:hover{transform:none}.account-address-icon{width:39px;height:39px}.account-address-icon svg{width:18px}.account-address-copy strong{font-size:17px}.account-address-copy em{font-size:8px}.address-page{width:calc(100% - 24px);padding-block:16px 42px}.address-back-link{margin-bottom:9px}.address-page-head{gap:10px;margin-bottom:11px}.address-page-head>span{width:40px;height:40px}.address-page-head h1{font-size:24px}.address-page-head p{font-size:9px;line-height:1.6}.address-form-card{padding:12px;border-radius:9px}.address-form{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px 7px}.address-form label.full{grid-column:1/-1}.address-form input,.address-form select{min-height:43px;padding:8px;font-size:10px}.address-form-actions{gap:8px}.address-form-actions .primary-button{min-height:41px;padding-inline:15px}.address-privacy{align-items:flex-start;margin-top:10px;padding-top:10px}}
 @media(max-width:350px){.address-form{grid-template-columns:1fr}.address-form label.full,.address-form-actions{grid-column:auto}.address-form-actions{align-items:stretch;flex-direction:column}.address-form-actions .primary-button{width:100%}.address-form-actions>a{justify-content:center}}
+/* خلفية الموقع المريحة للعين */
+body {
+  background-color: #f6f1ec;
+}
 
 
 
