@@ -8,6 +8,7 @@ import { SiteAppearanceProvider } from "@/components/site-appearance-provider";
 import { SiteFooter } from "@/components/site-footer";
 import { AppInstallPrompt } from "@/components/app-install-prompt";
 import { PwaRegister } from "@/components/pwa-register";
+import { SocialLinks } from "@/components/social-links";
 import "./globals.css";
 
 // إضافة خط القاهرة العصري والأنيق للموقع
@@ -42,6 +43,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
                 <PwaRegister />
                 <Header />
                 <main>{children}</main>
+                <SocialLinks />
                 <SiteFooter />
                 <AppInstallPrompt />
               </SiteAppearanceProvider>

@@ -107,6 +107,13 @@ button { cursor:pointer; }
 .luxury-cta-badges span { display:inline-flex; align-items:center; justify-content:center; min-height:44px; padding:0 18px; border-radius:999px; background:rgba(255,255,255,.08); border:1px solid rgba(255,255,255,.12); color:#f9efe7; font-size:11px; font-weight:700; letter-spacing:.5px; }
 
 .benefits { display:grid; grid-template-columns:repeat(3,1fr); background:#fff; position:relative; z-index:3; padding:24px 34px; border-bottom:1px solid var(--line); }
+.social-links { display:flex; align-items:center; justify-content:center; gap:18px; padding:22px 20px; background:#fff; border-top:1px solid var(--line); border-bottom:1px solid var(--line); color:var(--muted); font-size:12px; }
+.social-links>div { display:flex; align-items:center; gap:8px; }
+.social-links a { position:relative; width:42px; height:42px; display:grid; place-items:center; border:1px solid #eadfe2; border-radius:50%; color:var(--rose-dark); background:linear-gradient(145deg,#fff,#fbf1f4); box-shadow:0 8px 18px rgba(77,29,47,.08); transition:.2s; }
+.social-links a:hover { color:#fff; background:var(--rose-dark); border-color:var(--rose-dark); transform:translateY(-2px); }
+.social-links svg { width:17px; height:17px; }
+.social-links a span { position:absolute; right:50%; bottom:-27px; transform:translateX(50%); white-space:nowrap; padding:4px 8px; border-radius:7px; background:var(--ink); color:#fff; font-size:9px; opacity:0; pointer-events:none; transition:.2s; }
+.social-links a:hover span,.social-links a:focus-visible span { opacity:1; }
 .benefits>div { display:flex; align-items:center; justify-content:center; gap:15px; border-left:1px solid var(--line); }
 .benefits>div:last-child { border-left:0; }
 .benefits svg { color:var(--rose); width:28px; }

@@ -55,6 +55,15 @@ export interface Coupon {
 }
 
 export interface AppContent {
+  websiteSocial?: {
+    enabled?: boolean;
+    instagram?: string;
+    facebook?: string;
+    whatsapp?: string;
+    telegram?: string;
+    tiktok?: string;
+    website?: string;
+  };
   websiteHome?: {
     announcement?: {
       text?: string;
