@@ -15,7 +15,7 @@ const messages: Record<string, string> = {
 export function AuthPanel() {
   const { user, loading, login, register, google, resetPassword, logout } = useAuth();
   const [email, setEmail] = useState(""); const [password, setPassword] = useState("");
-  const [mode, setMode] = useState<"login" | "register">("login");
+  const [mode, setMode] = useState<"login" | "register">("register");
   const [busy, setBusy] = useState(false); const [message, setMessage] = useState("");
   const run = async (action: () => Promise<void>, success = "") => { setBusy(true); setMessage(""); try { await action(); setMessage(success); } catch (error) { const code = error instanceof FirebaseError ? error.code : ""; setMessage(messages[code] || "تعذر إتمام العملية. تحققي من البيانات وحاولي مجددًا."); } finally { setBusy(false); } };
   const submit = (event: FormEvent) => { event.preventDefault(); void run(() => mode === "login" ? login(email, password) : register(email, password)); };
