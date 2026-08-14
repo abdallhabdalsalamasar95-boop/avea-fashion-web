@@ -11,6 +11,7 @@ declare global {
 }
 
 type BrowserLabel = "Chrome" | "Edge" | "Firefox" | "Safari" | "المتصفح";
+const ANDROID_APK_URL = "/avea-fashion.apk";
 
 function detectBrowserLabel(): BrowserLabel {
   const ua = window.navigator.userAgent.toLowerCase();
@@ -29,6 +30,7 @@ export function AppInstallPrompt() {
   const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null);
   const [showHelp, setShowHelp] = useState(false);
   const [browserLabel, setBrowserLabel] = useState<BrowserLabel>("المتصفح");
+  const [isAndroid, setIsAndroid] = useState(false);
 
   useEffect(() => {
     setMounted(true);
@@ -39,6 +41,7 @@ export function AppInstallPrompt() {
 
     setIsStandalone(standalone);
     setBrowserLabel(detectBrowserLabel());
+    setIsAndroid(/android/i.test(window.navigator.userAgent));
 
     const onBeforeInstallPrompt = (event: Event) => {
       event.preventDefault();
@@ -63,6 +66,10 @@ export function AppInstallPrompt() {
   if (!mounted || isStandalone) return null;
 
   const handleInstall = async () => {
+    if (isAndroid) {
+      window.location.href = ANDROID_APK_URL;
+      return;
+    }
     if (!deferredPrompt) {
       setShowHelp(true);
       return;
@@ -76,7 +83,7 @@ export function AppInstallPrompt() {
 
   const helpText =
     browserLabel === "Safari"
-      ? 'في Safari: اضغطي زر المشاركة ثم اختاري "إضافة إلى الشاشة الرئيسية".'
+      ? 'في Safari: اضغطي زر المشاركة ثم اختاري "إضافة إلى الشاشة الرئيسية"، وبعدها اضغطي "إضافة".'
       : browserLabel === "Firefox"
         ? 'في Firefox: افتحي قائمة المتصفح وابحثي عن "Install" أو "Add to Home Screen".'
         : 'في هذا المتصفح: افتحي قائمة المتصفح وابحثي عن "Install app" أو "Add to Home Screen".';
@@ -85,7 +92,7 @@ export function AppInstallPrompt() {
     <>
       <button
         onClick={handleInstall}
-        aria-label="حملي تطبيق افيا"
+        aria-label="حمّلي تطبيق AVEA"
         style={{
           position: "fixed",
           top: 96,
@@ -110,7 +117,7 @@ export function AppInstallPrompt() {
         }}
       >
         <span aria-hidden="true">⬇</span>
-        <span>حملي تطبيق افيا</span>
+        <span>{isAndroid ? "حمّلي تطبيق AVEA" : "أضيفي AVEA"}</span>
       </button>
 
       {showHelp && (
@@ -142,11 +149,13 @@ export function AppInstallPrompt() {
             onClick={(event) => event.stopPropagation()}
           >
             <strong style={{ display: "block", marginBottom: 8, fontSize: 15 }}>
-              حملي تطبيق افيا
+              {isAndroid ? "حمّلي تطبيق AVEA" : "أضيفي AVEA للشاشة الرئيسية"}
             </strong>
 
             <p style={{ margin: "0 0 12px", color: "#75696e", lineHeight: 1.8, fontSize: 13 }}>
-              {deferredPrompt
+              {isAndroid
+                ? "سيبدأ تنزيل تطبيق AVEA بصيغة APK. بعد اكتمال التنزيل افتحي الملف ووافقي على التثبيت."
+                : deferredPrompt
                 ? "إذا ظهر مربع التثبيت، وافقي عليه وسيتم التثبيت مباشرة."
                 : helpText}
             </p>
