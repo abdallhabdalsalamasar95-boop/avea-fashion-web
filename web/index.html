@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <base href="$FLUTTER_BASE_HREF">
+  <meta name="description" content="AVEA FASHION — فساتين وموديلات نسائية مختارة بعناية، مع تجربة تسوق سريعة وشحن داخل ليبيا." />
+  <meta name="theme-color" content="#7a2e50" />
+  <meta name="color-scheme" content="light dark" />
+  <link rel="icon" type="image/png" href="favicon.png" />
+  <link rel="canonical" href="https://avea-fashion-web.onrender.com/" />
+  <meta property="og:type" content="website" />
+  <meta property="og:locale" content="ar_LY" />
+  <meta property="og:site_name" content="AVEA FASHION" />
+  <meta property="og:title" content="AVEA FASHION | أناقتك تبدأ من هنا" />
+  <meta property="og:description" content="تشكيلات نسائية راقية، طلب سهل وشحن سريع داخل ليبيا." />
+  <meta property="og:url" content="https://avea-fashion-web.onrender.com/" />
+  <meta property="og:image" content="https://avea-fashion-web.onrender.com/icons/Icon-512.png" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="AVEA FASHION | أناقتك تبدأ من هنا" />
+  <meta name="twitter:description" content="تشكيلات نسائية راقية وتجربة تسوق سريعة داخل ليبيا." />
+  <meta name="twitter:image" content="https://avea-fashion-web.onrender.com/icons/Icon-512.png" />
+  <meta name="google-adsense-account" content="ca-pub-1003377600392455" />
+  <title>AVEA FASHION | أناقتك تبدأ من هنا</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --welcome-rose: #b25078;
+      --welcome-deep: #321923;
+      --welcome-gold: #d4af6a;
+      --welcome-cream: #fff8f3;
+    }
+    * { box-sizing: border-box; }
+    html, body {
+      height: 100%;
+      margin: 0;
+      padding: 0;
+      background: var(--welcome-cream);
+      font-family: 'Segoe UI', Tahoma, Arial, sans-serif;
+    }
+    body {
+      overflow: hidden;
+    }
+    #welcome {
+      position: fixed;
+      inset: 0;
+      display: grid;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      background:
+        radial-gradient(circle at 15% 12%, rgba(212, 175, 106, .22), transparent 30%),
+        radial-gradient(circle at 88% 88%, rgba(178, 80, 120, .24), transparent 34%),
+        linear-gradient(145deg, #fffaf6 0%, #f8e9ee 52%, #f3dce5 100%);
+      color: var(--welcome-deep);
+      z-index: 9999;
+      opacity: 1;
+      visibility: visible;
+      transition: opacity 320ms ease, visibility 320ms ease;
+    }
+    #welcome.is-ready {
+      opacity: 0;
+      visibility: hidden;
+      pointer-events: none;
+    }
+    .welcome-card {
+      width: min(88vw, 390px);
+      padding: 30px 24px 26px;
+      text-align: center;
+      border: 1px solid rgba(122, 46, 80, .12);
+      border-radius: 30px;
+      background: rgba(255, 255, 255, .72);
+      box-shadow: 0 24px 70px rgba(74, 30, 48, .12);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      animation: welcome-in 520ms cubic-bezier(.2, .8, .2, 1) both;
+    }
+    .welcome-mark {
+      width: 76px;
+      height: 76px;
+      margin: 0 auto 18px;
+      display: grid;
+      place-items: center;
+      border-radius: 24px;
+      color: #fff;
+      background: linear-gradient(145deg, var(--welcome-rose), #7a2e50);
+      box-shadow: 0 14px 34px rgba(122, 46, 80, .25);
+      font-family: Georgia, 'Times New Roman', serif;
+      font-size: 29px;
+      font-weight: 800;
+      letter-spacing: 2px;
+    }
+    .welcome-brand {
+      margin: 0;
+      font-family: Georgia, 'Times New Roman', serif;
+      font-size: 25px;
+      font-weight: 800;
+      letter-spacing: 3px;
+    }
+    .welcome-tagline {
+      margin: 9px 0 0;
+      color: #775a66;
+      font-size: 14px;
+      font-weight: 650;
+      line-height: 1.7;
+    }
+    .welcome-progress {
+      width: 148px;
+      height: 4px;
+      margin: 22px auto 11px;
+      overflow: hidden;
+      border-radius: 99px;
+      background: rgba(178, 80, 120, .13);
+    }
+    .welcome-progress::after {
+      content: '';
+      display: block;
+      width: 52%;
+      height: 100%;
+      border-radius: inherit;
+      background: linear-gradient(90deg, var(--welcome-rose), var(--welcome-gold));
+      animation: welcome-progress 1.05s ease-in-out infinite alternate;
+    }
+    #loading-status {
+      min-height: 18px;
+      color: #8a6b76;
+      font-size: 12px;
+      font-weight: 700;
+    }
+    @keyframes welcome-in {
+      from { opacity: 0; transform: translateY(12px) scale(.98); }
+      to { opacity: 1; transform: translateY(0) scale(1); }
+    }
+    @keyframes welcome-progress {
+      from { transform: translateX(88%); }
+      to { transform: translateX(-88%); }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      #welcome, .welcome-card, .welcome-progress::after {
+        animation: none;
+        transition-duration: 1ms;
+      }
+    }
+    @media (prefers-color-scheme: dark) {
+      :root { color-scheme: dark; }
+      html, body { background: #150f12; }
+      #welcome {
+        color: #fff8f3;
+        background:
+          radial-gradient(circle at 15% 12%, rgba(212, 175, 106, .15), transparent 30%),
+          radial-gradient(circle at 88% 88%, rgba(178, 80, 120, .18), transparent 34%),
+          linear-gradient(145deg, #130e10, #24151b 55%, #321923);
+      }
+      .welcome-card {
+        background: rgba(28, 20, 23, .76);
+        border-color: rgba(255, 255, 255, .09);
+        box-shadow: 0 24px 70px rgba(0, 0, 0, .28);
+      }
+      .welcome-tagline, #loading-status { color: #d6bec7; }
+    }
+  </style>
+  <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "OnlineStore",
+      "name": "AVEA FASHION",
+      "url": "https://avea-fashion-web.onrender.com/",
+      "logo": "https://avea-fashion-web.onrender.com/icons/Icon-512.png",
+      "description": "متجر أزياء نسائية راقية مع شحن داخل ليبيا",
+      "areaServed": "LY",
+      "inLanguage": ["ar", "en"]
+    }
+  </script>
+</head>
+<body>
+  <div id="welcome" role="status" aria-live="polite" aria-label="جاري فتح متجر AVEA FASHION">
+    <div class="welcome-card">
+      <div class="welcome-mark" aria-hidden="true">AV</div>
+      <h1 class="welcome-brand">AVEA FASHION</h1>
+      <p class="welcome-tagline">أهلاً بكِ، أناقتك تبدأ من هنا ✨</p>
+      <div class="welcome-progress" aria-hidden="true"></div>
+      <div id="loading-status">نجهّز لكِ أحدث التشكيلات…</div>
+    </div>
+  </div>
+  <script>
+    (function () {
+      const welcome = document.getElementById('welcome');
+      const status = document.getElementById('loading-status');
+      const startedAt = performance.now();
+      function dismissLoading() {
+        if (!welcome) return;
+        const remaining = Math.max(0, 650 - (performance.now() - startedAt));
+        window.setTimeout(function () {
+          welcome.classList.add('is-ready');
+          window.setTimeout(function () { welcome.remove(); }, 380);
+        }, remaining);
+      }
+
+      let adsRequested = false;
+      function loadAds() {
+        if (adsRequested) return;
+        adsRequested = true;
+        const script = document.createElement('script');
+        script.async = true;
+        script.crossOrigin = 'anonymous';
+        script.src = 'https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1003377600392455';
+        document.head.appendChild(script);
+      }
+
+      window.addEventListener('flutter-first-frame', function () {
+        if (status) {
+          status.textContent = 'أهلاً بكِ في AVEA FASHION';
+        }
+        dismissLoading();
+        window.setTimeout(loadAds, 1200);
+      });
+      // Never leave visitors behind an overlay if a browser misses the event.
+      window.setTimeout(dismissLoading, 12000);
+      // Keep ads available even if an older engine does not emit the event.
+      window.setTimeout(loadAds, 6000);
+    })();
+  </script>
+  <script src="flutter_bootstrap.js?v=5" async></script>
+</body>
+</html>

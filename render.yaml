@@ -1,0 +1,7 @@
+services:
+  - type: web
+    name: avea-fashion-web
+    runtime: static
+    buildCommand: cd web_storefront && npm ci && npm run build
+    staticPublishPath: web_storefront/out
+    autoDeployTrigger: commit

@@ -1,0 +1,37 @@
+{
+    "name": "AVEA FASHION",
+    "short_name": "AVEA",
+    "start_url": ".",
+    "display": "standalone",
+    "background_color": "#FDF6F0",
+    "theme_color": "#7A2E50",
+    "description": "متجر أزياء نسائية راقية وتجربة تسوق سريعة داخل ليبيا.",
+    "lang": "ar",
+    "dir": "rtl",
+    "orientation": "any",
+    "prefer_related_applications": false,
+    "icons": [
+        {
+            "src": "icons/Icon-192.png",
+            "sizes": "192x192",
+            "type": "image/png"
+        },
+        {
+            "src": "icons/Icon-512.png",
+            "sizes": "512x512",
+            "type": "image/png"
+        },
+        {
+            "src": "icons/Icon-maskable-192.png",
+            "sizes": "192x192",
+            "type": "image/png",
+            "purpose": "maskable"
+        },
+        {
+            "src": "icons/Icon-maskable-512.png",
+            "sizes": "512x512",
+            "type": "image/png",
+            "purpose": "maskable"
+        }
+    ]
+}
