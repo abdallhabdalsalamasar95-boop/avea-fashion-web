@@ -587,3 +587,105 @@ html[dir="rtl"] .cart-drawer {
     transform: translateY(0);
   }
 }
+/* ==========================================================================
+   FIX PRODUCT CARD OVERLAPS & BADGES
+   ========================================================================== */
+
+/* 1. إعطاء مساحة كافية للبطاقة ومنع تداخل النصوص */
+.product-card {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  position: relative;
+  border-radius: 12px;
+  background: #ffffff;
+  padding: 10px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+}
+
+/* 2. ضبط أبعاد وتغطية صورة المنتج */
+.product-card .image-container {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 3 / 4;
+  border-radius: 8px;
+  overflow: hidden;
+  margin-bottom: 10px;
+}
+
+/* 3. شارة نفد المخزون ونسبة الخصم (منع التداخل) */
+.badge-out-of-stock {
+  position: absolute;
+  top: 8px;
+  inset-inline-start: 8px;
+  background: rgba(33, 26, 29, 0.85);
+  color: #ffffff;
+  padding: 4px 10px;
+  font-size: 0.75rem;
+  border-radius: 6px;
+  z-index: 3;
+}
+
+.badge-discount {
+  position: absolute;
+  top: 8px;
+  inset-inline-end: 8px;
+  background: #b25078;
+  color: #ffffff;
+  padding: 4px 8px;
+  font-size: 0.75rem;
+  font-weight: bold;
+  border-radius: 6px;
+  z-index: 3;
+}
+
+/* 4. أيقونة المفضلة (القلب) */
+.btn-wishlist {
+  position: absolute;
+  bottom: 8px;
+  inset-inline-end: 8px;
+  background: rgba(255, 255, 255, 0.9);
+  border-radius: 50%;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 4;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+}
+
+/* 5. شريط "عمولتك" للمندوبات */
+.commission-tag {
+  background: #f7f3eb;
+  border: 1px dashed #c7a96a;
+  color: #713047;
+  padding: 4px 8px;
+  border-radius: 6px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  text-align: center;
+  margin-block: 6px;
+  display: inline-block;
+}
+
+/* 6. زر الإضافة / نفد المخزون السفلي */
+.btn-action {
+  width: 100%;
+  padding: 10px;
+  border-radius: 8px;
+  font-weight: 700;
+  font-size: 0.9rem;
+  margin-top: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+
+.btn-action.disabled {
+  background: #e4e4e7;
+  color: #71717a;
+  cursor: not-allowed;
+  border: none;
+}
