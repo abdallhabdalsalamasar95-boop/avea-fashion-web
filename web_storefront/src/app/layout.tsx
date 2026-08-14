@@ -1,4 +1,5 @@
-﻿import type { Metadata } from "next";
+import type { Metadata } from "next";
+import { Cairo } from "next/font/google";
 import { Header } from "@/components/header";
 import { AuthProvider } from "@/components/auth-provider";
 import { AmbassadorProvider } from "@/components/ambassador-context";
@@ -8,6 +9,13 @@ import { SiteFooter } from "@/components/site-footer";
 import { AppInstallPrompt } from "@/components/app-install-prompt";
 import { PwaRegister } from "@/components/pwa-register";
 import "./globals.css";
+
+// إضافة خط القاهرة العصري والأنيق للموقع
+const cairo = Cairo({
+  subsets: ["arabic"],
+  weight: ["400", "500", "600", "700"],
+  variable: "--font-cairo",
+});
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://aveafashion.com"),
@@ -26,7 +34,7 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="ar" dir="rtl" data-scroll-behavior="smooth">
-      <body>
+      <body className={cairo.className}>
         <AuthProvider>
           <AmbassadorProvider>
             <StoreProvider>
@@ -44,4 +52,3 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
     </html>
   );
 }
-
