@@ -13,6 +13,7 @@ export default function Home() {
   const [products, setProducts] = useState<Product[]>([]);
   const [content, setContent] = useState<AppContent>({});
   const [query, setQuery] = useState("");
+  const [searchOpen, setSearchOpen] = useState(false);
   const [sort, setSort] = useState("featured");
   const [inStockOnly, setInStockOnly] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -117,7 +118,10 @@ export default function Home() {
           <a className="view-all" href="#catalog-controls">تصفّحي الكل <ArrowLeft /></a>
         </div>
         <div className="catalog-controls" id="catalog-controls">
-          <label className="search-box"><Search /><input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="ابحثي عن منتج..." /></label>
+          <div className={`floating-search ${searchOpen ? "open" : ""}`}>
+            {searchOpen && <input autoFocus value={query} onChange={(e) => setQuery(e.target.value)} placeholder="ابحثي عن منتج..." aria-label="البحث عن منتج" />}
+            <button type="button" className="floating-search-button" onClick={() => setSearchOpen((value) => !value)} aria-label={searchOpen ? "إغلاق البحث" : "البحث عن منتج"}><Search /></button>
+          </div>
         </div>
         <div className="category-list">
           <a className="active" href="#catalog-controls">الكل</a>

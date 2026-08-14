@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { ArrowRight, Check, ChevronUp, RefreshCw, SlidersHorizontal, X } from "lucide-react";
+import { ArrowRight, Check, ChevronUp, RefreshCw, Search, SlidersHorizontal, X } from "lucide-react";
 import { Suspense, useEffect, useMemo, useRef, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { ProductCard } from "@/components/product-card";
@@ -23,6 +23,8 @@ function CategoryCollection() {
   const [size, setSize] = useState("");
   const [price, setPrice] = useState<"all" | "under300" | "300to500" | "over500">("all");
   const [inStockOnly, setInStockOnly] = useState(false);
+  const [query, setQuery] = useState("");
+  const [searchOpen, setSearchOpen] = useState(false);
   const [sort, setSort] = useState<"newest" | "priceLow" | "priceHigh">("newest");
   const dragStartY = useRef<number | null>(null);
 
@@ -57,6 +59,8 @@ function CategoryCollection() {
     setPrice("all");
     setInStockOnly(false);
     setSort("newest");
+    setQuery("");
+    setSearchOpen(false);
     setSheet(null);
   }, [requestedCategory]);
 
@@ -66,6 +70,8 @@ function CategoryCollection() {
   }, [products, requestedCategory]);
   const availableSizes = useMemo(() => Array.from(new Set(categoryProducts.flatMap((product) => product.sizes).filter(Boolean))), [categoryProducts]);
   const visibleProducts = useMemo(() => categoryProducts.filter((product) => {
+    const term = query.trim().toLocaleLowerCase("ar");
+    if (term && !`${product.name} ${product.tags ?? ""}`.toLocaleLowerCase("ar").includes(term)) return false;
     if (size && !product.sizes.includes(size)) return false;
     if (inStockOnly && (product.outOfStock || Number(product.availableStock ?? 0) <= 0)) return false;
     if (price === "under300" && product.price >= 300) return false;
@@ -76,7 +82,7 @@ function CategoryCollection() {
     if (sort === "priceLow") return a.price - b.price;
     if (sort === "priceHigh") return b.price - a.price;
     return (b.createdAt ?? 0) - (a.createdAt ?? 0);
-  }), [categoryProducts, inStockOnly, price, size, sort]);
+  }), [categoryProducts, inStockOnly, price, query, size, sort]);
   const managedCategories = useMemo(() => (content.websiteHome?.categories ?? [])
     .filter((item) => item.enabled !== false && item.title?.trim())
     .sort((a, b) => (a.sortOrder ?? 0) - (b.sortOrder ?? 0)), [content]);
@@ -101,6 +107,8 @@ function CategoryCollection() {
         : <div className="product-grid category-product-grid">{visibleProducts.map((product) => <ProductCard product={product} key={product.id} />)}</div>}
 
       {!loading && !error && categoryProducts.length > 0 && <div className="category-floating-tools" aria-label="أدوات القسم">
+        {searchOpen && <div className="category-floating-search"><input autoFocus value={query} onChange={(event) => setQuery(event.target.value)} placeholder="ابحثي عن منتج..." aria-label="البحث داخل القسم" /></div>}
+        <button className={`category-search-button ${searchOpen ? "active" : ""}`} type="button" onClick={() => setSearchOpen((value) => !value)} aria-label={searchOpen ? "إغلاق البحث" : "البحث عن منتج"}><Search /></button>
         <button className={activeFilterCount ? "active" : ""} type="button" onClick={() => setSheet("filters")} aria-label="فتح الفلترة"><SlidersHorizontal />{activeFilterCount > 0 && <b>{activeFilterCount}</b>}</button>
         {managedCategories.length > 0 && <button className="category-pull-handle" type="button" onClick={() => setSheet("categories")} onPointerDown={(event) => { dragStartY.current = event.clientY; try { event.currentTarget.setPointerCapture(event.pointerId); } catch { /* Synthetic events may not own an active pointer. */ } }} onPointerUp={(event) => { finishCategoryDrag(event.clientY); if (event.currentTarget.hasPointerCapture(event.pointerId)) event.currentTarget.releasePointerCapture(event.pointerId); }} onPointerCancel={() => { dragStartY.current = null; }}><i /><span>الأقسام</span><ChevronUp /></button>}
       </div>}
