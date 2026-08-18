@@ -1,3 +1,6 @@
+.account-page .saved-orders .ambassador-order-summary-meta{min-width:76px}
+.order-summary-shipment{display:flex;align-items:center;justify-content:flex-end;gap:3px;max-width:90px;overflow:hidden;color:#6b7f72;font-size:7px;line-height:1.2;text-overflow:ellipsis;white-space:nowrap}.order-summary-shipment svg{width:11px;height:11px;flex:0 0 auto}
+.saved-orders .ambassador-compact-order{border-color:#e8dfdc;background:linear-gradient(135deg,#fff 0%,#fdfafa 100%)}.saved-orders .ambassador-compact-order.expanded{border-color:#d4b8c0;box-shadow:0 12px 28px rgba(77,41,52,.09)}
 .withdrawal-status{display:inline-flex;align-items:center;margin:2px 0 6px;padding:4px 9px;border-radius:999px;background:#fff3cd;color:#765b00;font-size:9px;font-weight:800}.withdrawal-status.approved{background:#dcecff;color:#174f8c}.withdrawal-status.paid{background:#dff5e7;color:#17653a}.withdrawal-status.rejected{background:#fde3e3;color:#9b2424}
 
 :root { --rose:#b25078; --rose-dark:#713047; --rose-light:#f5e4e9; --gold:#c7a96a; --ink:#211a1d; --muted:#75696e; --cream:#f6f1ec; --white:#fff; --line:#e9e0e2; --shadow:0 24px 60px rgba(52,31,39,.11); --font-arabic:Tahoma,"Segoe UI",Arial,sans-serif; }
@@ -238,7 +241,7 @@ button { cursor:pointer; }
 .home-product-section:first-of-type { margin-top:22px; }
 .home-product-section + .home-product-section { background:linear-gradient(90deg,transparent,#fcf8f6 15%,#fcf8f6 85%,transparent); }
 .home-product-section + .collection { border-top:1px solid #eee9e6; }
-.collection .section-heading>div:before { content:"طھط´ظƒظٹظ„ط© AVEA"; display:block; margin-bottom:5px; color:var(--rose-dark); font-size:10px; font-weight:800; letter-spacing:.6px; }
+.collection .section-heading>div:before { content:"تشكيلة Carmen Karla"; display:block; margin-bottom:5px; color:var(--rose-dark); font-size:10px; font-weight:800; letter-spacing:.6px; }
 .collection .section-heading h2 { margin-top:0; }
 .collection .catalog-controls { padding:12px; margin-bottom:16px; border:1px solid #eee9e6; border-radius:12px; background:#fbfaf9; }
 .collection .search-box { width:min(100%,430px); box-shadow:0 5px 18px rgba(44,31,36,.04); }

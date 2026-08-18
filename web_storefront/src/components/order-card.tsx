@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { ChevronDown, Clock3, MapPin, Trash2, UserRound } from "lucide-react";
+import { ChevronDown, Clock3, MapPin, PackageCheck, Trash2, UserRound } from "lucide-react";
 import { ReactNode, useId, useState } from "react";
 import { OrderTrackingTimeline, orderStatusLabels } from "@/components/order-tracking-timeline";
 import { ProductImage } from "@/components/product-image";
@@ -36,8 +36,8 @@ export function OrderCard({ orderId, status, createdAt, total, itemCount, items 
   return <article className={`order-detail-card tracked-order-card status-${status}${compact ? " ambassador-compact-order" : ""}${expanded ? " expanded" : ""}`}>
     {compact ? <button className="ambassador-order-summary" type="button" aria-label={`${expanded ? "إخفاء" : "عرض"} تفاصيل الطلب ${orderId}`} aria-expanded={expanded} aria-controls={detailsId} onClick={() => setExpanded((current) => !current)}>
       <span className="ambassador-order-thumb"><ProductImage src={firstItem?.imageUrl} alt={firstItem?.name ?? "الموديل"} /></span>
-      <span className="ambassador-order-summary-copy"><small><b dir="ltr">#{orderId}</b> • {formattedDate}</small><strong>{firstItem?.name || (customer ? "طلب عميلة" : "طلبك")}</strong><em>{customer?.name || "طلبك"} • {itemCount} {itemCount === 1 ? "قطعة" : "قطع"}</em></span>
-      <span className="ambassador-order-summary-meta"><em className={`order-status ${status}`}>{orderStatusLabels[status]}</em><b>{total.toFixed(2)} د.ل</b>{footerExtra}</span>
+      <span className="ambassador-order-summary-copy"><small><b dir="ltr">#{orderId}</b> • {formattedDate}</small><strong>{customer?.name || firstItem?.name || "طلبك"}</strong><em>{firstItem?.name && customer ? firstItem.name : `${itemCount} ${itemCount === 1 ? "قطعة" : "قطع"}`}</em></span>
+      <span className="ambassador-order-summary-meta"><em className={`order-status ${status}`}>{orderStatusLabels[status]}</em><b>{total.toFixed(2)} د.ل</b>{delivery?.referenceCode && <small className="order-summary-shipment"><PackageCheck /> {delivery.referenceCode}</small>}{footerExtra}</span>
       <ChevronDown aria-hidden="true" className="ambassador-order-expand-icon" />
     </button> : <header className="saved-order-main order-detail-card-head">
       <div className="order-icon"><Clock3 /></div>
