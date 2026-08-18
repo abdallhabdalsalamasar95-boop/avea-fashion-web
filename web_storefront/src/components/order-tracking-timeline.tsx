@@ -23,7 +23,7 @@ const forwardSteps: Array<{ status: OrderStatus; label: string }> = [
 
 const rank: Partial<Record<OrderStatus, number>> = { pending: 0, processing: 1, shipped: 2, delivered: 3 };
 
-export function OrderTrackingTimeline({ status, delivery, compact = false }: { status: OrderStatus; delivery?: ExternalDeliveryTracking; compact?: boolean }) {
+export function OrderTrackingTimeline({ status, delivery, compact = false, orderId = "" }: { status: OrderStatus; delivery?: ExternalDeliveryTracking; compact?: boolean; orderId?: string }) {
   const isReturn = status === "returning" || status === "returned";
   const isInterrupted = status === "postponed" || status === "canceled";
   const steps = isReturn
@@ -39,7 +39,7 @@ export function OrderTrackingTimeline({ status, delivery, compact = false }: { s
       <div><small>تتبّع درب السبيل</small><strong>{statusLabels[status] ?? status}</strong></div>
       {tracking && <b dir="ltr">{tracking}</b>}
     </header>
-    <div className={`tracking-steps${isReturn ? " return-path" : ""}${isInterrupted ? " interrupted" : ""}`}>
+    {status !== "canceled" && <div className={`tracking-steps${isReturn ? " return-path" : ""}${isInterrupted ? " interrupted" : ""}`}>
       {steps.map((step, index) => {
         const active = index <= currentRank && status !== "canceled";
         const current = step.status === status;
@@ -48,10 +48,10 @@ export function OrderTrackingTimeline({ status, delivery, compact = false }: { s
           <span>{step.label}</span>
         </div>;
       })}
-    </div>
+    </div>}
     {status === "postponed" && <div className="tracking-outcome postponed"><PauseCircle /><span><strong>تم تأجيل التوصيل</strong><small>هذه الحالة واردة مباشرة من درب السبيل. سيظهر أي موعد أو تحديث جديد هنا تلقائيًا.</small></span></div>}
-    {status === "canceled" && <div className="tracking-outcome canceled"><Ban /><span><strong>تم إلغاء الشحنة</strong><small>ألغت شركة التوصيل الشحنة أو حُذفت من درب السبيل.</small></span></div>}
-    {!compact && events.length > 0 && <div className="tracking-events">
+    {status === "canceled" && <div className="tracking-outcome canceled"><Ban /><span><strong>تم إلغاء الشحنة</strong><small>{delivery?.lastError || "ألغت شركة التوصيل الشحنة أو حُذفت من درب السبيل."}</small><a href={`mailto:support@aveafashion.com?subject=${encodeURIComponent(`استفسار عن الطلب ${orderId}`)}`}>تواصل مع الدعم</a></span></div>}
+    {status !== "canceled" && !compact && events.length > 0 && <div className="tracking-events">
       {events.map((event, index) => <article key={event.id || `${event.type}-${index}`}>
         <i />
         <div><strong>{event.descriptionAr || event.descriptionEn || "تحديث على الشحنة"}</strong>{event.timestamp && <time>{new Intl.DateTimeFormat("ar-LY", { dateStyle: "medium", timeStyle: "short" }).format(new Date(event.timestamp))}</time>}</div>

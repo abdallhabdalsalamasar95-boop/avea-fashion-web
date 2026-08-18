@@ -7,6 +7,8 @@ import { OrderStatus, SavedCustomerOrder } from "@/lib/types";
 import { AuthPanel } from "@/components/auth-panel";
 import { useAuth } from "@/components/auth-provider";
 import { OrderCard } from "@/components/order-card";
+import { useStore } from "@/components/store-provider";
+import { CartItem } from "@/lib/types";
 import { cancelCustomerOrder, fetchCustomerOrders, fetchOrderTracking } from "@/lib/api";
 import { readCustomerOrders, writeCustomerOrders } from "@/lib/customer-storage";
 
@@ -17,11 +19,35 @@ const normalizedStatus = (value: unknown): OrderStatus => {
 
 export default function AccountPage() {
   const { user, loading: authLoading } = useAuth();
+  const { addToCart } = useStore();
   const [orders, setOrders] = useState<SavedCustomerOrder[]>([]);
   const [filter, setFilter] = useState<"all" | "active" | "postponed" | "canceled" | "completed">("all");
   const [syncing, setSyncing] = useState(false);
   const [syncMessage, setSyncMessage] = useState("");
   const [cancelingOrderId, setCancelingOrderId] = useState("");
+  const [reorderingOrderId, setReorderingOrderId] = useState("");
+
+  const reorder = (order: SavedCustomerOrder) => {
+    if (!order.items?.length) return;
+    setReorderingOrderId(order.orderId);
+    order.items.forEach((item, index) => {
+      if (!item.productId) return;
+      addToCart({
+        lineId: `${item.productId}_${item.size ?? ""}_${item.color ?? ""}_${index}`,
+        productId: item.productId,
+        productCode: item.productCode,
+        name: item.name || "منتج",
+        price: Number(item.price ?? 0),
+        imageUrl: item.imageUrl,
+        size: item.size,
+        length: item.length,
+        color: item.color,
+        quantity: Math.max(1, Number(item.quantity ?? 1)),
+      } satisfies CartItem);
+    });
+    setSyncMessage("تمت إضافة منتجات الطلب إلى السلة.");
+    window.setTimeout(() => setReorderingOrderId(""), 350);
+  };
 
   const cancelOrder = async (orderId: string) => {
     if (!user || cancelingOrderId || !window.confirm("هل تريدين إلغاء هذا الطلب؟ لا يمكن التراجع بعد الإلغاء.")) return;
@@ -104,10 +130,10 @@ export default function AccountPage() {
         <div className="account-card-title orders-title"><div><PackageCheck /></div><span><small>{user ? "طلبات هذا الحساب فقط" : "طلبات الضيف على هذا الجهاز"}</small><h2>طلباتي</h2></span><i className={syncing ? "syncing" : ""}><RefreshCw /></i></div>
         {user && <div className="account-owner-note"><UserRound /><span><small>الحساب الحالي</small><strong>{user.displayName || user.email}</strong></span><Check /></div>}
         {syncMessage && <p className="orders-sync-message">{syncMessage}</p>}
-        {orders.length > 0 && <><div className="order-status-summary"><article><Truck /><span><small>جارية</small><strong>{counts.active}</strong></span></article><article className="postponed"><PauseCircle /><span><small>مؤجلة</small><strong>{counts.postponed}</strong></span></article><article className="canceled"><Ban /><span><small>ملغية</small><strong>{counts.canceled}</strong></span></article></div><div className="order-filters">{([['all', 'الكل', orders.length], ['active', 'الجارية', counts.active], ['postponed', 'المؤجلة', counts.postponed], ['canceled', 'الملغية', counts.canceled], ['completed', 'المكتملة', counts.completed]] as const).map(([value, label, count]) => <button key={value} className={filter === value ? "active" : ""} onClick={() => setFilter(value)}>{label}<b>{count}</b></button>)}</div></>}
+        {orders.length > 0 && <><div className="order-status-summary"><article><Truck /><span><small>جارية</small><strong>{counts.active}</strong></span></article>{counts.postponed > 0 && <article className="postponed"><PauseCircle /><span><small>مؤجلة</small><strong>{counts.postponed}</strong></span></article>}{counts.canceled > 0 && <article className="canceled"><Ban /><span><small>ملغية</small><strong>{counts.canceled}</strong></span></article>}</div><div className="order-filters">{([['all', 'الكل', orders.length], ['active', 'الجارية', counts.active], ['postponed', 'المؤجلة', counts.postponed], ['canceled', 'الملغية', counts.canceled], ['completed', 'المكتملة', counts.completed]] as const).filter(([value, , count]) => value === "all" || count > 0).map(([value, label, count]) => <button key={value} className={filter === value ? "active" : ""} onClick={() => setFilter(value)}>{label}<b>{count}</b></button>)}</div></>}
         {orders.length === 0 ? <div className="account-empty"><ShoppingBag /><h3>لا توجد طلبات لهذا الحساب</h3><p>{user ? "أي طلب تسجلينه بهذا الحساب سيظهر هنا وحده، ولن تظهر طلبات الحسابات الأخرى." : "بعد إتمام أول طلب كضيفة سيظهر رقمه وحالته هنا."}</p><Link className="secondary-button" href="/#collection">ابدئي التسوق</Link></div>
           : visibleOrders.length === 0 ? <div className="orders-filter-empty"><PackageCheck /><p>لا توجد طلبات في هذه الحالة.</p></div>
-          : <div className="saved-orders">{visibleOrders.map((order) => <OrderCard key={order.orderId} orderId={order.orderId} status={order.status} createdAt={order.createdAt} total={order.total} itemCount={order.itemCount} items={order.items} delivery={order.externalDelivery} onCancel={["pending", "processing"].includes(order.status) ? () => void cancelOrder(order.orderId) : undefined} canceling={cancelingOrderId === order.orderId} compact />)}</div>}
+          : <div className="saved-orders">{visibleOrders.map((order) => <OrderCard key={order.orderId} orderId={order.orderId} status={order.status} createdAt={order.createdAt} total={order.total} itemCount={order.itemCount} items={order.items} delivery={order.externalDelivery} onReorder={order.status === "canceled" ? () => reorder(order) : undefined} reordering={reorderingOrderId === order.orderId} onCancel={["pending", "processing"].includes(order.status) ? () => void cancelOrder(order.orderId) : undefined} canceling={cancelingOrderId === order.orderId} compact />)}</div>}
       </section>
     </div>
   </div>;
