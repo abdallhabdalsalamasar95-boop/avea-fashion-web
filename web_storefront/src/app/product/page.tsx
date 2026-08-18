@@ -123,7 +123,7 @@ function ProductDetails() {
         <div className="purchase-row">
           <div className="quantity"><button onClick={() => setQuantity(Math.max(1, quantity - 1))}><Minus /></button><span>{quantity}</span><button disabled={maximumQuantity !== undefined && quantity >= maximumQuantity} onClick={() => setQuantity((current) => maximumQuantity !== undefined ? Math.min(maximumQuantity, current + 1) : current + 1)}><Plus /></button></div>
           <button className="primary-button add-main" onClick={add} disabled={incomplete || soldOut}>{added ? <><Check /> تمت الإضافة</> : <><ShoppingBag /> {soldOut ? "نفد المخزون" : incomplete ? "اختاري الخيارات" : "أضيفي للسلة"}</>}</button>
-          <button className="primary-button buy-now-main" onClick={buyNow} disabled={incomplete || soldOut}><Zap /> {soldOut ? "نفد المخزون" : incomplete ? "اختاري الخيارات" : "اشتري الآن"}</button>
+          <button className="primary-button buy-now-main" onClick={buyNow} disabled={incomplete || soldOut}><Zap /> {soldOut ? "نفد المخزون" : incomplete ? "اختاري الخيارات" : "اطلبي الآن"}</button>
           <button className={isFavorite(product.id) ? "wish-main active" : "wish-main"} onClick={() => toggleFavorite(product.id)}><Heart fill={isFavorite(product.id) ? "currentColor" : "none"} /></button>
         </div>
         <AmbassadorShareButton

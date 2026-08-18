@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { BadgePercent, Heart, Home, Menu, Search, ShoppingBag, Store, UserRound, X } from "lucide-react";
+import { BadgePercent, Heart, Home, Search, ShoppingBag, Store, UserRound } from "lucide-react";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import type { CSSProperties } from "react";
@@ -24,7 +24,6 @@ const links = [
 export function Header() {
   const { cartCount, favorites } = useStore();
   const { user } = useAuth();
-  const [open, setOpen] = useState(false);
   const [announcement, setAnnouncement] = useState<NonNullable<NonNullable<AppContent["websiteHome"]>["announcement"]>>({
     text: "شحن لجميع المدن الليبية • الدفع عند الاستلام",
     enabled: true,
@@ -53,16 +52,13 @@ export function Header() {
         </div>
       </div>}
       <div className="nav-shell container">
-        <button className="icon-button menu-button" onClick={() => setOpen(!open)} aria-label="القائمة">
-          {open ? <X /> : <Menu />}
-        </button>
         <AppInstallPrompt />
         <Link className="brand" href="/" aria-label="كارمن كارلا الرئيسية">
           <span>CK</span>
           <small>KARLA</small>
         </Link>
-        <nav className={open ? "nav-links open" : "nav-links"}>
-          {links.map(([href, label]) => <Link key={href} href={href} onClick={() => setOpen(false)}>{label}</Link>)}
+        <nav className="nav-links">
+          {links.map(([href, label]) => <Link key={href} href={href}>{label}</Link>)}
         </nav>
         <div className="nav-actions">
           <LocaleToggle />

@@ -95,19 +95,19 @@ export function AppInstallPrompt() {
       <button
         className="app-install-prompt"
         onClick={handleInstall}
-        aria-label="حمّلي تطبيق AVEA"
+        aria-label="حمّلي تطبيق Carmen Karla"
         style={{
           position: "relative",
           zIndex: 51,
           border: "1px solid rgba(77, 29, 47, .16)",
           borderRadius: 7,
-          width: 58,
-          minWidth: 58,
-          height: 26,
-          padding: 0,
-          background: "#fff",
-          color: "#4d1d2f",
-          boxShadow: "0 2px 7px rgba(77, 29, 47, .12)",
+          width: 104,
+          minWidth: 104,
+          height: 30,
+          padding: "0 7px",
+          background: "#111",
+          color: "#fff",
+          boxShadow: "0 3px 9px rgba(0, 0, 0, .18)",
           display: "inline-flex",
           alignItems: "center",
           justifyContent: "center",
@@ -117,8 +117,8 @@ export function AppInstallPrompt() {
           backdropFilter: "blur(10px)",
         }}
       >
-        <span aria-hidden="true" style={{ width: 17, height: 17, display: "grid", placeItems: "center", borderRadius: 5, background: "#4d1d2f", color: "#fff", fontFamily: "Georgia, serif", fontSize: 10, letterSpacing: 1 }}>A</span>
-        <span style={{ fontSize: 7, lineHeight: 1, whiteSpace: "nowrap" }}>تطبيق Carmen Karla</span>
+        <span aria-hidden="true" style={{ width: 18, height: 18, display: "grid", placeItems: "center", borderRadius: 5, background: "#fff", color: "#111", fontFamily: "Georgia, serif", fontSize: 9, fontWeight: 800, letterSpacing: 1 }}>CK</span>
+        <span style={{ fontSize: 8, lineHeight: 1, whiteSpace: "nowrap", fontWeight: 800 }}>تطبيق Carmen Karla</span>
       </button>
 
       {showHelp && (
