@@ -1240,6 +1240,15 @@ body {
 /* "-28%" must not flip to "28%-" inside the RTL page. */
 .sale-badge{direction:ltr;unicode-bidi:isolate}
 
+/* Checkout destination search: towns are nested under a branch city, so both levels are searchable. */
+.destination-search{position:relative}
+.destination-results{position:absolute;z-index:20;top:100%;inset-inline:0;max-height:250px;overflow-y:auto;margin:5px 0 0;padding:5px;list-style:none;border:1px solid #ece4e6;border-radius:11px;background:#fff;box-shadow:0 16px 38px rgba(35,24,29,.16)}
+.destination-results li{margin:0}
+.destination-results button{display:flex;align-items:baseline;justify-content:space-between;gap:10px;width:100%;min-height:42px;padding:0 11px;border:0;border-radius:8px;background:transparent;color:var(--ink);text-align:start;cursor:pointer}
+.destination-results button:hover{background:#faf3f5}
+.destination-results strong{font-size:12px;font-weight:700}
+.destination-results small{flex-shrink:0;color:var(--muted);font-size:9px}
+
 /* Account page: compact header and a two-up quick links row. */
 .account-quick-links{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
 .account-quick-links .account-address-link{margin:0}
