@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { ArrowRight, Check, ChevronLeft, ChevronRight, CircleDollarSign, Flame, Heart, Maximize2, Minus, Plus, Ruler, ShoppingBag, X, Zap } from "lucide-react";
+import { ArrowRight, Check, ChevronLeft, ChevronRight, CircleDollarSign, Flame, Heart, Maximize2, Minus, Plus, Ruler, ShoppingBag, Sparkles, X, Zap } from "lucide-react";
 import { Suspense, useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { useAmbassador } from "@/components/ambassador-context";
@@ -13,6 +13,31 @@ import { saveAmbassadorShare } from "@/lib/ambassador-share";
 import { commissionRate, lineCommission } from "@/lib/commission";
 import { animateProductToCart } from "@/lib/cart-animation";
 import { Product } from "@/lib/types";
+
+// Weight ranges are calibrated for 160-170cm; height adjusts the result by one step.
+const SIZE_CHART = [
+  { size: "36", minWeight: 0, maxWeight: 50, weight: "45 - 50", bust: "82 - 85", waist: "64 - 67", hips: "90 - 93" },
+  { size: "38", minWeight: 51, maxWeight: 56, weight: "51 - 56", bust: "86 - 89", waist: "68 - 71", hips: "94 - 97" },
+  { size: "40", minWeight: 57, maxWeight: 63, weight: "57 - 63", bust: "90 - 93", waist: "72 - 75", hips: "98 - 101" },
+  { size: "42", minWeight: 64, maxWeight: 71, weight: "64 - 71", bust: "94 - 97", waist: "76 - 79", hips: "102 - 105" },
+  { size: "44", minWeight: 72, maxWeight: 80, weight: "72 - 80", bust: "98 - 101", waist: "80 - 83", hips: "106 - 109" },
+  { size: "46", minWeight: 81, maxWeight: 89, weight: "81 - 89", bust: "102 - 105", waist: "84 - 87", hips: "110 - 113" },
+  { size: "48", minWeight: 90, maxWeight: 98, weight: "90 - 98", bust: "106 - 109", waist: "88 - 91", hips: "114 - 117" },
+  { size: "50", minWeight: 99, maxWeight: 999, weight: "99 - 108", bust: "110 - 113", waist: "92 - 95", hips: "118 - 121" },
+];
+
+function sizeFromBody(weightValue: string, heightValue: string): string {
+  const weight = Number(weightValue);
+  if (!Number.isFinite(weight) || weight < 35 || weight > 140) return "";
+  let index = SIZE_CHART.findIndex((row) => weight <= row.maxWeight);
+  if (index < 0) index = SIZE_CHART.length - 1;
+  const height = Number(heightValue);
+  if (Number.isFinite(height) && height >= 140 && height <= 200) {
+    if (height < 158) index = Math.max(0, index - 1);
+    else if (height > 175) index = Math.min(SIZE_CHART.length - 1, index + 1);
+  }
+  return SIZE_CHART[index].size;
+}
 
 function ProductDetails() {
   const searchParams = useSearchParams();
@@ -29,6 +54,8 @@ function ProductDetails() {
   const [sharedBy, setSharedBy] = useState("");
   const [showSizeGuide, setShowSizeGuide] = useState(false);
   const [showLightbox, setShowLightbox] = useState(false);
+  const [bodyWeight, setBodyWeight] = useState("");
+  const [bodyHeight, setBodyHeight] = useState("");
   const { addToCart, isFavorite, toggleFavorite } = useStore();
   const { ambassador, commission } = useAmbassador();
 
@@ -39,7 +66,7 @@ function ProductDetails() {
         const found = items.find((item) => item.id === id) ?? null;
         setProduct(found);
         setImage(found?.imageUrl ?? found?.imageUrls[0] ?? "");
-        const availableSizes = found?.sizes.filter((item) => (found.sizeQuantities?.[item] ?? 1) > 0) ?? [];
+        const availableSizes = found?.sizes.filter((item: string) => (found.sizeQuantities?.[item] ?? 1) > 0) ?? [];
         if (availableSizes.length === 1) setSize(availableSizes[0]);
         if (found?.lengths.length === 1) setLength(found.lengths[0]);
         if (found?.colors.length === 1) setColor(found.colors[0]);
@@ -74,6 +101,14 @@ function ProductDetails() {
     ? product.sizeQuantities[size]
     : undefined;
   const maximumQuantity = selectedSizeStock ?? product.availableStock;
+  const recommendedSize = sizeFromBody(bodyWeight, bodyHeight);
+  const recommendedSizeAvailable = recommendedSize
+    ? product.sizes.includes(recommendedSize) && (product.sizeQuantities?.[recommendedSize] ?? 1) > 0
+    : undefined;
+  const shareLabel = ambassador ? "شاركي مع عميلاتك" : "مشاركة المنتج";
+  const shareText = ambassador
+    ? `اختيار خاص لكِ من شريكة Carmen Karla المعتمدة ${ambassador.ambassadorName}. راجعي ${product.name} وأكملي طلبك بسهولة.`
+    : `شاهدي ${product.name} على متجر Carmen Karla.`;
 
   const changeSize = (nextSize: string) => {
     setSize(nextSize);
@@ -131,20 +166,24 @@ function ProductDetails() {
         {!size && !soldOut && product.availableStock !== undefined && product.availableStock > 0 && product.availableStock <= 3 && <div className="urgency-badge"><Flame /><span>كمية محدودة جدًا متوفرة الآن!</span></div>}
         {product.lengths.length > 0 && <Option title="الطول" items={product.lengths} value={length} onChange={setLength} />}
         {product.colors.length > 0 && <Option title="اللون" items={product.colors} value={color} onChange={setColor} />}
-        <div className="product-secondary-actions">
-          <div className="quantity product-quantity"><button onClick={() => setQuantity(Math.max(1, quantity - 1))}><Minus /></button><span>{quantity}</span><button disabled={maximumQuantity !== undefined && quantity >= maximumQuantity} onClick={() => setQuantity((current) => maximumQuantity !== undefined ? Math.min(maximumQuantity, current + 1) : current + 1)}><Plus /></button></div>
-          <button className={isFavorite(product.id) ? "wish-main active" : "wish-main"} onClick={() => toggleFavorite(product.id)} aria-label="إضافة للمفضلة"><Heart fill={isFavorite(product.id) ? "currentColor" : "none"} /></button>
-        </div>
-        <div className="purchase-row">
-          <button className="primary-button add-main" onClick={add} disabled={incomplete || soldOut}>{added ? <><Check /> تم</> : <><ShoppingBag /> إضافة للسلة</>}</button>
-          <button className="primary-button buy-now-main" onClick={buyNow} disabled={incomplete || soldOut}><Zap /> اشتري الآن</button>
-          <AmbassadorShareButton
-            className="detail-share-action purchase-share"
-            title={product.name}
-            text={ambassador ? `اختيار خاص لكِ من شريكة Carmen Karla المعتمدة ${ambassador.ambassadorName}. راجعي ${product.name} وأكملي طلبك بسهولة.` : `شاهدي ${product.name} على متجر Carmen Karla.`}
-            label={ambassador ? "شاركي مع عميلاتك" : "مشاركة"}
-            buildPath={(token) => `/product/?id=${encodeURIComponent(product.id)}${token ? `&ref=${encodeURIComponent(token)}` : ""}`}
-          />
+        <div className="purchase-panel">
+          <div className="purchase-panel-top">
+            <div className="quantity product-quantity"><button onClick={() => setQuantity(Math.max(1, quantity - 1))} aria-label="إنقاص"><Minus /></button><span>{quantity}</span><button disabled={maximumQuantity !== undefined && quantity >= maximumQuantity} onClick={() => setQuantity((current) => maximumQuantity !== undefined ? Math.min(maximumQuantity, current + 1) : current + 1)} aria-label="زيادة"><Plus /></button></div>
+            <span className="purchase-total"><small>الإجمالي</small><strong>{(product.price * quantity).toFixed(0)} د.ل</strong></span>
+          </div>
+          <div className="purchase-row">
+            <button className="primary-button buy-now-main" onClick={buyNow} disabled={incomplete || soldOut}><Zap /> اشتري الآن</button>
+            <button className="primary-button add-main" onClick={add} disabled={incomplete || soldOut}>{added ? <><Check /> تمت الإضافة</> : <><ShoppingBag /> إضافة للسلة</>}</button>
+            <button className={isFavorite(product.id) ? "icon-action wish-main active" : "icon-action wish-main"} onClick={() => toggleFavorite(product.id)} aria-label="إضافة للمفضلة" title="إضافة للمفضلة"><Heart fill={isFavorite(product.id) ? "currentColor" : "none"} /></button>
+            <AmbassadorShareButton
+              compact
+              className="icon-action purchase-share"
+              title={product.name}
+              text={shareText}
+              label={shareLabel}
+              buildPath={(token) => `/product/?id=${encodeURIComponent(product.id)}${token ? `&ref=${encodeURIComponent(token)}` : ""}`}
+            />
+          </div>
         </div>
         <ul className="detail-benefits"><li><Check /> الدفع عند الاستلام</li><li><Check /> توصيل لجميع مدن ليبيا</li><li><Check /> خدمة عملاء لمتابعة طلبك</li></ul>
       </div>
@@ -152,32 +191,54 @@ function ProductDetails() {
 
     {/* Mobile Sticky Bottom Purchase Bar */}
     <aside className="sticky-mobile-bar">
-      <div className="sticky-bar-price"><strong>{product.price} د.ل</strong><small>{product.name}</small></div>
-      <div className="sticky-bar-actions">
-        <button className="primary-button buy-now-main" onClick={buyNow} disabled={incomplete || soldOut}><Zap /> اشتري الآن</button>
-        <button className="primary-button add-main" onClick={add} disabled={incomplete || soldOut}><ShoppingBag /> السلة</button>
-      </div>
+      <button className={isFavorite(product.id) ? "icon-action wish-main active" : "icon-action wish-main"} onClick={() => toggleFavorite(product.id)} aria-label="إضافة للمفضلة"><Heart fill={isFavorite(product.id) ? "currentColor" : "none"} /></button>
+      <AmbassadorShareButton
+        compact
+        className="icon-action purchase-share"
+        title={product.name}
+        text={shareText}
+        label={shareLabel}
+        buildPath={(token) => `/product/?id=${encodeURIComponent(product.id)}${token ? `&ref=${encodeURIComponent(token)}` : ""}`}
+      />
+      <button className="primary-button add-main" onClick={add} disabled={incomplete || soldOut} aria-label="إضافة للسلة">{added ? <Check /> : <ShoppingBag />}<span>السلة</span></button>
+      <button className="primary-button buy-now-main" onClick={buyNow} disabled={incomplete || soldOut}><Zap /><span>اشتري الآن · {(product.price * quantity).toFixed(0)} د.ل</span></button>
     </aside>
 
     {/* Size Guide Modal */}
     {showSizeGuide && <div className="modal-overlay" onClick={() => setShowSizeGuide(false)} role="dialog" aria-modal="true">
       <div className="size-modal-card" onClick={(e) => e.stopPropagation()}>
         <header><h3><Ruler /> دليل مقاسات Carmen Karla</h3><button onClick={() => setShowSizeGuide(false)} aria-label="إغلاق"><X /></button></header>
+
+        <div className="size-finder">
+          <p className="size-finder-title"><Sparkles /> احسبي مقاسكِ في ثانية</p>
+          <div className="size-finder-inputs">
+            <label><span>الوزن (كجم)</span><input type="number" inputMode="numeric" min={35} max={140} placeholder="60" value={bodyWeight} onChange={(e) => setBodyWeight(e.target.value)} /></label>
+            <label><span>الطول (سم)</span><input type="number" inputMode="numeric" min={140} max={195} placeholder="165" value={bodyHeight} onChange={(e) => setBodyHeight(e.target.value)} /></label>
+          </div>
+          {recommendedSize
+            ? <div className="size-finder-result">
+                <Check />
+                <span>مقاسكِ المقترح هو <strong>{recommendedSize}</strong>{recommendedSizeAvailable === false && <em> (غير متوفر حاليًا لهذا الموديل)</em>}</span>
+                {recommendedSizeAvailable && <button type="button" onClick={() => { changeSize(recommendedSize); setShowSizeGuide(false); }}>اختيار المقاس</button>}
+              </div>
+            : <small className="size-finder-hint">أدخلي وزنكِ وطولكِ لعرض المقاس الأنسب لكِ.</small>}
+        </div>
+
         <div className="size-table-wrap">
           <table>
-            <thead><tr><th>المقاس</th><th>الصدر (سم)</th><th>الخصر (سم)</th><th>الأوراك (سم)</th></tr></thead>
+            <thead><tr><th>المقاس</th><th>الوزن (كجم)</th><th>الصدر (سم)</th><th>الخصر (سم)</th><th>الأوراك (سم)</th></tr></thead>
             <tbody>
-              <tr><td>38</td><td>86 - 89</td><td>68 - 71</td><td>94 - 97</td></tr>
-              <tr><td>40</td><td>90 - 93</td><td>72 - 75</td><td>98 - 101</td></tr>
-              <tr><td>42</td><td>94 - 97</td><td>76 - 79</td><td>102 - 105</td></tr>
-              <tr><td>44</td><td>98 - 101</td><td>80 - 83</td><td>106 - 109</td></tr>
-              <tr><td>46</td><td>102 - 105</td><td>84 - 87</td><td>110 - 113</td></tr>
-              <tr><td>48</td><td>106 - 109</td><td>88 - 91</td><td>114 - 117</td></tr>
-              <tr><td>50</td><td>110 - 113</td><td>92 - 95</td><td>118 - 121</td></tr>
+              {SIZE_CHART.map((row) => <tr key={row.size} className={recommendedSize === row.size ? "recommended" : ""}>
+                <td><strong>{row.size}</strong></td>
+                <td>{row.weight}</td>
+                <td>{row.bust}</td>
+                <td>{row.waist}</td>
+                <td>{row.hips}</td>
+              </tr>)}
             </tbody>
           </table>
         </div>
-        <small className="size-guide-note">قياسات دقيقة بالسنتمتر لتسهيل الاختيار المثالي.</small>
+        <small className="size-guide-note">الأوزان تقديرية لطول 160 - 170 سم. للطول الأقل من 158 سم يُفضّل النزول مقاسًا، وللطول فوق 175 سم يُفضّل الصعود مقاسًا.</small>
       </div>
     </div>}
 
