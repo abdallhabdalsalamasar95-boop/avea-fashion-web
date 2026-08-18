@@ -13,6 +13,6 @@ function whatsappDigits(value: string): string {
 export function AmbassadorSupportButton({ number, enabled }: { number?: string; enabled?: boolean }) {
   const digits = whatsappDigits(number ?? "");
   if (!enabled || !digits) return null;
-  const message = encodeURIComponent("مرحبًا، أحتاج مساعدة بخصوص برنامج مندوبات AVEA Fashion");
+  const message = encodeURIComponent("مرحبًا، أحتاج مساعدة بخصوص برنامج مندوبات Carmen Karla");
   return <a className="ambassador-whatsapp-float" href={`https://wa.me/${digits}?text=${message}`} target="_blank" rel="noreferrer" aria-label="التواصل مع دعم المندوبات عبر واتساب"><MessageCircle /><span>دعم المندوبات</span></a>;
 }
