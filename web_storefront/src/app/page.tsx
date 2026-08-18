@@ -48,13 +48,9 @@ export default function Home() {
     return Number(Boolean(b.imageUrl)) - Number(Boolean(a.imageUrl));
   }), [products, query, inStockOnly, sort]);
   const newestProducts = useMemo(() => [...products].sort((a, b) => (b.createdAt ?? 0) - (a.createdAt ?? 0)).slice(0, 10), [products]);
-  const bestSellingProducts = useMemo(() => [...products].sort((a, b) => {
-    const aPopular = `${a.category ?? ""} ${a.tags ?? ""}`.includes("الاكثر طلبا") || `${a.category ?? ""} ${a.tags ?? ""}`.includes("الأكثر طلبًا");
-    const bPopular = `${b.category ?? ""} ${b.tags ?? ""}`.includes("الاكثر طلبا") || `${b.category ?? ""} ${b.tags ?? ""}`.includes("الأكثر طلبًا");
-    if (aPopular !== bPopular) return Number(bPopular) - Number(aPopular);
-    const reviews = (b.reviewsCount ?? 0) - (a.reviewsCount ?? 0);
-    return reviews || (b.rating ?? 0) - (a.rating ?? 0) || (b.createdAt ?? 0) - (a.createdAt ?? 0);
-  }).slice(0, 10), [products]);
+  const bestSellingProducts = useMemo(() => [...products].sort((a, b) =>
+    (b.soldPieces ?? 0) - (a.soldPieces ?? 0) || (b.createdAt ?? 0) - (a.createdAt ?? 0)
+  ).slice(0, 10), [products]);
 
   const offer = content.offers?.items?.find((item) => item.enabled !== false)?.text;
   const managedBanner = content.websiteHome?.banner;

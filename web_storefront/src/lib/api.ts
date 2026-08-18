@@ -1,7 +1,7 @@
 ﻿const DEFAULT_API_BASE_URL =
   typeof window !== "undefined" &&
   (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1")
-    ? "http://127.0.0.1:8080"
+    ? "https://carmenkarla-backend.onrender.com"
     : "https://carmenkarla-backend.onrender.com";
 
 export const API_BASE_URL = (
@@ -63,6 +63,7 @@ export const normalizeProduct = (raw: Record<string, unknown>): Product => {
     tags: raw.tags ? String(raw.tags) : undefined,
     rating: raw.rating ? Number(raw.rating) : undefined,
     reviewsCount: raw.reviewsCount ? Number(raw.reviewsCount) : undefined,
+    soldPieces: Number(raw.soldPieces ?? 0),
     sizes: list(raw.sizes),
     lengths: list(raw.lengths),
     colors: list(raw.colors),
@@ -115,7 +116,7 @@ export async function fetchDeliveryDestinations(signal?: AbortSignal): Promise<R
   const cities = record((payload as Record<string, unknown>).cities);
   return Object.fromEntries(
     Object.entries(cities)
-      .map(([city, areas]) => [cleanOption(city), list(areas)] as const)
+      .map(([city, areas]) => [cleanOption(city), Array.from(new Set(list(areas).map((area) => area === "المدينة القديمة" ? "المدينة" : area)))] as const)
       .filter(([city, areas]) => city && areas.length),
   );
 }

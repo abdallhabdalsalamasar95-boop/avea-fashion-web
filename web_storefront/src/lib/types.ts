@@ -12,6 +12,7 @@ export interface Product {
   tags?: string;
   rating?: number;
   reviewsCount?: number;
+  soldPieces?: number;
   sizes: string[];
   lengths: string[];
   colors: string[];
