@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { Ban, Check, ChevronLeft, MapPin, PackageCheck, PauseCircle, RefreshCw, ShoppingBag, Truck, UserRound } from "lucide-react";
+import { ChevronLeft, Heart, MapPin, PackageCheck, RefreshCw, ShoppingBag } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { OrderStatus, SavedCustomerOrder } from "@/lib/types";
 import { AuthPanel } from "@/components/auth-panel";
@@ -117,20 +117,26 @@ export default function AccountPage() {
   }), [filter, orders]);
 
   return <div className="container inner-page account-page">
-    <div className="page-title"><span>مساحتك الخاصة</span><h1>حسابي وطلباتي</h1><p>أديري عنوان التوصيل وتابعي الطلبات التي أرسلتِها.</p></div>
+    <div className="page-title account-title"><span>مساحتك الخاصة</span><h1>حسابي وطلباتي</h1></div>
     <AuthPanel />
     <div className="account-grid">
-      <Link className="account-address-link" href="/account/address/" aria-label="فتح عنواني لإضافة أو تعديل بيانات التوصيل">
-        <span className="account-address-icon"><MapPin aria-hidden="true" /></span>
-        <span className="account-address-copy"><small>بيانات التوصيل</small><strong>عنواني</strong><em>إضافة أو تعديل عنوان التوصيل</em></span>
-        <ChevronLeft aria-hidden="true" />
-      </Link>
+      <div className="account-quick-links">
+        <Link className="account-address-link" href="/account/address/" aria-label="فتح عنواني لإضافة أو تعديل بيانات التوصيل">
+          <span className="account-address-icon"><MapPin aria-hidden="true" /></span>
+          <span className="account-address-copy"><strong>عنواني</strong><em>بيانات التوصيل</em></span>
+          <ChevronLeft aria-hidden="true" />
+        </Link>
+        <Link className="account-address-link" href="/favorites/" aria-label="فتح المفضلة">
+          <span className="account-address-icon"><Heart aria-hidden="true" /></span>
+          <span className="account-address-copy"><strong>المفضلة</strong><em>القطع المحفوظة</em></span>
+          <ChevronLeft aria-hidden="true" />
+        </Link>
+      </div>
 
       <section className="account-card orders-card" id="orders">
         <div className="account-card-title orders-title"><div><PackageCheck /></div><span><small>{user ? "طلبات هذا الحساب فقط" : "طلبات الضيف على هذا الجهاز"}</small><h2>طلباتي</h2></span><i className={syncing ? "syncing" : ""}><RefreshCw /></i></div>
-        {user && <div className="account-owner-note"><UserRound /><span><small>الحساب الحالي</small><strong>{user.displayName || user.email}</strong></span><Check /></div>}
         {syncMessage && <p className="orders-sync-message">{syncMessage}</p>}
-        {orders.length > 0 && <><div className="order-status-summary"><article><Truck /><span><small>جارية</small><strong>{counts.active}</strong></span></article>{counts.postponed > 0 && <article className="postponed"><PauseCircle /><span><small>مؤجلة</small><strong>{counts.postponed}</strong></span></article>}{counts.canceled > 0 && <article className="canceled"><Ban /><span><small>ملغية</small><strong>{counts.canceled}</strong></span></article>}</div><div className="order-filters">{([['all', 'الكل', orders.length], ['active', 'الجارية', counts.active], ['postponed', 'المؤجلة', counts.postponed], ['canceled', 'الملغية', counts.canceled], ['completed', 'المكتملة', counts.completed]] as const).filter(([value, , count]) => value === "all" || count > 0).map(([value, label, count]) => <button key={value} className={filter === value ? "active" : ""} onClick={() => setFilter(value)}>{label}<b>{count}</b></button>)}</div></>}
+        {orders.length > 0 && <div className="order-filters">{([['all', 'الكل', orders.length], ['active', 'الجارية', counts.active], ['postponed', 'المؤجلة', counts.postponed], ['canceled', 'الملغية', counts.canceled], ['completed', 'المكتملة', counts.completed]] as const).filter(([value, , count]) => value === "all" || count > 0).map(([value, label, count]) => <button key={value} className={filter === value ? "active" : ""} onClick={() => setFilter(value)}>{label}<b>{count}</b></button>)}</div>}
         {orders.length === 0 ? <div className="account-empty"><ShoppingBag /><h3>لا توجد طلبات لهذا الحساب</h3><p>{user ? "أي طلب تسجلينه بهذا الحساب سيظهر هنا وحده، ولن تظهر طلبات الحسابات الأخرى." : "بعد إتمام أول طلب كضيفة سيظهر رقمه وحالته هنا."}</p><Link className="secondary-button" href="/#collection">ابدئي التسوق</Link></div>
           : visibleOrders.length === 0 ? <div className="orders-filter-empty"><PackageCheck /><p>لا توجد طلبات في هذه الحالة.</p></div>
           : <div className="saved-orders">{visibleOrders.map((order) => <OrderCard key={order.orderId} orderId={order.orderId} status={order.status} createdAt={order.createdAt} total={order.total} itemCount={order.itemCount} items={order.items} delivery={order.externalDelivery} onReorder={order.status === "canceled" ? () => reorder(order) : undefined} reordering={reorderingOrderId === order.orderId} onCancel={["pending", "processing"].includes(order.status) ? () => void cancelOrder(order.orderId) : undefined} canceling={cancelingOrderId === order.orderId} compact />)}</div>}

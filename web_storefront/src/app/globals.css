@@ -1196,6 +1196,7 @@ body {
 /* Ambassador page: single-column hero and numbered steps. */
 .ambassador-page .ambassador-hero-grid{grid-template-columns:minmax(0,1fr);gap:0}
 .ambassador-page .ambassador-hero-copy{max-width:720px}
+.ambassador-join{scroll-margin-top:105px}
 .ambassador-simple-benefits>div>b{width:32px;height:32px;flex:0 0 32px;display:grid;place-items:center;border-radius:50%;background:var(--rose-dark);color:#fff;font-size:13px;font-weight:800;font-style:normal}
 
 /* Ambassador page tightened for phones. */
@@ -1238,6 +1239,25 @@ body {
 
 /* "-28%" must not flip to "28%-" inside the RTL page. */
 .sale-badge{direction:ltr;unicode-bidi:isolate}
+
+/* Account page: compact header and a two-up quick links row. */
+.account-quick-links{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.account-quick-links .account-address-link{margin:0}
+.account-address-copy em{font-style:normal}
+@media(max-width:850px){
+	.account-page .page-title{margin-bottom:12px;padding-bottom:11px}
+	.account-page .page-title h1{font-size:24px}
+	.account-page .signed-user{margin-bottom:12px;padding:11px 13px;border-radius:12px}
+	.account-quick-links{gap:8px}
+	.account-quick-links .account-address-link{gap:9px;padding:11px 12px;border-radius:12px}
+	.account-quick-links .account-address-icon{width:34px;height:34px}
+	.account-quick-links .account-address-icon svg{width:16px}
+	.account-address-copy strong{font-size:12px}
+	.account-address-copy em{font-size:8px}
+	.account-quick-links .account-address-link>svg:last-child{width:14px}
+	.account-page .orders-card{padding:14px 12px!important;border-radius:13px!important}
+	.account-page .account-card-title{margin-bottom:12px}
+}
 
 .footer .brand span,.footer .brand small{color:#fff!important}
 .footer .brand small{opacity:.72}
