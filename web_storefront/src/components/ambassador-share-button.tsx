@@ -54,7 +54,9 @@ export function AmbassadorShareButton({ buildPath, title, text, label = "مشا�
       {state === "loading" ? <LoaderCircle className="spin" /> : state === "copied" ? <Check /> : <Share2 />}
       {!compact && <span>{state === "copied" ? "تم نسخ الرابط" : state === "loading" ? "جاري تجهيز الرابط..." : label}</span>}
     </button>
+    {menuOpen && shareUrl && <span className="share-menu-backdrop" onClick={(event) => { event.stopPropagation(); setMenuOpen(false); }} />}
     {menuOpen && shareUrl && <span className="share-channel-menu" role="menu" onClick={(event) => event.stopPropagation()}>
+      <b className="share-menu-title">مشاركة عبر</b>
       <button type="button" onClick={() => openShare(`https://wa.me/?text=${encodeURIComponent(`${text}\n${shareUrl}`)}`)}><MessageCircle /> واتساب</button>
       <button type="button" onClick={() => openShare(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}`)}><Globe2 /> فيسبوك</button>
       <button type="button" onClick={() => openShare(`https://www.messenger.com/t/?link=${encodeURIComponent(shareUrl)}`)}><MessageCircle /> ماسنجر</button>
