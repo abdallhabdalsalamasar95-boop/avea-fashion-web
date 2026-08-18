@@ -2,7 +2,8 @@
 
 import Link from "next/link";
 import { BadgeCheck, Check, CheckCircle2, CircleDollarSign, Clipboard, LockKeyhole, MapPin, PackageSearch, Share2, ShoppingBag } from "lucide-react";
-import { FormEvent, useEffect, useMemo, useRef, useState } from "react";
+import { FormEvent, Suspense, useEffect, useMemo, useRef, useState } from "react";
+import { useSearchParams } from "next/navigation";
 import { useAmbassador } from "@/components/ambassador-context";
 import { DeliveryLocationFields } from "@/components/delivery-location-fields";
 import { ProductImage } from "@/components/product-image";
@@ -13,11 +14,20 @@ import { fetchAppContent, submitOrder } from "@/lib/api";
 import { clearAmbassadorShare, readAmbassadorShare } from "@/lib/ambassador-share";
 import { lineCommission, totalCommission } from "@/lib/commission";
 import { prependCustomerOrder, readCustomerProfile, writeCustomerProfile } from "@/lib/customer-storage";
-import { AmbassadorShare, AppContent, CheckoutCustomer } from "@/lib/types";
+import { AmbassadorShare, AppContent, CartItem, CheckoutCustomer } from "@/lib/types";
 
 const shipping: Record<string, number> = { "طرابلس": 10, "بنغازي": 15, "مصراتة": 12, "سبها": 20, "الزاوية": 12, "سرت": 18, "درنة": 18, "طبرق": 20, "أخرى": 25 };
-export default function CheckoutPage() {
-  const { cart, total, clearCart } = useStore();
+function CheckoutPageContent() {
+  const { cart: storeCart, clearCart } = useStore();
+  const searchParams = useSearchParams();
+  const isDirectCheckout = searchParams.get("direct") === "1";
+  const [directCart] = useState<CartItem[]>(() => {
+    if (typeof window === "undefined") return [];
+    try { return JSON.parse(sessionStorage.getItem("carmen-karla.direct-checkout.v1") || "[]") as CartItem[]; } catch { return []; }
+  });
+  const checkoutCart = isDirectCheckout ? directCart : storeCart;
+  const cart = checkoutCart;
+  const checkoutTotal = checkoutCart.reduce((sum, item) => sum + item.price * item.quantity, 0);
   const { user, loading: authLoading } = useAuth();
   const { ambassador, commission, loading: ambassadorLoading } = useAmbassador();
   const appearance = useSiteAppearance();
@@ -57,17 +67,17 @@ export default function CheckoutPage() {
   }, [ambassador, ambassadorLoading, authLoading, customer, shareLoaded, sharedOrder, user?.uid]);
 
   const pricing = useMemo(() => {
-    const coupon = content.coupons?.find((item) => item.enabled !== false && Number(item.enabled ?? 1) !== 0 && item.code.toUpperCase() === appliedCouponCode && total >= (item.minSubtotal ?? 0));
+    const coupon = content.coupons?.find((item) => item.enabled !== false && Number(item.enabled ?? 1) !== 0 && item.code.toUpperCase() === appliedCouponCode && checkoutTotal >= (item.minSubtotal ?? 0));
     let discount = 0;
     let delivery = shipping[customer.city] ?? 25;
-    if (coupon?.type === "percent") discount = Math.min(total * coupon.value / 100, coupon.maxDiscount && coupon.maxDiscount > 0 ? coupon.maxDiscount : Number.POSITIVE_INFINITY);
-    if (coupon?.type === "fixed") discount = Math.min(total, coupon.value);
+    if (coupon?.type === "percent") discount = Math.min(checkoutTotal * coupon.value / 100, coupon.maxDiscount && coupon.maxDiscount > 0 ? coupon.maxDiscount : Number.POSITIVE_INFINITY);
+    if (coupon?.type === "fixed") discount = Math.min(checkoutTotal, coupon.value);
     if (coupon?.type === "freeShipping" || coupon?.freeShipping === true || Number(coupon?.freeShipping ?? 0) === 1) delivery = 0;
-    return { subtotal: total, discount, shippingCost: delivery, grandTotal: Math.max(0, total - discount + delivery), coupon };
-  }, [appliedCouponCode, content.coupons, customer.city, total]);
+    return { subtotal: checkoutTotal, discount, shippingCost: delivery, grandTotal: Math.max(0, checkoutTotal - discount + delivery), coupon };
+  }, [appliedCouponCode, content.coupons, customer.city, checkoutTotal]);
   const isCustomerSharedCheckout = Boolean(sharedOrder);
-  const expectedCommission = totalCommission(cart, commission);
-  const itemCount = cart.reduce((sum, item) => sum + item.quantity, 0);
+  const expectedCommission = totalCommission(checkoutCart, commission);
+  const itemCount = checkoutCart.reduce((sum, item) => sum + item.quantity, 0);
   const confirmPanel = <div className="checkout-confirm-panel">{error && <p className="form-error">{error}</p>}<div><span><small>الإجمالي</small><strong>{pricing.grandTotal.toFixed(2)} د.ل</strong></span><button className="primary-button checkout-link" disabled={sending}>{sending ? "جاري الإرسال..." : "تأكيد الطلب"}</button></div><small className="secure-note"><LockKeyhole /> بياناتك تستخدم لإتمام الطلب فقط</small></div>;
 
   const applyCoupon = () => {
@@ -78,7 +88,7 @@ export default function CheckoutPage() {
       setCouponFeedback("الكود غير صالح أو متوقف");
       return;
     }
-    if (total < (coupon.minSubtotal ?? 0)) {
+    if (checkoutTotal < (coupon.minSubtotal ?? 0)) {
       setAppliedCouponCode("");
       setCouponFeedback(`الحد الأدنى لاستخدام الكود ${(coupon.minSubtotal ?? 0).toFixed(2)} د.ل`);
       return;
@@ -96,7 +106,7 @@ export default function CheckoutPage() {
 
   const submit = async (event: FormEvent) => {
     event.preventDefault(); setError("");
-    if (!cart.length) return setError("السلة فارغة.");
+    if (!checkoutCart.length) return setError("لم يتم اختيار منتج للشراء.");
     if (!customer.name.trim() || !customer.phone.trim() || !customer.area.trim() || !customer.address.trim()) return setError("يرجى تعبئة جميع بيانات التوصيل.");
     setSending(true);
     const id = checkoutAttemptId.current || `o_${Date.now()}_${crypto.randomUUID().slice(0, 8)}`;
@@ -109,10 +119,10 @@ export default function CheckoutPage() {
         submitterEmail: user.email ?? ambassador.email,
         submitterPhone: ambassador.ambassadorPhone,
       } : {};
-      const result = await submitOrder({ orderId: id, ambassadorShareToken: sharedOrder?.token, payload: { customer: { ...customer, ...ambassadorIdentity, accountRole: ambassador ? "ambassador" : "customer", placedAsAmbassador: Boolean(ambassador) }, items: cart, pricing: { subtotal: pricing.subtotal, discount: pricing.discount, shippingCost: pricing.shippingCost, grandTotal: pricing.grandTotal }, paymentMethod: "الدفع عند الاستلام", couponCode: pricing.coupon?.code ?? "", note }, status: "pending", source: "web", uid: user?.uid ?? "" }, idToken);
+      const result = await submitOrder({ orderId: id, ambassadorShareToken: sharedOrder?.token, payload: { customer: { ...customer, ...ambassadorIdentity, accountRole: ambassador ? "ambassador" : "customer", placedAsAmbassador: Boolean(ambassador) }, items: checkoutCart, pricing: { subtotal: pricing.subtotal, discount: pricing.discount, shippingCost: pricing.shippingCost, grandTotal: pricing.grandTotal }, paymentMethod: "الدفع عند الاستلام", couponCode: pricing.coupon?.code ?? "", note }, status: "pending", source: "web", uid: user?.uid ?? "" }, idToken);
       if (!ambassador && !sharedOrder) writeCustomerProfile(customer, user?.uid);
-      if (!ambassador) prependCustomerOrder({ orderId: result.orderId, trackingToken: result.trackingToken, createdAt: Date.now(), total: pricing.grandTotal, itemCount: cart.reduce((sum, item) => sum + item.quantity, 0), status: "pending", items: cart, orderChannel: "customer" }, user?.uid);
-      clearAmbassadorShare(); setOrderId(result.orderId); clearCart();
+      if (!ambassador) prependCustomerOrder({ orderId: result.orderId, trackingToken: result.trackingToken, createdAt: Date.now(), total: pricing.grandTotal, itemCount, status: "pending", items: checkoutCart, orderChannel: "customer" }, user?.uid);
+      clearAmbassadorShare(); setOrderId(result.orderId); if (isDirectCheckout) sessionStorage.removeItem("carmen-karla.direct-checkout.v1"); else clearCart();
     } catch (reason) { setError(reason instanceof Error ? reason.message : "تعذر إرسال الطلب."); }
     finally { setSending(false); }
   };
@@ -130,7 +140,7 @@ export default function CheckoutPage() {
   };
 
   if (orderId) return <div className="container success-page order-success"><div className="success-check"><CheckCircle2 /></div><span>شكرًا لاختياركِ أڤيا</span><h1>تم استلام طلبك بنجاح</h1>{sharedOrder && <div className="success-partner"><BadgeCheck /><span><small>بمساعدة شريكة AVEA المعتمدة</small><strong>{sharedOrder.ambassadorName}</strong></span></div>}<div className="success-order-number"><small>رقم الطلب</small><strong dir="ltr">{orderId}</strong><Clipboard /></div><p>سيتواصل فريقنا معكِ لتأكيد التفاصيل، ويمكنكِ متابعة حالة الطلب في أي وقت.</p><div className="success-actions"><Link className="primary-button" href={ambassador ? "/ambassador/" : "/account/#orders"}><PackageSearch /> {ambassador ? "عرض طلبات عميلاتي" : "تتبع طلبي"}</Link><button className="secondary-button" onClick={shareOrder}>{orderShared ? <Check /> : <Share2 />}{orderShared ? "تمت المشاركة" : "مشاركة رقم الطلب"}</button></div><Link className="success-home-link" href="/">العودة للرئيسية</Link></div>;
-  if (!cart.length) return <div className="container inner-page"><div className="empty-state"><h3>لا يمكن إتمام طلب فارغ</h3><Link className="primary-button" href="/#collection">العودة للمتجر</Link></div></div>;
+  if (!checkoutCart.length) return <div className="container inner-page"><div className="empty-state"><h3>لا يمكن إتمام طلب فارغ</h3><Link className="primary-button" href="/#collection">العودة للمتجر</Link></div></div>;
 
   return <div className="container inner-page checkout-page"><header className="simple-page-head"><div><span>إتمام الطلب</span><h1>باقي خطوة واحدة</h1><p>أدخلي بيانات التوصيل ثم راجعي الطلب وأكّديه.</p></div><Link href="/cart/">العودة للسلة</Link></header><form className="checkout-layout" onSubmit={submit} autoComplete={ambassador || sharedOrder ? "off" : "on"}>
     <div className="checkout-form">{ambassador && !isCustomerSharedCheckout && <div className="ambassador-checkout-note"><BadgeCheck /><div><strong>طلب مسجّل باسم المندوبة {ambassador.ambassadorName}</strong><span>العمولة المتوقعة {expectedCommission.toFixed(2)} د.ل وتُعتمد بعد نجاح التوصيل. بيانات العميلة لن تُحفظ على هذا الجهاز.</span></div></div>}{sharedOrder && <div className="ambassador-checkout-note customer-shared-note partner-checkout-note"><span className="partner-mark">A</span><div><small>شريكة AVEA المعتمدة</small><strong>{sharedOrder.ambassadorName}</strong><span>نسّقت اختياراتكِ، وأنتِ تضيفين بيانات التوصيل بخصوصية تامة.</span></div><BadgeCheck /></div>}
@@ -139,4 +149,8 @@ export default function CheckoutPage() {
     {appearance.checkoutConfirmPosition === "afterCustomer" && confirmPanel}</div>
     <aside className="order-summary checkout-summary"><div className="summary-heading"><span><ShoppingBag /></span><div><small>{itemCount} {itemCount === 1 ? "قطعة" : "قطع"}</small><h2>مراجعة الطلب</h2></div></div><div className="checkout-items">{cart.map((item) => <div className="mini-line" key={item.lineId}><ProductImage src={item.imageUrl} alt={item.name} /><span><b>{item.name}</b><small>{item.quantity} × {item.price} د.ل</small>{ambassador && !isCustomerSharedCheckout && <em>عمولتك {lineCommission(item, commission).toFixed(2)} د.ل</em>}</span></div>)}</div><hr/><div><span>المجموع</span><strong>{pricing.subtotal.toFixed(2)} د.ل</strong></div>{pricing.discount > 0 && <div className="discount"><span>الخصم</span><strong>- {pricing.discount.toFixed(2)} د.ل</strong></div>}<div><span>التوصيل إلى {customer.city}</span><strong>{pricing.shippingCost.toFixed(2)} د.ل</strong></div>{ambassador && !isCustomerSharedCheckout && <div className="commission-summary compact"><span><CircleDollarSign /> عمولتك المتوقعة</span><strong>{expectedCommission.toFixed(2)} د.ل</strong></div>}<hr/><div className="summary-total"><span>الإجمالي</span><strong>{pricing.grandTotal.toFixed(2)} د.ل</strong></div>{appearance.checkoutConfirmPosition === "summary" && confirmPanel}</aside>
   </form></div>;
+}
+
+export default function CheckoutPage() {
+  return <Suspense fallback={<div className="page-loading">جاري تجهيز صفحة الطلب...</div>}><CheckoutPageContent /></Suspense>;
 }
