@@ -220,7 +220,7 @@ button { cursor:pointer; }
 .about div { max-width:720px; }
 
 /* Organized premium home page */
-.home-product-section { padding-block:58px 62px; overflow:hidden; }
+.home-product-section { padding-block:58px 62px; overflow:visible; }
 .home-product-section + .home-product-section { border-top:1px solid #eee9e6; }
 .home-product-section:nth-of-type(even) { position:relative; }
 .home-rail-heading { display:flex; align-items:end; justify-content:space-between; gap:28px; margin-bottom:25px; }
@@ -230,7 +230,7 @@ button { cursor:pointer; }
 .home-rail-heading p { margin:7px 0 0; color:var(--muted); font-size:12px; }
 .home-rail-heading small { flex:0 0 auto; display:flex; align-items:center; gap:7px; color:#8d8286; font-size:10px; }
 .home-rail-heading small svg { width:15px; height:15px; }
-.home-product-rail { display:grid; grid-auto-flow:column; grid-auto-columns:calc((100% - 60px)/4); gap:20px; overflow-x:auto; overflow-y:hidden; overscroll-behavior-inline:contain; scroll-snap-type:inline mandatory; scrollbar-width:thin; scrollbar-color:#cbbfc3 transparent; padding:2px 1px 20px; -webkit-overflow-scrolling:touch; touch-action:pan-x; }
+.home-product-rail { display:grid; grid-auto-flow:column; grid-auto-columns:calc((100% - 60px)/4); gap:20px; overflow-x:auto; overflow-y:hidden; overscroll-behavior-x:contain; overscroll-behavior-y:auto; scroll-snap-type:inline mandatory; scrollbar-width:thin; scrollbar-color:#cbbfc3 transparent; padding:2px 1px 20px; -webkit-overflow-scrolling:touch; touch-action:auto; }
 .home-product-rail>.product-card { scroll-snap-align:start; min-width:0; }
 .home-product-rail::-webkit-scrollbar { height:5px; }
 .home-product-rail::-webkit-scrollbar-track { background:#f2efed; border-radius:20px; }

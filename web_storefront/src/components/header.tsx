@@ -18,7 +18,7 @@ const links = [
   ["/favorites/", "المفضلة"],
   ["/ambassador/", "مندوبة مبيعات"],
   ["/account/", "حسابي وطلباتي"],
-  ["/#about", "عن أڤيا"],
+  ["/#about", "عن كارمن كارلا"],
 ];
 
 export function Header() {
@@ -57,9 +57,9 @@ export function Header() {
           {open ? <X /> : <Menu />}
         </button>
         <AppInstallPrompt />
-        <Link className="brand" href="/" aria-label="أڤيا فاشن الرئيسية">
-          <span>AVEA</span>
-          <small>FASHION</small>
+        <Link className="brand" href="/" aria-label="كارمن كارلا الرئيسية">
+          <span>CK</span>
+          <small>KARLA</small>
         </Link>
         <nav className={open ? "nav-links open" : "nav-links"}>
           {links.map(([href, label]) => <Link key={href} href={href} onClick={() => setOpen(false)}>{label}</Link>)}

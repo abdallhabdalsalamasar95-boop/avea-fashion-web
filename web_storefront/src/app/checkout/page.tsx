@@ -118,9 +118,9 @@ export default function CheckoutPage() {
   };
 
   const shareOrder = async () => {
-    const text = `تم تسجيل طلبي من AVEA Fashion\nرقم الطلب: ${orderId}${sharedOrder ? `\nبمساعدة شريكة AVEA المعتمدة ${sharedOrder.ambassadorName}` : ""}`;
+    const text = `تم تسجيل طلبي من Carmen Karla\nرقم الطلب: ${orderId}${sharedOrder ? `\nبمساعدة شريكة Carmen Karla المعتمدة ${sharedOrder.ambassadorName}` : ""}`;
     try {
-      if (navigator.share) await navigator.share({ title: "طلب AVEA Fashion", text, url: `${window.location.origin}${ambassador ? "/ambassador/" : "/account/#orders"}` });
+      if (navigator.share) await navigator.share({ title: "طلب Carmen Karla", text, url: `${window.location.origin}${ambassador ? "/ambassador/" : "/account/#orders"}` });
       else await navigator.clipboard.writeText(text);
       setOrderShared(true);
       window.setTimeout(() => setOrderShared(false), 2200);

@@ -125,11 +125,11 @@ function CategoryCollection() {
             <label className="category-stock-switch"><span><strong>المتوفر فقط</strong><small>إخفاء القطع النافدة</small></span><input type="checkbox" checked={inStockOnly} onChange={(event) => setInStockOnly(event.target.checked)} /><i /></label>
             <button className="category-apply-filter" type="button" onClick={() => setSheet(null)}>عرض {visibleProducts.length} {visibleProducts.length === 1 ? "منتج" : "منتجات"}</button>
           </> : <>
-            <header><div><small>اسحبي واختاري</small><h2>أقسام أڤيا</h2></div></header>
+            <header><div><small>اسحبي واختاري</small><h2>أقسام كارمن كارلا</h2></div></header>
             <div className="category-sheet-list">{managedCategories.map((item) => {
               const filter = item.productCategoryFilter?.trim() || item.title;
               const current = cleanCategory(filter) === cleanCategory(requestedCategory);
-              return <Link className={current ? "current" : ""} href={`/category/?name=${encodeURIComponent(filter)}&title=${encodeURIComponent(item.title)}`} key={item.id} onClick={() => setSheet(null)}>{item.imageUrl ? <img src={item.imageUrl} alt="" /> : <span>AVEA</span>}<strong>{item.title}</strong>{current && <Check />}</Link>;
+              return <Link className={current ? "current" : ""} href={`/category/?name=${encodeURIComponent(filter)}&title=${encodeURIComponent(item.title)}`} key={item.id} onClick={() => setSheet(null)}>{item.imageUrl ? <img src={item.imageUrl} alt="" /> : <span>Carmen Karla</span>}<strong>{item.title}</strong>{current && <Check />}</Link>;
             })}</div>
           </>}
         </section>

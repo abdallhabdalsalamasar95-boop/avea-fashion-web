@@ -11,7 +11,8 @@ declare global {
 }
 
 type BrowserLabel = "Chrome" | "Edge" | "Firefox" | "Safari" | "المتصفح";
-const ANDROID_APK_URL = "https://avea-fashion-web.onrender.com/avea-fashion.apk";
+const APP_BASE_URL = process.env.NEXT_PUBLIC_APP_URL || "https://karla.onrender.com";
+const ANDROID_APK_URL = `${APP_BASE_URL}/avea-fashion.apk`;
 
 function detectBrowserLabel(): BrowserLabel {
   const ua = window.navigator.userAgent.toLowerCase();
@@ -67,7 +68,7 @@ export function AppInstallPrompt() {
 
   const handleInstall = async () => {
     if (isAndroid) {
-      const chromeIntent = "intent://avea-fashion-web.onrender.com/avea-fashion.apk#Intent;scheme=https;package=com.android.chrome;end";
+      const chromeIntent = `intent://${new URL(APP_BASE_URL).host}/avea-fashion.apk#Intent;scheme=https;package=com.android.chrome;end`;
       window.location.href = chromeIntent;
       return;
     }
@@ -117,7 +118,7 @@ export function AppInstallPrompt() {
         }}
       >
         <span aria-hidden="true" style={{ width: 17, height: 17, display: "grid", placeItems: "center", borderRadius: 5, background: "#4d1d2f", color: "#fff", fontFamily: "Georgia, serif", fontSize: 10, letterSpacing: 1 }}>A</span>
-        <span style={{ fontSize: 7, lineHeight: 1, whiteSpace: "nowrap" }}>تطبيق AVEA</span>
+        <span style={{ fontSize: 7, lineHeight: 1, whiteSpace: "nowrap" }}>تطبيق Carmen Karla</span>
       </button>
 
       {showHelp && (
@@ -154,7 +155,7 @@ export function AppInstallPrompt() {
 
             <p style={{ margin: "0 0 12px", color: "#75696e", lineHeight: 1.8, fontSize: 13 }}>
               {isAndroid
-                ? "سيبدأ تنزيل تطبيق AVEA بصيغة APK. بعد اكتمال التنزيل افتحي الملف ووافقي على التثبيت."
+                ? "سيبدأ تنزيل تطبيق Carmen Karla بصيغة APK. بعد اكتمال التنزيل افتحي الملف ووافقي على التثبيت."
                 : deferredPrompt
                 ? "إذا ظهر مربع التثبيت، وافقي عليه وسيتم التثبيت مباشرة."
                 : helpText}

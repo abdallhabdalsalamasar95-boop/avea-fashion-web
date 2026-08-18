@@ -21,9 +21,9 @@ export default function AmbassadorPage() {
     <section className="ambassador-hero">
       <div className="container ambassador-hero-grid">
         <div className="ambassador-hero-copy">
-          <span><Sparkles /> فرصة عمل مرنة مع AVEA FASHION</span>
+          <span><Sparkles /> فرصة عمل مرنة مع Carmen Karla</span>
           <h1>كوني مندوبة مبيعات<br />وابني دخلك بطريقتك</h1>
-          <p>سوّقي منتجات أڤيا لعميلاتك واكسبي عمولتك عند نجاح التوصيل — بدون شراء مخزون أو رسوم تسجيل.</p>
+          <p>سوّقي منتجات كارمن كارلا لعميلاتك واكسبي عمولتك عند نجاح التوصيل — بدون شراء مخزون أو رسوم تسجيل.</p>
           <div className="ambassador-hero-actions">
             <a className="ambassador-primary" href="#join">انضمي الآن <ArrowLeft /></a>
             <Link className="ambassador-secondary" href="/#collection">استكشفي التشكيلة</Link>

@@ -70,15 +70,15 @@ export default function Home() {
   return (
     <>
       {bannerVisible && <section className="managed-hero">
-        <a href={managedBanner?.linkUrl?.trim() || "#collection"} aria-label={managedBanner?.altText || "تسوّقي من أڤيا فاشن"}>
-          <img src={bannerImage} alt={managedBanner?.altText || "بانر أڤيا فاشن"} />
+        <a href={managedBanner?.linkUrl?.trim() || "#collection"} aria-label={managedBanner?.altText || "تسوّقي من كارمن كارلا"}>
+          <img src={bannerImage} alt={managedBanner?.altText || "بانر كارمن كارلا"} />
         </a>
       </section>}
 
       {appearance.showHomepageCategories && categoryShowcase.length > 0 && <section className="category-showcase container" id="categories">
         <div className="category-cards">
           {categoryShowcase.map((item) => <Link className="category-link" key={item.id} href={`/category/?name=${encodeURIComponent(item.productCategoryFilter?.trim() || item.title)}&title=${encodeURIComponent(item.title)}`}>
-            {item.imageUrl ? <img src={item.imageUrl} alt={item.title} loading="lazy" /> : <div className="category-placeholder">AVEA</div>}
+            {item.imageUrl ? <img src={item.imageUrl} alt={item.title} loading="lazy" /> : <div className="category-placeholder">Carmen Karla</div>}
             <span><strong>{item.title}</strong></span>
           </Link>)}
         </div>
@@ -88,7 +88,7 @@ export default function Home() {
 
       {appearance.showNewestSection && !loading && newestProducts.length > 0 && <section className="home-product-section container" aria-labelledby="newest-products-title">
         <div className="home-rail-heading">
-          <div><span>وصل حديثًا</span><h2 id="newest-products-title">الأحدث</h2><p>أجدد الموديلات التي وصلت إلى أڤيا.</p></div>
+          <div><span>وصل حديثًا</span><h2 id="newest-products-title">الأحدث</h2><p>أجدد الموديلات التي وصلت إلى كارمن كارلا.</p></div>
           <small>اسحبي لليسار <ArrowLeft /></small>
         </div>
         <div className="home-product-rail">
@@ -97,14 +97,14 @@ export default function Home() {
       </section>}
 
       {sectionBannerVisible && <section className={`managed-section-banner section-banner-${sectionBanner?.widthMode ?? "full"} section-banner-spacing-${sectionBanner?.spacing ?? "tight"} section-banner-height-${sectionBanner?.height ?? "medium"}${sectionBanner?.widthMode === "container" ? " container" : ""}`}>
-        <a href={sectionBanner?.linkUrl?.trim() || "#collection"} aria-label={sectionBanner?.altText || "تسوّقي أحدث تشكيلات أڤيا"}>
+        <a href={sectionBanner?.linkUrl?.trim() || "#collection"} aria-label={sectionBanner?.altText || "تسوّقي أحدث تشكيلات كارمن كارلا"}>
           <img src={sectionBannerImage} alt={sectionBanner?.altText || "بانر أحدث المنتجات والأكثر مبيعًا"} loading="lazy" />
         </a>
       </section>}
 
       {appearance.showBestSellingSection && !loading && bestSellingProducts.length > 0 && <section className="home-product-section container" aria-labelledby="best-products-title">
         <div className="home-rail-heading">
-          <div><span>اختيار العميلات</span><h2 id="best-products-title">الأكثر مبيعًا</h2><p>الموديلات الأعلى طلبًا من عميلاتنا.</p></div>
+          <div><span>اختيار العميلات</span><h2 id="best-products-title">الأكثر مبيعًا</h2><p>الموديلات الأعلى طلبًا من عميلات كارمن كارلا.</p></div>
           <small>اسحبي لليسار <ArrowLeft /></small>
         </div>
         <div className="home-product-rail">
@@ -147,7 +147,7 @@ export default function Home() {
         <div><Sparkles /><span><strong>اختيارات مميزة</strong><small>تشكيلات متجددة</small></span></div>
       </section>
 
-      <section className="about" id="about"><div className="container"><span>AVEA FASHION</span><h2>اختيارات صنعت لتتميّز</h2></div></section>
+      <section className="about" id="about"><div className="container"><span>Carmen Karla</span><h2>اختيارات صنعت لتتميّز</h2></div></section>
     </>
   );
 }
