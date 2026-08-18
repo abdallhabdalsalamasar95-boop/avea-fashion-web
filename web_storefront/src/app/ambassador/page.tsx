@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { ArrowLeft, BadgeCheck, BadgePercent, Check, PackageCheck, Sparkles, WalletCards } from "lucide-react";
+import { ArrowLeft, Check, Sparkles } from "lucide-react";
 import { useEffect, useState } from "react";
 import { AmbassadorPortal } from "@/components/ambassador-portal";
 import { AmbassadorSupportButton } from "@/components/ambassador-support-button";
@@ -23,33 +23,25 @@ export default function AmbassadorPage() {
         <div className="ambassador-hero-copy">
           <span><Sparkles /> فرصة عمل مرنة مع Carmen Karla</span>
           <h1>كوني مندوبة مبيعات<br />وابني دخلك بطريقتك</h1>
-          <p>سوّقي منتجات كارمن كارلا لعميلاتك واكسبي عمولتك عند نجاح التوصيل — بدون شراء مخزون أو رسوم تسجيل.</p>
+          <p>شاركي منتجات كارمن كارلا مع عميلاتك، واكسبي عمولتك عند نجاح التوصيل.</p>
           <div className="ambassador-hero-actions">
             <a className="ambassador-primary" href="#join">انضمي الآن <ArrowLeft /></a>
             <Link className="ambassador-secondary" href="/#collection">استكشفي التشكيلة</Link>
           </div>
-          <div className="ambassador-trust"><span><Check /> بدون رسوم تسجيل</span><span><Check /> وقت عمل مرن</span><span><Check /> دعم مستمر</span></div>
-        </div>
-        <div className="ambassador-commission-card">
-          <div className="commission-glow" />
-          <span className="commission-icon"><BadgePercent /></span>
-          <small>عمولة خاصة بكل منتج</small>
-          <strong>اختاري وربحي</strong>
-          <p>تظهر قيمة العمولة بوضوح على كل منتج، وتُعتمد بعد توصيل الطلب بنجاح.</p>
-          <div><BadgeCheck /> لا توجد نسبة موحّدة على جميع المنتجات</div>
+          <div className="ambassador-trust"><span><Check /> بدون رسوم</span><span><Check /> بدون مخزون</span><span><Check /> وقت مرن</span></div>
         </div>
       </div>
     </section>
 
     <section className="container ambassador-simple-benefits">
-      <div><WalletCards /><span><strong>عمولة واضحة</strong><small>على كل طلب موصّل</small></span></div>
-      <div><PackageCheck /><span><strong>بدون مخزون</strong><small>نجهز ونوصل عنك</small></span></div>
-      <div><BadgeCheck /><span><strong>لوحة واحدة</strong><small>للطلبات والأرباح</small></span></div>
+      <div><b>1</b><span><strong>سجّلي بياناتك</strong><small>الاسم والهاتف والمنطقة فقط</small></span></div>
+      <div><b>2</b><span><strong>شاركي المنتجات</strong><small>لكل قطعة رابط خاص باسمك</small></span></div>
+      <div><b>3</b><span><strong>اكسبي عمولتك</strong><small>تُعتمد بعد توصيل الطلب بنجاح</small></span></div>
     </section>
 
     <section className="ambassador-quick-join">
       <div className="container">
-        <div className="ambassador-section-heading"><span>ابدئي الآن</span><h2>ثلاث بيانات وتصبح لوحتك جاهزة</h2><p>أنشئي حسابًا أو سجّلي الدخول، ثم أدخلي الاسم والهاتف والمنطقة.</p></div>
+        <div className="ambassador-section-heading"><span>ابدئي الآن</span><h2>ثلاث بيانات وتصبح لوحتك جاهزة</h2></div>
         <div className="ambassador-join" id="join"><AmbassadorPortal /></div>
       </div>
     </section>

@@ -1193,6 +1193,11 @@ body {
 	.image-fallback span{font-size:6px!important;letter-spacing:.4px!important}
 }
 
+/* Ambassador page: single-column hero and numbered steps. */
+.ambassador-page .ambassador-hero-grid{grid-template-columns:minmax(0,1fr);gap:0}
+.ambassador-page .ambassador-hero-copy{max-width:720px}
+.ambassador-simple-benefits>div>b{width:32px;height:32px;flex:0 0 32px;display:grid;place-items:center;border-radius:50%;background:var(--rose-dark);color:#fff;font-size:13px;font-weight:800;font-style:normal}
+
 /* Ambassador page tightened for phones. */
 @media(max-width:850px){
 	.ambassador-trust{grid-template-columns:repeat(3,minmax(0,1fr))!important;gap:6px!important}
@@ -1210,6 +1215,7 @@ body {
 	.ambassador-login-box .auth-intro p{font-size:9px}
 	.ambassador-login-box .auth-panel input{min-height:46px}
 	.ambassador-login-box .auth-panel .primary-button{min-height:48px}
+	.ambassador-simple-benefits>div>b{width:28px;height:28px;flex-basis:28px;font-size:12px}
 }
 
 /* Home catalog: search and category chips share one sticky row on phones. */
