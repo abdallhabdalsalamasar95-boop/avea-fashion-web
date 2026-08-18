@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { ArrowRight, Check, CircleDollarSign, Heart, Minus, Plus, ShoppingBag } from "lucide-react";
+import { ArrowRight, Check, CircleDollarSign, Heart, Minus, Plus, ShoppingBag, Zap } from "lucide-react";
 import { Suspense, useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { useAmbassador } from "@/components/ambassador-context";
@@ -90,6 +90,18 @@ function ProductDetails() {
     window.setTimeout(() => setAdded(false), 2200);
   };
 
+  const buyNow = () => {
+    if (incomplete || soldOut) return;
+    sessionStorage.setItem("carmen-karla.direct-checkout.v1", JSON.stringify([{
+      lineId: `${product.id}_${size}_${length}_${color}`,
+      productId: product.id, productCode: product.productCode, name: product.name, price: product.price,
+      imageUrl: image, category: product.category, tags: product.tags,
+      size, length, color, quantity, commissionPercent: product.commissionPercent,
+      sizeQuantities: product.sizeQuantities, availableStock: product.availableStock,
+    }]));
+    window.location.href = "/checkout/?direct=1";
+  };
+
   return <div className="container detail-page">
     <Link className="back-link" href="/"><ArrowRight /> العودة للتشكيلة</Link>
     <div className="detail-grid">
@@ -98,7 +110,7 @@ function ProductDetails() {
         {gallery.length > 1 && <div className="thumbs">{gallery.map((src) => <button className={src === image ? "active" : ""} onClick={() => setImage(src)} key={src}><ProductImage src={src} alt={product.name} /></button>)}</div>}
       </div>
       <div className="detail-info">
-        {sharedBy && <div className="shared-product-note partner-signature"><span className="partner-mark">A</span><span><small>اختيار خاص من شريكة AVEA المعتمدة</small><strong>{sharedBy}</strong><em>اختارت لكِ هذه القطعة بعناية</em></span><Check /></div>}
+        {sharedBy && <div className="shared-product-note partner-signature"><span className="partner-mark">CK</span><span><small>اختيار خاص من شريكة Carmen Karla المعتمدة</small><strong>{sharedBy}</strong><em>اختارت لكِ هذه القطعة بعناية</em></span><Check /></div>}
         <span className="detail-category">{product.category}</span>
         <h1>{product.name}</h1>
         {product.productCode && <small>رمز المنتج: {product.productCode}</small>}
@@ -111,12 +123,13 @@ function ProductDetails() {
         <div className="purchase-row">
           <div className="quantity"><button onClick={() => setQuantity(Math.max(1, quantity - 1))}><Minus /></button><span>{quantity}</span><button disabled={maximumQuantity !== undefined && quantity >= maximumQuantity} onClick={() => setQuantity((current) => maximumQuantity !== undefined ? Math.min(maximumQuantity, current + 1) : current + 1)}><Plus /></button></div>
           <button className="primary-button add-main" onClick={add} disabled={incomplete || soldOut}>{added ? <><Check /> تمت الإضافة</> : <><ShoppingBag /> {soldOut ? "نفد المخزون" : incomplete ? "اختاري الخيارات" : "أضيفي للسلة"}</>}</button>
+          <button className="primary-button buy-now-main" onClick={buyNow} disabled={incomplete || soldOut}><Zap /> {soldOut ? "نفد المخزون" : incomplete ? "اختاري الخيارات" : "اشتري الآن"}</button>
           <button className={isFavorite(product.id) ? "wish-main active" : "wish-main"} onClick={() => toggleFavorite(product.id)}><Heart fill={isFavorite(product.id) ? "currentColor" : "none"} /></button>
         </div>
         <AmbassadorShareButton
           className="detail-share-action"
           title={product.name}
-          text={ambassador ? `اختيار خاص لكِ من شريكة AVEA المعتمدة ${ambassador.ambassadorName}. راجعي ${product.name} وأكملي طلبك بسهولة.` : `شاهدي ${product.name} على متجر AVEA Fashion.`}
+          text={ambassador ? `اختيار خاص لكِ من شريكة Carmen Karla المعتمدة ${ambassador.ambassadorName}. راجعي ${product.name} وأكملي طلبك بسهولة.` : `شاهدي ${product.name} على متجر Carmen Karla.`}
           label={ambassador ? "إرسال المنتج للزبونة" : "مشاركة المنتج"}
           buildPath={(token) => `/product/?id=${encodeURIComponent(product.id)}${token ? `&ref=${encodeURIComponent(token)}` : ""}`}
         />
@@ -131,7 +144,7 @@ function Option({ title, items, value, onChange, quantities }: { title: string; 
     const quantity = quantities && Object.hasOwn(quantities, item) ? quantities[item] : undefined;
     const unavailable = quantity === 0;
     return <button className={value === item ? "active" : ""} onClick={() => onChange(item)} disabled={unavailable} key={item}>
-      <strong>{item}</strong>{quantity !== undefined && <small>{quantity} {quantity === 1 ? "قطعة" : "قطع"}</small>}
+      <strong>{item}</strong>
     </button>;
   })}</div></div>;
 }

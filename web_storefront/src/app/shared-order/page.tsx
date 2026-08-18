@@ -70,7 +70,7 @@ function SharedOrderReview() {
           const item = product ? resolveItem(selection, product) : null;
           return item ? [item] : [];
         });
-        if (resolved.length !== selections.length) throw new Error("تغيّر توفر أحد المنتجات أو خياراته. اطلبي من شريكة AVEA إرسال رابط جديد.");
+        if (resolved.length !== selections.length) throw new Error("تغيّر توفر أحد المنتجات أو خياراته. اطلبي من شريكة Carmen Karla إرسال رابط جديد.");
         setShare(verifiedShare);
         if (verifiedShare) saveAmbassadorShare(verifiedShare);
         else clearAmbassadorShare();
@@ -115,7 +115,7 @@ function SharedOrderReview() {
   if (error) return <div className="container inner-page"><div className="empty-state shared-order-error"><ShoppingBag /><h3>تعذر فتح الطلب</h3><p>{error}</p><Link className="primary-button" href="/">العودة للمتجر</Link></div></div>;
 
   return <div className="shared-order-page">
-    <section className="shared-order-hero"><div className="container"><span><BadgeCheck /> {share ? "تجربة AVEA الخاصة" : "سلة AVEA مشتركة"}</span>{share && <div className="partner-hero-card"><i>A</i><div><small>شريكة AVEA المعتمدة</small><strong>{share.ambassadorName}</strong><em>نسّقت لكِ هذه الاختيارات بعناية</em></div><BadgeCheck /></div>}<h1>{share ? "اختيارات صُمّمت لكِ" : "راجعي اختياراتكِ بهدوء"}</h1><p>{share ? <>راجعي القطع والمقاسات التي اختارتها لكِ شريكتنا <strong>{share.ambassadorName}</strong>، ثم أكملي بيانات التوصيل بكل خصوصية.</> : <>تمت مشاركة هذه السلة معكِ. راجعي المنتجات والمقاسات والكميات، ثم يمكنكِ إكمال الطلب ببياناتكِ.</>}</p><div className="shared-steps"><b className="active"><i>1</i> مراجعة الطلب</b><span></span><b><i>2</i> بيانات التوصيل</b><span></span><b><i>3</i> التأكيد</b></div></div></section>
+    <section className="shared-order-hero"><div className="container"><span><BadgeCheck /> {share ? "تجربة Carmen Karla الخاصة" : "سلة Carmen Karla مشتركة"}</span>{share && <div className="partner-hero-card"><i>CK</i><div><small>شريكة Carmen Karla المعتمدة</small><strong>{share.ambassadorName}</strong><em>نسّقت لكِ هذه الاختيارات بعناية</em></div><BadgeCheck /></div>}<h1>{share ? "اختيارات صُمّمت لكِ" : "راجعي اختياراتكِ بهدوء"}</h1><p>{share ? <>راجعي القطع والمقاسات التي اختارتها لكِ شريكتنا <strong>{share.ambassadorName}</strong>، ثم أكملي بيانات التوصيل بكل خصوصية.</> : <>تمت مشاركة هذه السلة معكِ. راجعي المنتجات والمقاسات والكميات، ثم يمكنكِ إكمال الطلب ببياناتكِ.</>}</p><div className="shared-steps"><b className="active"><i>1</i> مراجعة الطلب</b><span></span><b><i>2</i> بيانات التوصيل</b><span></span><b><i>3</i> التأكيد</b></div></div></section>
     <div className="container shared-order-layout">
       <section className="shared-review-card"><header><div><small>اختياراتك</small><h2>{count} {count === 1 ? "قطعة" : "قطع"}</h2></div><CheckCircle2 /></header><div className="shared-review-lines">{items.map((item) => {
         const product = productsById.get(item.productId);

@@ -54,7 +54,7 @@ export function ProductCard({ product }: { product: Product }) {
           <AmbassadorShareButton
             className="product-card-share"
             title={product.name}
-            text={ambassador ? `اختيار خاص لكِ من شريكة AVEA المعتمدة ${ambassador.ambassadorName}. شاهدي التفاصيل وأكملي طلبك بكل سهولة.` : `شاهدي هذا المنتج المميز من AVEA Fashion.`}
+            text={ambassador ? `اختيار خاص لكِ من شريكة Carmen Karla المعتمدة ${ambassador.ambassadorName}. شاهدي التفاصيل وأكملي طلبك بكل سهولة.` : `شاهدي هذا المنتج المميز من Carmen Karla.`}
             label="مشاركة المنتج"
             compact
             buildPath={(token) => `/product/?id=${encodeURIComponent(product.id)}${token ? `&ref=${encodeURIComponent(token)}` : ""}`}
