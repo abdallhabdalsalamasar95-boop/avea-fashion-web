@@ -18,18 +18,39 @@ const cairo = Cairo({
   variable: "--font-cairo",
 });
 
+const APP_URL = process.env.NEXT_PUBLIC_APP_URL || "https://karla.onrender.com";
+
+export const viewport = {
+  width: "device-width",
+  initialScale: 1,
+  viewportFit: "cover",
+  themeColor: "#0f172a",
+};
+
 export const metadata: Metadata = {
-  metadataBase: new URL("https://aveafashion.com"),
-  applicationName: "AVEA Fashion",
-  title: { default: "AVEA Fashion | أناقتك تبدأ هنا", template: "%s | AVEA Fashion" },
-  description: "متجر أڤيا فاشن للأزياء النسائية العصرية في ليبيا. تسوقي أحدث الفساتين والعبايات مع الدفع عند الاستلام.",
-  keywords: ["أزياء نسائية", "فساتين", "عبايات", "ليبيا", "AVEA Fashion"],
+  metadataBase: new URL(APP_URL),
+  applicationName: "Carmen Karla",
+  title: { default: "Carmen Karla | أناقتك تبدأ هنا", template: "%s | Carmen Karla" },
+  description: "متجر كارمن كارلا للأزياء النسائية العصرية في ليبيا. تسوقي أحدث الفساتين والعبايات مع الدفع عند الاستلام.",
+  keywords: ["أزياء نسائية", "فساتين", "عبايات", "ليبيا", "Carmen Karla", "كارمن كارلا"],
   icons: { icon: "/icon-192.png", apple: "/apple-touch-icon.png" },
   manifest: "/manifest.webmanifest",
-  themeColor: "#0f172a",
-  viewport: "width=device-width, initial-scale=1, viewport-fit=cover",
-  appleWebApp: { capable: true, title: "AVEA Fashion", statusBarStyle: "default" },
-  openGraph: { title: "AVEA Fashion", description: "أناقتك، بطريقتك", locale: "ar_LY", type: "website" },
+  appleWebApp: { capable: true, title: "Carmen Karla", statusBarStyle: "default" },
+  openGraph: {
+    title: "Carmen Karla",
+    description: "أناقتك، بطريقتك",
+    locale: "ar_LY",
+    type: "website",
+    url: APP_URL,
+    siteName: "Carmen Karla",
+    images: [{ url: "/icon-512.png", width: 512, height: 512, alt: "Carmen Karla" }],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Carmen Karla",
+    description: "أناقتك، بطريقتك",
+    images: ["/icon-512.png"],
+  },
 };
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
