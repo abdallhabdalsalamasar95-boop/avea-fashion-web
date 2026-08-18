@@ -113,15 +113,17 @@ export default function Home() {
           <div><h2>كل المنتجات</h2></div>
           <a className="view-all" href="#catalog-controls">تصفّحي الكل <ArrowLeft /></a>
         </div>
-        <div className="catalog-controls" id="catalog-controls">
-          <div className={`floating-search ${searchOpen ? "open" : ""}`}>
-            {searchOpen && <input autoFocus value={query} onChange={(e) => setQuery(e.target.value)} placeholder="ابحثي عن منتج..." aria-label="البحث عن منتج" />}
-            <button type="button" className="floating-search-button" onClick={() => setSearchOpen((value) => !value)} aria-label={searchOpen ? "إغلاق البحث" : "البحث عن منتج"}><Search /></button>
+        <div className="catalog-sticky-bar">
+          <div className="catalog-controls" id="catalog-controls">
+            <div className={`floating-search ${searchOpen ? "open" : ""}`}>
+              {searchOpen && <input autoFocus value={query} onChange={(e) => setQuery(e.target.value)} placeholder="ابحثي عن منتج..." aria-label="البحث عن منتج" />}
+              <button type="button" className="floating-search-button" onClick={() => setSearchOpen((value) => !value)} aria-label={searchOpen ? "إغلاق البحث" : "البحث عن منتج"}><Search /></button>
+            </div>
           </div>
-        </div>
-        <div className="category-list">
-          <a className="active" href="#catalog-controls">الكل</a>
-          {categories.map((item) => <Link key={item} href={`/category/?name=${encodeURIComponent(item)}`}>{item}</Link>)}
+          <div className="category-list">
+            <a className="active" href="#catalog-controls">الكل</a>
+            {categories.map((item) => <Link key={item} href={`/category/?name=${encodeURIComponent(item)}`}>{item}</Link>)}
+          </div>
         </div>
         <div className="catalog-toolbar">
           <p><strong>{shown.length}</strong> منتج</p>

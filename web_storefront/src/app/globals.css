@@ -1212,6 +1212,44 @@ body {
 	.ambassador-login-box .auth-panel .primary-button{min-height:48px}
 }
 
+/* Home catalog: search and category chips share one sticky row on phones. */
+.catalog-sticky-bar{display:contents}
+@media(max-width:850px){
+	.collection .catalog-sticky-bar{position:sticky;top:90px;z-index:9;display:grid;grid-template-columns:42px minmax(0,1fr);align-items:center;gap:9px;margin:0 -12px 12px;padding:8px 12px;border-bottom:1px solid #f1ebe9;background:rgba(255,255,255,.97)}
+	.collection .catalog-sticky-bar .catalog-controls{position:static!important;z-index:auto;margin:0!important;padding:0!important;border:0!important;border-radius:0;background:transparent!important}
+	.collection .catalog-sticky-bar .floating-search-button{width:42px;height:42px;box-shadow:none}
+	.collection .catalog-sticky-bar .floating-search-button svg{width:18px}
+	.collection .catalog-sticky-bar .category-list{margin:0;padding:0!important}
+	.collection .catalog-sticky-bar:has(.floating-search.open){grid-template-columns:minmax(0,1fr)}
+	.collection .catalog-sticky-bar:has(.floating-search.open) .category-list{display:none}
+	.collection .catalog-sticky-bar .floating-search.open{width:100%;gap:7px}
+	.collection .catalog-sticky-bar .floating-search.open input{width:100%;min-height:42px;padding:0 14px;border-radius:11px;box-shadow:none;font-size:12px}
+	.collection .catalog-toolbar{border-top:0}
+}
+@media(max-width:560px){
+	.collection .catalog-sticky-bar{margin-inline:-11px;padding-inline:11px}
+}
+
+/* "-28%" must not flip to "28%-" inside the RTL page. */
+.sale-badge{direction:ltr;unicode-bidi:isolate}
+
+.footer .brand span,.footer .brand small{color:#fff!important}
+.footer .brand small{opacity:.72}
+/* The header centres .brand absolutely; the footer copy must stay in flow. */
+.footer .brand{position:static!important;inset:auto!important;transform:none!important}
+@media(max-width:850px){
+	.footer{padding-top:30px!important}
+	.footer-grid{gap:20px 16px!important}
+	.footer-grid>div{gap:9px}
+	.footer-grid>div:first-child{flex-direction:column!important;align-items:flex-start!important;gap:7px;margin-bottom:2px}
+	.footer .footer-brand span{font-size:15px!important}
+	.footer .footer-brand small{font-size:8px!important}
+	.footer-grid h3{font-size:12px}
+	.footer-grid p,.footer-grid a,.footer-grid span{font-size:10px;line-height:1.7}
+	.footer-grid a{min-height:26px;display:flex;align-items:center}
+	.copyright{margin-top:22px!important;padding-top:14px!important;font-size:9px}
+}
+
 
 
 
