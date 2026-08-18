@@ -50,7 +50,7 @@ export function OrderTrackingTimeline({ status, delivery, compact = false, order
       })}
     </div>}
     {status === "postponed" && <div className="tracking-outcome postponed"><PauseCircle /><span><strong>تم تأجيل التوصيل</strong><small>هذه الحالة واردة مباشرة من درب السبيل. سيظهر أي موعد أو تحديث جديد هنا تلقائيًا.</small></span></div>}
-    {status === "canceled" && <div className="tracking-outcome canceled"><Ban /><span><strong>تم إلغاء الشحنة</strong><small>{delivery?.lastError || "ألغت شركة التوصيل الشحنة أو حُذفت من درب السبيل."}</small><a href={`mailto:support@aveafashion.com?subject=${encodeURIComponent(`استفسار عن الطلب ${orderId}`)}`}>تواصل مع الدعم</a></span></div>}
+    {status === "canceled" && <div className="tracking-outcome canceled"><Ban /><span><strong>تم إلغاء الشحنة</strong><small>{delivery?.lastError || "ألغت شركة التوصيل الشحنة أو حُذفت من درب السبيل."}</small><a href={`https://wa.me/218921397674?text=${encodeURIComponent(`مرحبًا، أحتاج مساعدة بخصوص الطلب ${orderId}${delivery?.lastError ? ` — ${delivery.lastError}` : ""}`)}`} target="_blank" rel="noreferrer">تواصل مع الدعم عبر واتساب</a></span></div>}
     {status !== "canceled" && !compact && events.length > 0 && <div className="tracking-events">
       {events.map((event, index) => <article key={event.id || `${event.type}-${index}`}>
         <i />
