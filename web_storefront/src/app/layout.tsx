@@ -7,6 +7,7 @@ import { StoreProvider } from "@/components/store-provider";
 import { SiteAppearanceProvider } from "@/components/site-appearance-provider";
 import { SiteFooter } from "@/components/site-footer";
 import { AppInstallPrompt } from "@/components/app-install-prompt";
+import { PresenceBeacon } from "@/components/presence-beacon";
 import { PwaRegister } from "@/components/pwa-register";
 import { SocialLinks } from "@/components/social-links";
 import "./globals.css";
@@ -62,6 +63,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
             <StoreProvider>
               <SiteAppearanceProvider>
                 <PwaRegister />
+                <PresenceBeacon />
                 <Header />
                 <main>{children}</main>
                 <SocialLinks />
