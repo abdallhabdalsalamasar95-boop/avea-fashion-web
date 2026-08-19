@@ -162,6 +162,7 @@ export interface ExternalDeliveryTracking {
   referenceCode?: string;
   providerStatus?: string;
   syncStatus?: string;
+  lastError?: string;
   lastSyncAtMs?: number;
   timeline?: ShipmentTimelineEvent[];
 }

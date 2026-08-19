@@ -1,4 +1,23 @@
-﻿const DEFAULT_API_BASE_URL =
+﻿import {
+  AmbassadorOrder,
+  AmbassadorProfile,
+  AmbassadorShare,
+  AmbassadorWithdrawalRequest,
+  AmbassadorWithdrawalSummary,
+  AppContent,
+  CartItem,
+  CheckoutCustomer,
+  ExternalDeliveryTracking,
+  OrderProductLine,
+  OrderStatus,
+  Product,
+  SavedCustomerOrder,
+  SharedCartSelection,
+  ShipmentTimelineEvent,
+  TrackedOrder,
+} from "@/lib/types";
+
+const DEFAULT_API_BASE_URL =
   typeof window !== "undefined" &&
   (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1")
     ? "https://carmenkarla-backend.onrender.com"
@@ -20,7 +39,7 @@ const list = (value: unknown): string[] => {
   } catch {
     // The API also stores some option lists as comma-separated strings.
   }
-  return [...new Set(value.split(/[,طŒ\n\r]+/).map(cleanOption).filter(Boolean))];
+  return [...new Set(value.split(/[,،\n\r]+/).map(cleanOption).filter(Boolean))];
 };
 
 const quantityMap = (value: unknown): Record<string, number> => {
@@ -52,14 +71,14 @@ export const normalizeProduct = (raw: Record<string, unknown>): Product => {
   return {
     id: String(raw.id ?? raw.productId ?? ""),
     productCode: raw.productCode ? String(raw.productCode) : undefined,
-    name: String(raw.name ?? raw.title ?? "ظ…ظ†طھط¬ ط¨ط¯ظˆظ† ط§ط³ظ…"),
+    name: String(raw.name ?? raw.title ?? "منتج بدون اسم"),
     price: Number(raw.price ?? 0),
     oldPrice: raw.oldPrice ? Number(raw.oldPrice) : undefined,
     imageUrl,
     imageUrls,
     realImageUrl: raw.realImageUrl ? String(raw.realImageUrl) : undefined,
     description: raw.description ? String(raw.description) : undefined,
-    category: raw.category ? String(raw.category) : "طھط´ظƒظٹظ„ط© ط£ع¤ظٹط§",
+    category: raw.category ? String(raw.category) : "تشكيلة أڤيا",
     tags: raw.tags ? String(raw.tags) : undefined,
     rating: raw.rating ? Number(raw.rating) : undefined,
     reviewsCount: raw.reviewsCount ? Number(raw.reviewsCount) : undefined,
@@ -85,7 +104,7 @@ async function getJson(path: string, signal?: AbortSignal): Promise<unknown> {
     headers: { Accept: "application/json" },
     cache: "no-store",
   });
-  if (!response.ok) throw new Error(`طھط¹ط°ط± ط§ظ„ط§طھطµط§ظ„ ط¨ط§ظ„ط®ط§ط¯ظ… (${response.status})`);
+  if (!response.ok) throw new Error(`تعذر الاتصال بالخادم (${response.status})`);
   return response.json();
 }
 
@@ -134,7 +153,7 @@ export async function submitOrder(order: Record<string, unknown>, idToken?: stri
   });
   const payload = (await response.json().catch(() => ({}))) as Record<string, unknown>;
   if (!response.ok || payload.ok === false) {
-    throw new Error(String(payload.error ?? payload.message ?? "طھط¹ط°ط± ط¥ط±ط³ط§ظ„ ط§ظ„ط·ظ„ط¨"));
+    throw new Error(String(payload.error ?? payload.message ?? "تعذر إرسال الطلب"));
   }
   return { orderId: String(payload.orderId ?? order.orderId), trackingToken: String(payload.trackingToken ?? "") };
 }
@@ -145,7 +164,7 @@ export async function createAmbassadorShare(idToken: string): Promise<Ambassador
     headers: { Accept: "application/json", Authorization: `Bearer ${idToken}` },
   });
   const payload = (await response.json().catch(() => ({}))) as Record<string, unknown>;
-  if (!response.ok || payload.ok === false) throw new Error(String(payload.error ?? "طھط¹ط°ط± ط¥ظ†ط´ط§ط، ط±ط§ط¨ط· ط§ظ„ظ…ط´ط§ط±ظƒط©"));
+  if (!response.ok || payload.ok === false) throw new Error(String(payload.error ?? "تعذر إنشاء رابط المشاركة"));
   return {
     token: String(payload.token ?? ""),
     ambassadorName: String(payload.ambassadorName ?? ""),
@@ -160,7 +179,7 @@ export async function fetchAmbassadorShare(token: string, signal?: AbortSignal):
     headers: { Accept: "application/json" },
   });
   const payload = (await response.json().catch(() => ({}))) as Record<string, unknown>;
-  if (!response.ok || payload.ok === false) throw new Error(String(payload.error ?? "ط±ط§ط¨ط· ط§ظ„ط·ظ„ط¨ ط؛ظٹط± طµط§ظ„ط­"));
+  if (!response.ok || payload.ok === false) throw new Error(String(payload.error ?? "رابط الطلب غير صالح"));
   return {
     token,
     ambassadorName: String(payload.ambassadorName ?? ""),
@@ -172,22 +191,49 @@ const orderStatuses: OrderStatus[] = ["pending", "processing", "shipped", "postp
 
 const statusFromProvider = (value: unknown): OrderStatus | null => {
   const status = String(value ?? "").trim().toLowerCase().replace(/[\s-]+/g, "_");
-  if (["postponed", "deferred", "delayed", "rescheduled", "on_hold", "hold", "ظ…ط¤ط¬ظ„", "ظ…ط¤ط¬ظ„ط©", "ظ…ط¤ط¬ظ„ظ‡"].includes(status)) return "postponed";
-  if (["canceled", "cancelled", "deleted", "ظ…ظ„ط؛ظٹ", "ظ…ظ„ط؛ظٹط©", "ظ…ظ„ط؛ظ‰", "ظ…ظ„ط؛ط§ط©"].includes(status)) return "canceled";
+  if (["postponed", "deferred", "delayed", "rescheduled", "on_hold", "hold", "مؤجل", "مؤجلة", "مؤجله"].includes(status)) return "postponed";
+  if (["canceled", "cancelled", "deleted", "ملغي", "ملغية", "ملغى", "ملغاة"].includes(status)) return "canceled";
   if (["returning", "return_in_progress"].includes(status)) return "returning";
   if (["returned", "return_completed"].includes(status)) return "returned";
-  if (["shipped", "dispatched", "out_for_delivery", "in_transit", "picked_up"].includes(status)) return "shipped";
+  if (["shipped", "dispatched", "out_for_delivery", "in_transit", "picked_up", "processing"].includes(status)) return "shipped";
   if (["completed", "released", "delivered"].includes(status)) return "delivered";
-  if (["processing", "booked", "assigned", "accepted"].includes(status)) return "processing";
+  if (["booked", "assigned", "accepted", "confirmed", "received"].includes(status)) return "processing";
   if (status === "pending") return "pending";
   return null;
 };
 
+const forwardChain: OrderStatus[] = ["pending", "processing", "shipped", "delivered"];
+
+// Darb Al Sabeel leaves a shipment "pending" after a branch booked or picked it
+// up, so timeline events decide the furthest step the customer has reached.
+const eventStep: Record<string, OrderStatus> = {
+  booked: "processing",
+  accepted: "processing",
+  referenced: "processing",
+  assigned: "shipped",
+  picked_up: "shipped",
+  shipped: "shipped",
+  out_for_delivery: "shipped",
+  in_transit: "shipped",
+  delivered: "delivered",
+  completed: "delivered",
+};
+
 const normalizedOrderStatus = (value: unknown, delivery?: ExternalDeliveryTracking): OrderStatus => {
   const providerStatus = statusFromProvider(delivery?.providerStatus ?? delivery?.status);
-  if (providerStatus) return providerStatus;
-  const status = String(value ?? "pending") as OrderStatus;
-  return orderStatuses.includes(status) ? status : "pending";
+  if (providerStatus && !forwardChain.includes(providerStatus)) return providerStatus;
+
+  const fallback = String(value ?? "pending") as OrderStatus;
+  const local = orderStatuses.includes(fallback) ? fallback : "pending";
+  const base = providerStatus ?? (forwardChain.includes(local) ? local : null);
+  if (!base) return local;
+
+  let furthest = forwardChain.indexOf(base);
+  for (const event of delivery?.timeline ?? []) {
+    const step = eventStep[String(event.type ?? "").trim().toLowerCase().replace(/[\s-]+/g, "_")];
+    if (step) furthest = Math.max(furthest, forwardChain.indexOf(step));
+  }
+  return forwardChain[furthest];
 };
 
 const normalizeDeliveryTracking = (value: unknown): ExternalDeliveryTracking => {
@@ -200,6 +246,7 @@ const normalizeDeliveryTracking = (value: unknown): ExternalDeliveryTracking => 
     referenceCode: source.referenceCode == null ? undefined : String(source.referenceCode),
     providerStatus: source.providerStatus == null ? undefined : String(source.providerStatus),
     syncStatus: source.syncStatus == null ? undefined : String(source.syncStatus),
+    lastError: source.lastError == null ? undefined : String(source.lastError),
     lastSyncAtMs: source.lastSyncAtMs == null ? undefined : Number(source.lastSyncAtMs),
     timeline: Array.isArray(source.timeline) ? source.timeline.map((raw) => {
       const event = record(raw);
@@ -234,7 +281,7 @@ export async function fetchCustomerOrders(idToken: string, signal?: AbortSignal)
     headers: { Accept: "application/json", Authorization: `Bearer ${idToken}` },
   });
   const payload = (await response.json().catch(() => ({}))) as Record<string, unknown>;
-  if (!response.ok || payload.ok === false) throw new Error(String(payload.error ?? "طھط¹ط°ط± طھط­ظ…ظٹظ„ ط·ظ„ط¨ط§طھ ط§ظ„ط­ط³ط§ط¨"));
+  if (!response.ok || payload.ok === false) throw new Error(String(payload.error ?? "تعذر تحميل طلبات الحساب"));
   return Array.isArray(payload.items) ? payload.items.map<SavedCustomerOrder>((value) => {
     const row = record(value);
     const externalDelivery = normalizeDeliveryTracking(row.externalDelivery);
@@ -259,7 +306,7 @@ async function cancelOwnedOrder(kind: "customers" | "ambassadors", orderId: stri
   });
   const payload = (await response.json().catch(() => ({}))) as Record<string, unknown>;
   if (!response.ok || payload.ok === false) {
-    throw new Error(String(payload.error ?? "طھط¹ط°ط± ط¥ظ„ط؛ط§ط، ط§ظ„ط·ظ„ط¨ ط§ظ„ط¢ظ†"));
+    throw new Error(String(payload.error ?? "تعذر إلغاء الطلب الآن"));
   }
 }
 
@@ -279,7 +326,7 @@ const normalizeOrderItems = (value: unknown) => (Array.isArray(value) ? value : 
   return {
     productId: String(line.productId ?? line.id ?? ""),
     productCode: line.productCode == null ? undefined : String(line.productCode),
-    name: String(line.name ?? line.title ?? "ظ…ظˆط¯ظٹظ„ ط¨ط¯ظˆظ† ط§ط³ظ…"),
+    name: String(line.name ?? line.title ?? "موديل بدون اسم"),
     imageUrl: line.imageUrl == null ? undefined : String(line.imageUrl),
     size: line.size == null ? undefined : cleanOption(line.size),
     length: line.length == null ? undefined : cleanOption(line.length),
@@ -337,7 +384,7 @@ export async function fetchAmbassadorOrders(idToken: string, uid: string, signal
   }
   const payload = (await response.json().catch(() => ({}))) as Record<string, unknown>;
   if (!response.ok || payload.ok === false) {
-    throw new Error(String(payload.error ?? "طھط¹ط°ط± طھط­ظ…ظٹظ„ ظ„ظˆط­ط© ط§ظ„ظ…ظ†ط¯ظˆط¨ط©"));
+    throw new Error(String(payload.error ?? "تعذر تحميل لوحة المندوبة"));
   }
   return Array.isArray(payload.items)
     ? payload.items.map(normalizeAmbassadorOrder).filter((item) => item.orderId)
@@ -379,7 +426,7 @@ async function ambassadorWithdrawalRequest(method: "GET" | "POST", idToken: stri
   });
   const payload = (await response.json().catch(() => ({}))) as Record<string, unknown>;
   if (!response.ok || payload.ok === false) {
-    throw new Error(String(payload.error ?? "طھط¹ط°ط± طھط­ط¯ظٹط« ط¨ظٹط§ظ†ط§طھ ط§ظ„ط³ط­ط¨"));
+    throw new Error(String(payload.error ?? "تعذر تحديث بيانات السحب"));
   }
   return normalizeWithdrawalSummary(payload);
 }

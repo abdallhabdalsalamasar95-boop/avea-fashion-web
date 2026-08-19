@@ -11,7 +11,7 @@ declare global {
 }
 
 type BrowserLabel = "Chrome" | "Edge" | "Firefox" | "Safari" | "المتصفح";
-const APP_BASE_URL = process.env.NEXT_PUBLIC_APP_URL || "https://karla.onrender.com";
+const APP_BASE_URL = process.env.NEXT_PUBLIC_APP_URL || "https://avea-fashion-web.onrender.com";
 const ANDROID_APK_URL = `${APP_BASE_URL}/avea-fashion.apk`;
 
 function detectBrowserLabel(): BrowserLabel {

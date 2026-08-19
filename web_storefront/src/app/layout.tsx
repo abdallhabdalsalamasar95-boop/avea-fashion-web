@@ -19,7 +19,7 @@ const cairo = Cairo({
   variable: "--font-cairo",
 });
 
-const APP_URL = process.env.NEXT_PUBLIC_APP_URL || "https://karla.onrender.com";
+const APP_URL = process.env.NEXT_PUBLIC_APP_URL || "https://avea-fashion-web.onrender.com";
 
 export const viewport = {
   width: "device-width",

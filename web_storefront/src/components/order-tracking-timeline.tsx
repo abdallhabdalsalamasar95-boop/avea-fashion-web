@@ -5,8 +5,8 @@ import { ExternalDeliveryTracking, OrderStatus } from "@/lib/types";
 
 const statusLabels: Record<OrderStatus, string> = {
   pending: "قيد الانتظار",
-  processing: "تحت المعالجة",
-  shipped: "في التوصيل",
+  processing: "تم القبول",
+  shipped: "قيد التوصيل",
   postponed: "مؤجلة",
   delivered: "تم التوصيل",
   canceled: "ملغي",
@@ -16,8 +16,8 @@ const statusLabels: Record<OrderStatus, string> = {
 
 const forwardSteps: Array<{ status: OrderStatus; label: string }> = [
   { status: "pending", label: "قيد الانتظار" },
-  { status: "processing", label: "تحت المعالجة" },
-  { status: "shipped", label: "في التوصيل" },
+  { status: "processing", label: "تم القبول" },
+  { status: "shipped", label: "قيد التوصيل" },
   { status: "delivered", label: "تم التوصيل" },
 ];
 
@@ -41,7 +41,7 @@ export function OrderTrackingTimeline({ status, delivery, compact = false, order
     </header>
     {status !== "canceled" && <div className={`tracking-steps${isReturn ? " return-path" : ""}${isInterrupted ? " interrupted" : ""}`}>
       {steps.map((step, index) => {
-        const active = index <= currentRank && status !== "canceled";
+        const active = index <= currentRank;
         const current = step.status === status;
         return <div className={`${active ? "active" : ""}${current ? " current" : ""}`} key={step.status}>
           <i>{active ? <Check /> : step.status === "returned" || step.status === "returning" ? <RotateCcw /> : index === 3 ? <PackageCheck /> : <Clock3 />}</i>
