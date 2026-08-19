@@ -1,1 +1,9 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><rect width="64" height="64" rx="14" fill="#873653"/><text x="32" y="45" text-anchor="middle" font-family="Georgia,serif" font-size="42" fill="#fff">A</text></svg>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="Carmen Karla">
+  <rect width="512" height="512" rx="104" fill="#141414"/>
+  <g fill="none" stroke="#DDB489" stroke-width="20" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M248.7 192.1 A78 78 0 1 0 248.7 319.9"/>
+    <path d="M318 170 L318 342"/>
+    <path d="M318 256 L386 170"/>
+    <path d="M318 256 L386 342"/>
+  </g>
+</svg>
