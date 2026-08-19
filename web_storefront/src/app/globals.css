@@ -1288,3 +1288,8 @@ body {
 
 
 
+
+.brand-logo{display:flex;align-items:center;gap:0;padding:0}
+.brand-logo img{height:38px;width:auto;display:block}
+@media (max-width:640px){.brand-logo img{height:30px}}
+

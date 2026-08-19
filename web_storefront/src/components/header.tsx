@@ -53,9 +53,8 @@ export function Header() {
       </div>}
       <div className="nav-shell container">
         <AppInstallPrompt />
-        <Link className="brand" href="/" aria-label="كارمن كارلا الرئيسية">
-          <span>CK</span>
-          <small>KARLA</small>
+        <Link className="brand brand-logo" href="/" aria-label="كارمن كارلا الرئيسية">
+          <img src="/logo-wide.png" alt="Carmen Karla" />
         </Link>
         <nav className="nav-links">
           {links.map(([href, label]) => <Link key={href} href={href}>{label}</Link>)}
