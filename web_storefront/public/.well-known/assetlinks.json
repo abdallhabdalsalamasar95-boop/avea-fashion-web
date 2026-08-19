@@ -1,0 +1,12 @@
+[
+  {
+    "relation": ["delegate_permission/common.handle_all_urls"],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "ly.carmenkarla.shop",
+      "sha256_cert_fingerprints": [
+        "94:79:21:CE:97:AA:BA:F3:AA:08:A9:2D:C3:DB:18:5E:B3:04:1B:15:3B:89:A1:2F:F7:0B:37:05:CC:44:E0:77"
+      ]
+    }
+  }
+]
