@@ -102,7 +102,8 @@ export async function fetchProducts(signal?: AbortSignal): Promise<Product[]> {
   return rows
     .filter((row): row is Record<string, unknown> => Boolean(row && typeof row === "object"))
     .map(normalizeProduct)
-    .filter((product) => product.id);
+    // A product with no price would otherwise be orderable for 0 د.ل.
+    .filter((product) => product.id && product.price > 0);
 }
 
 export async function fetchAppContent(signal?: AbortSignal): Promise<AppContent> {

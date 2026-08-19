@@ -92,6 +92,13 @@ function ProductDetails() {
   if (loading) return <div className="page-loading">جاري تحميل تفاصيل القطعة...</div>;
   if (!product) return <div className="empty-state standalone"><h3>المنتج غير موجود</h3><Link className="secondary-button" href="/">العودة للمتجر</Link></div>;
   const gallery = product.imageUrls.length ? product.imageUrls : product.imageUrl ? [product.imageUrl] : [];
+  // Sizes arrive in the order the admin typed them, so present them ascending.
+  const sortedSizes = [...product.sizes].sort((a, b) => {
+    const left = Number(a);
+    const right = Number(b);
+    if (Number.isFinite(left) && Number.isFinite(right)) return left - right;
+    return a.localeCompare(b, "ar");
+  });
   const galleryIndex = gallery.indexOf(image) >= 0 ? gallery.indexOf(image) : 0;
   const nextImage = () => gallery.length > 1 && setImage(gallery[(galleryIndex + 1) % gallery.length]);
   const prevImage = () => gallery.length > 1 && setImage(gallery[(galleryIndex - 1 + gallery.length) % gallery.length]);
@@ -161,7 +168,7 @@ function ProductDetails() {
         <div className="detail-price"><strong>{product.price} د.ل</strong>{product.oldPrice && product.oldPrice > product.price && <del>{product.oldPrice} د.ل</del>}</div>
         {ambassador && !referralToken && <div className="detail-commission"><CircleDollarSign /><span><small>عمولتك على القطعة</small><strong>{lineCommission({ ...product, quantity: 1 }, commission).toFixed(2)} د.ل</strong></span><em>{commissionRate(product, commission)}%</em></div>}
         {product.description && <p className="description">{product.description}</p>}
-        {product.sizes.length > 0 && <Option title="المقاس" items={product.sizes} value={size} onChange={changeSize} quantities={product.sizeQuantities} onOpenSizeGuide={() => setShowSizeGuide(true)} />}
+        {product.sizes.length > 0 && <Option title="المقاس" items={sortedSizes} value={size} onChange={changeSize} quantities={product.sizeQuantities} onOpenSizeGuide={() => setShowSizeGuide(true)} />}
         {selectedSizeStock !== undefined && selectedSizeStock > 0 && selectedSizeStock <= 3 && <div className="urgency-badge"><Flame /><span>متبقي {selectedSizeStock === 1 ? "قطعة واحدة فقط" : `${selectedSizeStock} قطع فقط`} من هذا المقاس!</span></div>}
         {!size && !soldOut && product.availableStock !== undefined && product.availableStock > 0 && product.availableStock <= 3 && <div className="urgency-badge"><Flame /><span>كمية محدودة جدًا متوفرة الآن!</span></div>}
         {product.lengths.length > 0 && <Option title="الطول" items={product.lengths} value={length} onChange={setLength} />}
