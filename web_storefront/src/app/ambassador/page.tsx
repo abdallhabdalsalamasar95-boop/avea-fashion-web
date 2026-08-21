@@ -22,7 +22,7 @@ export default function AmbassadorPage() {
       <div className="container ambassador-hero-grid">
         <div className="ambassador-hero-copy">
           <span><Sparkles /> فرصة عمل مرنة مع Carmen Karla</span>
-          <h1>كوني مندوبة مبيعات<br />وابني دخلك بطريقتك</h1>
+          <h1>كن مندوب مبيعات<br />وابنِ دخلك بطريقتك</h1>
           <p>شاركي منتجات كارمن كارلا مع عميلاتك، واكسبي عمولتك عند نجاح التوصيل.</p>
           <div className="ambassador-hero-actions">
             <a className="ambassador-primary" href="#join">انضمي الآن <ArrowLeft /></a>

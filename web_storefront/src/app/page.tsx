@@ -1,10 +1,11 @@
 ﻿"use client";
 
 import Link from "next/link";
-import { ArrowLeft, ChevronDown, RefreshCw, Search, ShieldCheck, Sparkles, Truck } from "lucide-react";
+import { ArrowLeft, BadgeCheck, ChevronDown, RefreshCw, Search, ShieldCheck, Sparkles, Truck } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { ProductCard } from "@/components/product-card";
-import { fetchAppContent, fetchProducts } from "@/lib/api";
+import { fetchAmbassadorShare, fetchAppContent, fetchProducts } from "@/lib/api";
+import { decodeAmbassadorNameFromShareToken, readAmbassadorShare, saveAmbassadorShare, seedAmbassadorShareToken } from "@/lib/ambassador-share";
 import { AppContent, Product } from "@/lib/types";
 import { useSiteAppearance } from "@/components/site-appearance-provider";
 
@@ -19,6 +20,24 @@ export default function Home() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [retry, setRetry] = useState(0);
+  const [sharedBy, setSharedBy] = useState("");
+
+  useEffect(() => {
+    const referralToken = new URLSearchParams(window.location.search).get("ref")?.trim();
+    if (!referralToken) {
+      setSharedBy(readAmbassadorShare()?.ambassadorName ?? "");
+      return;
+    }
+    seedAmbassadorShareToken(referralToken);
+    const controller = new AbortController();
+    fetchAmbassadorShare(referralToken, controller.signal)
+      .then((share) => {
+        saveAmbassadorShare(share);
+        setSharedBy(share.ambassadorName);
+      })
+      .catch(() => setSharedBy(decodeAmbassadorNameFromShareToken(referralToken)));
+    return () => controller.abort();
+  }, []);
 
   useEffect(() => {
     const controller = new AbortController();
@@ -65,6 +84,12 @@ export default function Home() {
 
   return (
     <>
+      {sharedBy && <section className="container homepage-partner-card" aria-label={`الشريك ${sharedBy}`}>
+        <span className="partner-mark">CK</span>
+        <span><small>أهلًا بكِ في اختيار شريك Carmen Karla</small><strong>{sharedBy}</strong><em>تسوّقي بثقة — تم ترشيح هذه التشكيلة لكِ بعناية</em></span>
+        <BadgeCheck />
+      </section>}
+
       {bannerVisible && <section className="managed-hero">
         <a href={managedBanner?.linkUrl?.trim() || "#collection"} aria-label={managedBanner?.altText || "تسوّقي من كارمن كارلا"}>
           <img src={bannerImage} alt={managedBanner?.altText || "بانر كارمن كارلا"} />

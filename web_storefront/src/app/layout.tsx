@@ -24,8 +24,10 @@ const APP_URL = process.env.NEXT_PUBLIC_APP_URL || "https://avea-fashion-web.onr
 export const viewport = {
   width: "device-width",
   initialScale: 1,
+  maximumScale: 1,
+  userScalable: false,
   viewportFit: "cover",
-  themeColor: "#0f172a",
+  themeColor: "#fffaf7",
 };
 
 export const metadata: Metadata = {
@@ -36,7 +38,7 @@ export const metadata: Metadata = {
   keywords: ["أزياء نسائية", "فساتين", "عبايات", "ليبيا", "Carmen Karla", "كارمن كارلا"],
   icons: { icon: "/icon-192.png", apple: "/apple-touch-icon.png" },
   manifest: "/manifest.webmanifest",
-  appleWebApp: { capable: true, title: "Carmen Karla", statusBarStyle: "default" },
+  appleWebApp: { capable: true, title: "Carmen Karla", statusBarStyle: "black-translucent" },
   openGraph: {
     title: "Carmen Karla",
     description: "أناقتك، بطريقتك",

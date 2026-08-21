@@ -4,6 +4,7 @@ import Link from "next/link";
 import { ArrowLeft, BadgeCheck, Clock3, Landmark, PackageCheck, Pencil, Phone, RefreshCw, ShoppingBag, TrendingUp, UserRound, WalletCards } from "lucide-react";
 import { FormEvent, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { AuthPanel } from "@/components/auth-panel";
+import { AmbassadorShareButton } from "@/components/ambassador-share-button";
 import { OrderCard } from "@/components/order-card";
 import { useAuth } from "@/components/auth-provider";
 import { getAmbassadorProfile, saveAmbassadorProfile, validPhone } from "@/lib/ambassador-profile";
@@ -190,10 +191,14 @@ export function AmbassadorPortal() {
   return <div className="ambassador-dashboard">
     <header className="ambassador-dashboard-head">
       <div><span><BadgeCheck /> حساب مندوبة نشط</span><h2>مرحبًا، {profile.ambassadorName}</h2><p>تابعي مبيعاتك وعمولاتك وحالة كل طلب من مكان واحد.</p></div>
-      <div><button disabled={ordersLoading} onClick={() => void loadDashboard()}><RefreshCw className={ordersLoading ? "spin" : ""} /> {ordersLoading ? "جاري التحديث" : "تحديث"}</button><button onClick={() => setEditing(true)}><Pencil /> تعديل الملف</button><Link href="/#collection">طلب جديد لعميلة <ArrowLeft /></Link></div>
+      <div><AmbassadorShareButton className="ambassador-dashboard-share" buildPath={(token) => `/?ref=${encodeURIComponent(token)}`} title="مشاركة رابط المتجر الرئيسي" text={`تسوّقي من Carmen Karla عن طريق شريكتنا المعتمدة ${profile.ambassadorName}.`} label="مشاركة رابط المتجر الرئيسي" /><button disabled={ordersLoading} onClick={() => void loadDashboard()}><RefreshCw className={ordersLoading ? "spin" : ""} /> {ordersLoading ? "جاري التحديث" : "تحديث"}</button><button onClick={() => setEditing(true)}><Pencil /> تعديل الملف</button><Link href="/#collection">طلب جديد لعميلة <ArrowLeft /></Link></div>
     </header>
 
     {error && <p className="ambassador-error">{error}</p>}
+    <section className="ambassador-referral-card">
+      <div><span><BadgeCheck /> رابط شراكتك</span><h3>شاركي المتجر باسمك</h3><p>أي زبونة تفتح الرابط وتطلب، يظهر لها اسمك في الصفحة الرئيسية وتُسجّل العمولة في حسابك تلقائيًا.</p></div>
+      <AmbassadorShareButton buildPath={(token) => `/?ref=${encodeURIComponent(token)}`} title="مشاركة رابط المتجر الرئيسي" text={`تسوّقي من Carmen Karla عن طريق شريكتنا المعتمدة ${profile.ambassadorName}.`} label="مشاركة رابط المتجر الرئيسي" />
+    </section>
     <div className="ambassador-stat-grid">
       <article><span><TrendingUp /></span><small>إجمالي المبيعات</small><strong>{stats.sales.toFixed(2)} د.ل</strong><em>{orders.length} طلب</em></article>
       <article className="earned"><span><WalletCards /></span><small>إجمالي أرباحك</small><strong>{stats.totalCommission.toFixed(2)} د.ل</strong><em>من كل الطلبات النشطة</em></article>

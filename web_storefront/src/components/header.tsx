@@ -16,7 +16,7 @@ const links = [
   ["/", "الرئيسية"],
   ["/#collection", "المتجر"],
   ["/favorites/", "المفضلة"],
-  ["/ambassador/", "مندوبة مبيعات"],
+  ["/ambassador/", "مندوب مبيعات"],
   ["/account/", "حسابي وطلباتي"],
   ["/#about", "عن كارمن كارلا"],
 ];
@@ -75,7 +75,7 @@ export function Header() {
     <nav className="mobile-bottom-nav" aria-label="التنقل السريع">
       <Link className={pathname === "/" ? "active" : ""} href="/"><Home /><span>الرئيسية</span></Link>
       <Link href="/#collection"><Store /><span>المتجر</span></Link>
-      <Link className={pathname.startsWith("/ambassador") ? "active" : ""} href="/ambassador/"><BadgePercent /><span>المندوبات</span></Link>
+      <Link className={pathname.startsWith("/ambassador") ? "active" : ""} href="/ambassador/"><BadgePercent /><span>المندوبين</span></Link>
       <Link className={pathname.startsWith("/cart") || pathname.startsWith("/checkout") ? "active count-anchor" : "count-anchor"} href="/cart/" data-cart-target="mobile"><ShoppingBag />{cartCount > 0 && <b>{cartCount}</b>}<span>السلة</span></Link>
       <Link className={pathname.startsWith("/account") ? "active" : ""} href="/account/"><UserRound /><span>حسابي</span></Link>
     </nav></>

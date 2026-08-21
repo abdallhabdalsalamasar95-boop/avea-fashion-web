@@ -1,6 +1,20 @@
 import { AmbassadorShare, CartItem, SharedCartSelection } from "@/lib/types";
 
 export const AMBASSADOR_SHARE_SESSION_KEY = "avea.web.ambassador-share.v1";
+const AMBASSADOR_SHARE_FALLBACK_TTL_SECONDS = 7 * 24 * 60 * 60;
+
+const getStorage = (): Storage | null => {
+  if (typeof window === "undefined") return null;
+  try {
+    return window.localStorage;
+  } catch {
+    try {
+      return window.sessionStorage;
+    } catch {
+      return null;
+    }
+  }
+};
 
 const toBase64Url = (value: string): string => {
   const bytes = new TextEncoder().encode(value);
@@ -15,6 +29,17 @@ const fromBase64Url = (value: string): string => {
   const bytes = Uint8Array.from(binary, (character) => character.charCodeAt(0));
   return new TextDecoder().decode(bytes);
 };
+
+export function decodeAmbassadorNameFromShareToken(token: string): string {
+  try {
+    const body = String(token || "").trim().split(".", 1)[0] || "";
+    if (!body) return "";
+    const parsed = JSON.parse(fromBase64Url(body)) as Record<string, unknown>;
+    return String(parsed?.name ?? "").trim();
+  } catch {
+    return "";
+  }
+}
 
 export function encodeSharedCart(cart: CartItem[]): string {
   const selections: SharedCartSelection[] = cart.map((item) => ({
@@ -50,23 +75,57 @@ export function decodeSharedCart(value: string): SharedCartSelection[] {
 }
 
 export function saveAmbassadorShare(share: AmbassadorShare): void {
-  sessionStorage.setItem(AMBASSADOR_SHARE_SESSION_KEY, JSON.stringify(share));
+  const token = String(share?.token ?? "").trim();
+  if (!token) return;
+  const storage = getStorage();
+  if (!storage) return;
+  const previous = readAmbassadorShare();
+  const ambassadorName = String(share?.ambassadorName ?? "").trim() || previous?.ambassadorName || "";
+  const expiresAt = Number(share?.expiresAt ?? 0) > 0
+    ? Number(share.expiresAt)
+    : (previous?.expiresAt ?? Math.floor(Date.now() / 1000) + AMBASSADOR_SHARE_FALLBACK_TTL_SECONDS);
+  storage.setItem(AMBASSADOR_SHARE_SESSION_KEY, JSON.stringify({ token, ambassadorName, expiresAt }));
+}
+
+/**
+ * Store a referral token immediately so checkout attribution is never lost
+ * while the verification request is still in-flight.
+ */
+export function seedAmbassadorShareToken(token: string): void {
+  const clean = String(token || "").trim();
+  if (!clean) return;
+  const hintedName = decodeAmbassadorNameFromShareToken(clean);
+  saveAmbassadorShare({
+    token: clean,
+    ambassadorName: readAmbassadorShare()?.ambassadorName || hintedName,
+    expiresAt: Math.floor(Date.now() / 1000) + AMBASSADOR_SHARE_FALLBACK_TTL_SECONDS,
+  });
 }
 
 export function readAmbassadorShare(): AmbassadorShare | null {
   try {
-    const share = JSON.parse(sessionStorage.getItem(AMBASSADOR_SHARE_SESSION_KEY) || "null") as AmbassadorShare | null;
-    if (!share?.token || !share.ambassadorName || share.expiresAt * 1000 < Date.now()) {
-      sessionStorage.removeItem(AMBASSADOR_SHARE_SESSION_KEY);
+    const storage = getStorage();
+    if (!storage) return null;
+    const share = JSON.parse(storage.getItem(AMBASSADOR_SHARE_SESSION_KEY) || "null") as AmbassadorShare | null;
+    const token = String(share?.token ?? "").trim();
+    const expiresAt = Number(share?.expiresAt ?? 0);
+    if (!token || !expiresAt || expiresAt * 1000 < Date.now()) {
+      storage.removeItem(AMBASSADOR_SHARE_SESSION_KEY);
       return null;
     }
-    return share;
+    return {
+      token,
+      ambassadorName: String(share?.ambassadorName ?? "").trim(),
+      expiresAt,
+    };
   } catch {
-    sessionStorage.removeItem(AMBASSADOR_SHARE_SESSION_KEY);
+    const storage = getStorage();
+    storage?.removeItem(AMBASSADOR_SHARE_SESSION_KEY);
     return null;
   }
 }
 
 export function clearAmbassadorShare(): void {
-  sessionStorage.removeItem(AMBASSADOR_SHARE_SESSION_KEY);
+  const storage = getStorage();
+  storage?.removeItem(AMBASSADOR_SHARE_SESSION_KEY);
 }

@@ -141,6 +141,24 @@ export async function fetchDeliveryDestinations(signal?: AbortSignal): Promise<R
   );
 }
 
+export async function fetchShippingCost(
+  city: string,
+  area: string,
+  signal?: AbortSignal,
+): Promise<{ amount: number; source: "api" | "fallback"; providerAvailable: boolean }> {
+  const payload = record(
+    await getJson(
+      `/delivery/darb-sabeel/shipping-cost?city=${encodeURIComponent(city)}&area=${encodeURIComponent(area)}`,
+      signal,
+    ),
+  );
+  return {
+    amount: Number(payload.amount ?? 0),
+    source: String(payload.source ?? "fallback") === "api" ? "api" : "fallback",
+    providerAvailable: payload.providerAvailable === true,
+  };
+}
+
 export async function submitOrder(order: Record<string, unknown>, idToken?: string): Promise<{ orderId: string; trackingToken: string }> {
   const response = await fetch(`${API_BASE_URL}/orders`, {
     method: "POST",
@@ -384,7 +402,7 @@ export async function fetchAmbassadorOrders(idToken: string, uid: string, signal
   }
   const payload = (await response.json().catch(() => ({}))) as Record<string, unknown>;
   if (!response.ok || payload.ok === false) {
-    throw new Error(String(payload.error ?? "تعذر تحميل لوحة المندوبة"));
+    throw new Error(String(payload.error ?? "تعذر تحميل لوحة المندوب"));
   }
   return Array.isArray(payload.items)
     ? payload.items.map(normalizeAmbassadorOrder).filter((item) => item.orderId)

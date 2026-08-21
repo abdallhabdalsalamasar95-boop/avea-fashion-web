@@ -9,7 +9,7 @@ import { AmbassadorShareButton } from "@/components/ambassador-share-button";
 import { ProductImage } from "@/components/product-image";
 import { useStore } from "@/components/store-provider";
 import { fetchAmbassadorShare, fetchProducts } from "@/lib/api";
-import { saveAmbassadorShare } from "@/lib/ambassador-share";
+import { decodeAmbassadorNameFromShareToken, readAmbassadorShare, saveAmbassadorShare, seedAmbassadorShareToken } from "@/lib/ambassador-share";
 import { commissionRate, lineCommission } from "@/lib/commission";
 import { animateProductToCart } from "@/lib/cart-animation";
 import { Product } from "@/lib/types";
@@ -81,11 +81,15 @@ function ProductDetails() {
   }, [id]);
 
   useEffect(() => {
-    if (!referralToken) return;
+    if (!referralToken) {
+      setSharedBy(readAmbassadorShare()?.ambassadorName ?? "");
+      return;
+    }
+    seedAmbassadorShareToken(referralToken);
     const controller = new AbortController();
     fetchAmbassadorShare(referralToken, controller.signal)
       .then((share) => { saveAmbassadorShare(share); setSharedBy(share.ambassadorName); })
-      .catch(() => setSharedBy(""));
+      .catch(() => setSharedBy(decodeAmbassadorNameFromShareToken(referralToken)));
     return () => controller.abort();
   }, [referralToken]);
 
@@ -114,7 +118,7 @@ function ProductDetails() {
     : undefined;
   const shareLabel = ambassador ? "شاركي مع عميلاتك" : "مشاركة المنتج";
   const shareText = ambassador
-    ? `اختيار خاص لكِ من شريكة Carmen Karla المعتمدة ${ambassador.ambassadorName}. راجعي ${product.name} وأكملي طلبك بسهولة.`
+    ? `اختيار خاص لكِ من شريك Carmen Karla المعتمد ${ambassador.ambassadorName}. راجعي ${product.name} وأكملي طلبك بسهولة.`
     : `شاهدي ${product.name} على متجر Carmen Karla.`;
 
   const changeSize = (nextSize: string) => {
@@ -161,7 +165,7 @@ function ProductDetails() {
         {gallery.length > 1 && <div className="thumbs">{gallery.map((src) => <button className={src === image ? "active" : ""} onClick={() => setImage(src)} key={src}><ProductImage src={src} alt={product.name} /></button>)}</div>}
       </div>
       <div className="detail-info">
-        {sharedBy && <div className="shared-product-note partner-signature"><span className="partner-mark">CK</span><span><small>اختيار خاص من شريكة Carmen Karla المعتمدة</small><strong>{sharedBy}</strong><em>اختارت لكِ هذه القطعة بعناية</em></span><Check /></div>}
+        {sharedBy && <div className="shared-product-note partner-signature"><span className="partner-mark">CK</span><span><small>اختيار خاص من شريك Carmen Karla المعتمد</small><strong>{sharedBy}</strong><em>اختار لكِ هذه القطعة بعناية</em></span><Check /></div>}
         <span className="detail-category">{product.category}</span>
         <h1>{product.name}</h1>
         {product.productCode && <small>رمز المنتج: {product.productCode}</small>}
