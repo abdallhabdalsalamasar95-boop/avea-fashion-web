@@ -191,13 +191,13 @@ export function AmbassadorPortal() {
   return <div className="ambassador-dashboard">
     <header className="ambassador-dashboard-head">
       <div><span><BadgeCheck /> حساب مندوبة نشط</span><h2>مرحبًا، {profile.ambassadorName}</h2><p>تابعي مبيعاتك وعمولاتك وحالة كل طلب من مكان واحد.</p></div>
-      <div><AmbassadorShareButton className="ambassador-dashboard-share" buildPath={(token) => `/?ref=${encodeURIComponent(token)}`} title="مشاركة رابط المتجر الرئيسي" text={`تسوّقي من Carmen Karla عن طريق شريكتنا المعتمدة ${profile.ambassadorName}.`} label="مشاركة رابط المتجر الرئيسي" /><button disabled={ordersLoading} onClick={() => void loadDashboard()}><RefreshCw className={ordersLoading ? "spin" : ""} /> {ordersLoading ? "جاري التحديث" : "تحديث"}</button><button onClick={() => setEditing(true)}><Pencil /> تعديل الملف</button><Link href="/#collection">طلب جديد لعميلة <ArrowLeft /></Link></div>
+      <div><button disabled={ordersLoading} onClick={() => void loadDashboard()}><RefreshCw className={ordersLoading ? "spin" : ""} /> {ordersLoading ? "جاري التحديث" : "تحديث"}</button><button onClick={() => setEditing(true)}><Pencil /> تعديل الملف</button><Link href="/#collection">طلب جديد لعميلة <ArrowLeft /></Link></div>
     </header>
 
     {error && <p className="ambassador-error">{error}</p>}
     <section className="ambassador-referral-card">
       <div><span><BadgeCheck /> رابط شراكتك</span><h3>شاركي المتجر باسمك</h3><p>أي زبونة تفتح الرابط وتطلب، يظهر لها اسمك في الصفحة الرئيسية وتُسجّل العمولة في حسابك تلقائيًا.</p></div>
-      <AmbassadorShareButton buildPath={(token) => `/?ref=${encodeURIComponent(token)}`} title="مشاركة رابط المتجر الرئيسي" text={`تسوّقي من Carmen Karla عن طريق شريكتنا المعتمدة ${profile.ambassadorName}.`} label="مشاركة رابط المتجر الرئيسي" />
+      <AmbassadorShareButton buildPath={(token) => `/?ref=${encodeURIComponent(token)}`} title="شاركي واربحِي" text={`تسوّقي من Carmen Karla عن طريق شريكتنا المعتمدة ${profile.ambassadorName}.`} label="شاركي واربحِي" />
     </section>
     <div className="ambassador-stat-grid">
       <article><span><TrendingUp /></span><small>إجمالي المبيعات</small><strong>{stats.sales.toFixed(2)} د.ل</strong><em>{orders.length} طلب</em></article>

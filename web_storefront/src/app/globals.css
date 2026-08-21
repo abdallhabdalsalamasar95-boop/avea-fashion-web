@@ -671,7 +671,6 @@ body { background:#fffaf7; }
 
 /* Professional sales representative program */
 .ambassador-home{padding:82px 0;background:radial-gradient(circle at 10% 20%,rgba(210,175,96,.16),transparent 28%),linear-gradient(125deg,#151015,#38202b 58%,#713047);color:#fff;position:relative;overflow:hidden}
-.ambassador-home:before{content:"AVEA";position:absolute;left:-30px;bottom:-65px;color:rgba(255,255,255,.035);font:190px Georgia,serif;letter-spacing:14px}
 .ambassador-home-grid{display:grid;grid-template-columns:1.08fr .92fr;gap:78px;align-items:center;position:relative}
 .ambassador-kicker,.ambassador-hero-copy>span{color:#e5c77f;display:flex;align-items:center;gap:8px;font-size:12px;font-weight:800}
 .ambassador-kicker svg,.ambassador-hero-copy>span svg{width:17px}
