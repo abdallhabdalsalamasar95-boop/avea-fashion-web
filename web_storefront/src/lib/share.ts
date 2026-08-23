@@ -1,5 +1,5 @@
 export function getAppBaseUrl(): string {
-  return (process.env.NEXT_PUBLIC_APP_URL ?? "https://avea-fashion-web.onrender.com").replace(/\/+$/, "");
+  return (process.env.NEXT_PUBLIC_APP_URL ?? "https://karmencarla.onrender.com").replace(/\/+$/, "");
 }
 
 export function openMessengerShare(url: string): void {
