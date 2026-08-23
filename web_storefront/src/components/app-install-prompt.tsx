@@ -12,7 +12,7 @@ declare global {
 
 type BrowserLabel = "Chrome" | "Edge" | "Firefox" | "Safari" | "المتصفح";
 const APP_BASE_URL = process.env.NEXT_PUBLIC_APP_URL || "https://karmencarla.onrender.com";
-const ANDROID_APK_URL = `${APP_BASE_URL}/avea-fashion.apk`;
+const ANDROID_APK_URL = `${APP_BASE_URL}/carmen-karla.apk`;
 
 function detectBrowserLabel(): BrowserLabel {
   const ua = window.navigator.userAgent.toLowerCase();
@@ -68,7 +68,7 @@ export function AppInstallPrompt() {
 
   const handleInstall = async () => {
     if (isAndroid) {
-      const chromeIntent = `intent://${new URL(APP_BASE_URL).host}/avea-fashion.apk#Intent;scheme=https;package=com.android.chrome;end`;
+      const chromeIntent = `intent://${new URL(APP_BASE_URL).host}/carmen-karla.apk#Intent;scheme=https;package=com.android.chrome;end`;
       window.location.href = chromeIntent;
       return;
     }
@@ -150,7 +150,7 @@ export function AppInstallPrompt() {
             onClick={(event) => event.stopPropagation()}
           >
             <strong style={{ display: "block", marginBottom: 8, fontSize: 15 }}>
-              {isAndroid ? "حمّلي تطبيق AVEA" : "أضيفي AVEA للشاشة الرئيسية"}
+              {isAndroid ? "حمّلي تطبيق Carmen Karla" : "أضيفي Carmen Karla للشاشة الرئيسية"}
             </strong>
 
             <p style={{ margin: "0 0 12px", color: "#75696e", lineHeight: 1.8, fontSize: 13 }}>
