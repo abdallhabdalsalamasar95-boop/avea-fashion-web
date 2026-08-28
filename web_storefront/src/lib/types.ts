@@ -159,6 +159,7 @@ export interface ExternalDeliveryTracking {
   status?: string;
   shipmentId?: string;
   trackingNumber?: string;
+  courierPhone?: string;
   referenceCode?: string;
   providerStatus?: string;
   syncStatus?: string;
@@ -239,6 +240,9 @@ export interface AmbassadorOrder {
     commissionPercent?: number;
   };
   externalDelivery?: ExternalDeliveryTracking;
+  ambassadorPhone?: string;
+  statusReason?: string;
+  statusReasonImageUrl?: string;
 }
 
 export interface AmbassadorWithdrawalRequest {

@@ -261,6 +261,7 @@ const normalizeDeliveryTracking = (value: unknown): ExternalDeliveryTracking => 
     status: source.status == null ? undefined : String(source.status),
     shipmentId: source.shipmentId == null ? undefined : String(source.shipmentId),
     trackingNumber: source.trackingNumber == null ? undefined : String(source.trackingNumber),
+    courierPhone: source.courierPhone == null ? undefined : String(source.courierPhone),
     referenceCode: source.referenceCode == null ? undefined : String(source.referenceCode),
     providerStatus: source.providerStatus == null ? undefined : String(source.providerStatus),
     syncStatus: source.syncStatus == null ? undefined : String(source.syncStatus),
@@ -390,6 +391,9 @@ const normalizeAmbassadorOrder = (value: unknown): AmbassadorOrder => {
       commissionPercent: Number(summary.commissionPercent ?? 0),
     },
     externalDelivery: normalizeDeliveryTracking(row.externalDelivery),
+    ambassadorPhone: String(row.ambassadorPhone ?? summary.ambassadorPhone ?? customer.submitterPhone ?? "") || undefined,
+    statusReason: String(row.statusReason ?? "") || undefined,
+    statusReasonImageUrl: String(row.statusReasonImageUrl ?? "") || undefined,
   };
 };
 
