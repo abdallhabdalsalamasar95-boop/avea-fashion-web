@@ -164,14 +164,13 @@ export function AmbassadorPortal() {
   }, [user, profile, editing, loadDashboard]);
 
   const stats = useMemo(() => {
-    const active = orders.filter((order) => !["canceled", "returned"].includes(order.status));
     const delivered = orders.filter((order) => order.status === "delivered");
     const pending = orders.filter((order) => !["delivered", "canceled", "returned"].includes(order.status));
     const earned = delivered.reduce((sum, order) => sum + orderCommission(order, commission.defaultPercent, commission.perProductEnabled), 0);
     const pendingCommission = pending.reduce((sum, order) => sum + orderCommission(order, commission.defaultPercent, commission.perProductEnabled), 0);
     return {
-      sales: active.reduce((sum, order) => sum + order.grandTotal, 0),
-      totalCommission: earned + pendingCommission,
+      sales: delivered.reduce((sum, order) => sum + order.grandTotal, 0),
+      totalCommission: earned,
       earned,
       pending: pendingCommission,
       delivered: delivered.length,
@@ -200,8 +199,8 @@ export function AmbassadorPortal() {
       <AmbassadorShareButton buildPath={(token) => `/?ref=${encodeURIComponent(token)}`} title="شاركي واربحِي" text={`تسوّقي من Carmen Karla عن طريق شريكتنا المعتمدة ${profile.ambassadorName}.`} label="شاركي واربحِي" />
     </section>
     <div className="ambassador-stat-grid">
-      <article><span><TrendingUp /></span><small>إجمالي المبيعات</small><strong>{stats.sales.toFixed(2)} د.ل</strong><em>{orders.length} طلب</em></article>
-      <article className="earned"><span><WalletCards /></span><small>إجمالي أرباحك</small><strong>{stats.totalCommission.toFixed(2)} د.ل</strong><em>من كل الطلبات النشطة</em></article>
+      <article><span><TrendingUp /></span><small>إجمالي المبيعات</small><strong>{stats.sales.toFixed(2)} د.ل</strong><em>{stats.delivered} طلب موصّل</em></article>
+      <article className="earned"><span><WalletCards /></span><small>إجمالي أرباحك</small><strong>{stats.totalCommission.toFixed(2)} د.ل</strong><em>من الطلبات الموصّلة فقط</em></article>
       <article><span><Clock3 /></span><small>عمولة معلقة</small><strong>{stats.pending.toFixed(2)} د.ل</strong><em>المعتمد بعد التوصيل: {stats.earned.toFixed(2)} د.ل</em></article>
       <article><span><PackageCheck /></span><small>نسبة نجاح التوصيل</small><strong>{stats.deliveryRate.toFixed(0)}%</strong><em>{stats.delivered} طلب موصّل</em></article>
     </div>
@@ -218,7 +217,7 @@ export function AmbassadorPortal() {
       <section className="ambassador-orders-panel">
         <div className="ambassador-panel-title"><div><small>آخر النشاط</small><h3>طلبات عميلاتك</h3></div><b>{orders.length}</b></div>
         {ordersLoading && orders.length === 0 ? <div className="ambassador-orders-loading"><span /><p>جاري تحديث الطلبات...</p></div> : orders.length === 0 ? <div className="ambassador-no-orders"><ShoppingBag /><h4>ابدئي أول عملية بيع</h4><p>اختاري المنتجات وأدخلي بيانات عميلتك عند إتمام الطلب.</p><Link href="/#collection">تصفّح المنتجات</Link></div>
-          : <div className="ambassador-order-list">{orders.map((order) => <OrderCard compact key={order.orderId} orderId={order.orderId} status={order.status} createdAt={order.createdAtMs} total={order.grandTotal} itemCount={order.itemsCount} items={order.payload?.items} delivery={order.externalDelivery} customer={{ name: order.customerName, phone: order.customerPhone, city: order.customerCity, address: order.customerAddress }} footerExtra={<span className="order-card-commission">عمولتك <strong>{["canceled", "returned"].includes(order.status) ? "0.00" : orderCommission(order, commission.defaultPercent, commission.perProductEnabled).toFixed(2)} د.ل</strong></span>} onCancel={["pending", "processing"].includes(order.status) ? () => void cancelOrder(order.orderId) : undefined} canceling={cancelingOrderId === order.orderId} />)}</div>}
+          : <div className="ambassador-order-list">{orders.map((order) => <OrderCard compact key={order.orderId} orderId={order.orderId} status={order.status} createdAt={order.createdAtMs} total={order.grandTotal} itemCount={order.itemsCount} items={order.payload?.items} delivery={order.externalDelivery} ambassadorPhone={order.ambassadorPhone} statusReason={order.statusReason} statusReasonImageUrl={order.statusReasonImageUrl} customer={{ name: order.customerName, phone: order.customerPhone, city: order.customerCity, address: order.customerAddress }} footerExtra={<span className="order-card-commission">عمولتك <strong>{["canceled", "returned"].includes(order.status) ? "0.00" : orderCommission(order, commission.defaultPercent, commission.perProductEnabled).toFixed(2)} د.ل</strong></span>} onCancel={["pending", "processing"].includes(order.status) ? () => void cancelOrder(order.orderId) : undefined} canceling={cancelingOrderId === order.orderId} />)}</div>}
       </section>
       <aside className="ambassador-side-panel">
         <div className="ambassador-profile-card"><small>ملف المندوبة</small><h3>{profile.ambassadorName}</h3><p><Phone /> {profile.ambassadorPhone}</p><p>{profile.ambassadorAddress}</p><button onClick={() => setEditing(true)}>تحديث البيانات</button></div>
