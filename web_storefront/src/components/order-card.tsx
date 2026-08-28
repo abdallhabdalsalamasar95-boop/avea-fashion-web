@@ -15,6 +15,9 @@ interface OrderCardProps {
   itemCount: number;
   items?: OrderProductLine[];
   delivery?: ExternalDeliveryTracking;
+  ambassadorPhone?: string;
+  statusReason?: string;
+  statusReasonImageUrl?: string;
   customer?: {
     name?: string;
     phone?: string;
@@ -29,7 +32,7 @@ interface OrderCardProps {
   compact?: boolean;
 }
 
-export function OrderCard({ orderId, status, createdAt, total, itemCount, items = [], delivery, customer, footerExtra, onCancel, onReorder, reordering = false, canceling = false, compact = false }: OrderCardProps) {
+export function OrderCard({ orderId, status, createdAt, total, itemCount, items = [], delivery, ambassadorPhone, statusReason, statusReasonImageUrl, customer, footerExtra, onCancel, onReorder, reordering = false, canceling = false, compact = false }: OrderCardProps) {
   const [expanded, setExpanded] = useState(!compact);
   const detailsId = useId();
   const firstItem = items[0];
@@ -53,7 +56,9 @@ export function OrderCard({ orderId, status, createdAt, total, itemCount, items 
         <div><UserRound /><span><small>بيانات العميلة</small><strong>{customer.name || "غير محدد"}</strong>{customer.phone && <b dir="ltr">{customer.phone}</b>}</span></div>
         <div><MapPin /><span><small>عنوان التوصيل</small><strong>{[customer.city, customer.address].filter(Boolean).join(" - ") || "غير محدد"}</strong></span></div>
       </div>}
+      {ambassadorPhone && <div className="order-representative"><UserRound /><span><small>رقم المندوب</small><a dir="ltr" href={`tel:${ambassadorPhone}`}>{ambassadorPhone}</a></span></div>}
       <OrderTrackingTimeline status={status} delivery={delivery} orderId={orderId} />
+      {(status === "postponed" || status === "canceled") && (statusReason || statusReasonImageUrl) && <div className={`order-status-reason ${status}`}><strong>{status === "postponed" ? "سبب التأجيل" : "سبب الإلغاء"}</strong>{statusReason && <p>{statusReason}</p>}{statusReasonImageUrl && <a href={statusReasonImageUrl} target="_blank" rel="noreferrer"><img src={statusReasonImageUrl} alt={status === "postponed" ? "صورة سبب التأجيل" : "صورة سبب الإلغاء"} /></a>}</div>}
       {detailItems.length > 0 && <div className="order-product-lines">
         {detailItems.map((item, index) => <div className="order-product-line" key={`${item.productId ?? "item"}-${index}`}>
           <Link aria-label={item.name || "عرض المنتج"} href={item.productId ? `/product/?id=${encodeURIComponent(item.productId)}` : "#"}><ProductImage src={item.imageUrl} alt={item.name ?? "الموديل"} /></Link>

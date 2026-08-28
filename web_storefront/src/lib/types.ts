@@ -173,6 +173,9 @@ export interface TrackedOrder {
   createdAtMs: number;
   updatedAtMs: number;
   externalDelivery: ExternalDeliveryTracking;
+  ambassadorPhone?: string;
+  statusReason?: string;
+  statusReasonImageUrl?: string;
 }
 
 export interface OrderProductLine {
@@ -199,6 +202,9 @@ export interface SavedCustomerOrder {
   ownerUid?: string;
   items?: OrderProductLine[];
   orderChannel?: "customer" | "ambassador";
+  ambassadorPhone?: string;
+  statusReason?: string;
+  statusReasonImageUrl?: string;
 }
 
 export interface AmbassadorProfile {
