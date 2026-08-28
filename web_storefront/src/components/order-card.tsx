@@ -56,7 +56,7 @@ export function OrderCard({ orderId, status, createdAt, total, itemCount, items 
         <div><UserRound /><span><small>بيانات العميلة</small><strong>{customer.name || "غير محدد"}</strong>{customer.phone && <b dir="ltr">{customer.phone}</b>}</span></div>
         <div><MapPin /><span><small>عنوان التوصيل</small><strong>{[customer.city, customer.address].filter(Boolean).join(" - ") || "غير محدد"}</strong></span></div>
       </div>}
-      {ambassadorPhone && <div className="order-representative"><UserRound /><span><small>رقم المندوب</small><a dir="ltr" href={`tel:${ambassadorPhone}`}>{ambassadorPhone}</a></span></div>}
+      <div className="order-representative"><UserRound /><span><small>رقم المندوب</small>{ambassadorPhone ? <a dir="ltr" href={`tel:${ambassadorPhone}`}>{ambassadorPhone}</a> : <b>لم يتم تعيين مندوب بعد</b>}</span></div>
       <OrderTrackingTimeline status={status} delivery={delivery} orderId={orderId} />
       {(status === "postponed" || status === "canceled") && (statusReason || statusReasonImageUrl) && <div className={`order-status-reason ${status}`}><strong>{status === "postponed" ? "سبب التأجيل" : "سبب الإلغاء"}</strong>{statusReason && <p>{statusReason}</p>}{statusReasonImageUrl && <a href={statusReasonImageUrl} target="_blank" rel="noreferrer"><img src={statusReasonImageUrl} alt={status === "postponed" ? "صورة سبب التأجيل" : "صورة سبب الإلغاء"} /></a>}</div>}
       {detailItems.length > 0 && <div className="order-product-lines">
