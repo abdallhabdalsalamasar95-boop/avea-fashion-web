@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { ChevronDown, Clock3, MapPin, PackageCheck, RotateCcw, Trash2, UserRound } from "lucide-react";
+import { ChevronDown, Clock3, MapPin, PackageCheck, PhoneCall, RotateCcw, Trash2, UserRound } from "lucide-react";
 import { ReactNode, useId, useState } from "react";
 import { OrderTrackingTimeline, orderStatusLabels } from "@/components/order-tracking-timeline";
 import { ProductImage } from "@/components/product-image";
@@ -56,9 +56,8 @@ export function OrderCard({ orderId, status, createdAt, total, itemCount, items 
         <div><UserRound /><span><small>بيانات العميلة</small><strong>{customer.name || "غير محدد"}</strong>{customer.phone && <b dir="ltr">{customer.phone}</b>}</span></div>
         <div><MapPin /><span><small>عنوان التوصيل</small><strong>{[customer.city, customer.address].filter(Boolean).join(" - ") || "غير محدد"}</strong></span></div>
       </div>}
-      <div className="order-representative"><UserRound /><span><small>رقم المندوب</small>{ambassadorPhone ? <a dir="ltr" href={`tel:${ambassadorPhone}`}>{ambassadorPhone}</a> : <b>لم يتم تعيين مندوب بعد</b>}</span></div>
-      <OrderTrackingTimeline status={status} delivery={delivery} orderId={orderId} />
-      {(status === "postponed" || status === "canceled") && (statusReason || statusReasonImageUrl) && <div className={`order-status-reason ${status}`}><strong>{status === "postponed" ? "سبب التأجيل" : "سبب الإلغاء"}</strong>{statusReason && <p>{statusReason}</p>}{statusReasonImageUrl && <a href={statusReasonImageUrl} target="_blank" rel="noreferrer"><img src={statusReasonImageUrl} alt={status === "postponed" ? "صورة سبب التأجيل" : "صورة سبب الإلغاء"} /></a>}</div>}
+      <div className="order-representative"><UserRound /><span><small>رقم المندوب</small>{ambassadorPhone ? <b dir="ltr">{ambassadorPhone}</b> : <b>لم يتم تعيين مندوب بعد</b>}</span>{ambassadorPhone && <a className="order-representative-call" dir="ltr" href={`tel:${ambassadorPhone}`}><PhoneCall /> اتصال</a>}</div>
+      {(status === "postponed" || status === "canceled") ? ((statusReason || delivery?.lastError || statusReasonImageUrl) && <div className={`order-status-reason ${status}`}>{(statusReason || delivery?.lastError) && <p>{statusReason || delivery?.lastError}</p>}{statusReasonImageUrl && <a href={statusReasonImageUrl} target="_blank" rel="noreferrer"><img src={statusReasonImageUrl} alt="صورة السبب" /></a>}</div>) : <OrderTrackingTimeline status={status} delivery={delivery} orderId={orderId} />}
       {detailItems.length > 0 && <div className="order-product-lines">
         {detailItems.map((item, index) => <div className="order-product-line" key={`${item.productId ?? "item"}-${index}`}>
           <Link aria-label={item.name || "عرض المنتج"} href={item.productId ? `/product/?id=${encodeURIComponent(item.productId)}` : "#"}><ProductImage src={item.imageUrl} alt={item.name ?? "الموديل"} /></Link>
