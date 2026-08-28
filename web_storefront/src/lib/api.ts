@@ -289,6 +289,9 @@ export async function fetchOrderTracking(orderId: string, trackingToken: string,
     createdAtMs: Number(item.createdAtMs ?? 0),
     updatedAtMs: Number(item.updatedAtMs ?? 0),
     externalDelivery,
+    ambassadorPhone: String(item.ambassadorPhone ?? "") || undefined,
+    statusReason: String(item.statusReason ?? "") || undefined,
+    statusReasonImageUrl: String(item.statusReasonImageUrl ?? "") || undefined,
   };
 }
 
@@ -311,6 +314,9 @@ export async function fetchCustomerOrders(idToken: string, signal?: AbortSignal)
       status: normalizedOrderStatus(row.status, externalDelivery),
       trackingToken: row.trackingToken == null ? undefined : String(row.trackingToken),
       externalDelivery,
+      ambassadorPhone: String(row.ambassadorPhone ?? "") || undefined,
+      statusReason: String(row.statusReason ?? "") || undefined,
+      statusReasonImageUrl: String(row.statusReasonImageUrl ?? "") || undefined,
       items: normalizeOrderItems(row.items),
       orderChannel: row.orderChannel === "ambassador" ? "ambassador" : "customer",
     };

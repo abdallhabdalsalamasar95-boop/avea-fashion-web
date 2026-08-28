@@ -55,7 +55,7 @@ export default function AccountPage() {
     setSyncMessage("");
     try {
       await cancelCustomerOrder(orderId, await user.getIdToken());
-      const next = orders.map((order) => order.orderId === orderId ? { ...order, status: "canceled" as const } : order);
+      const next = orders.map((order) => order.orderId === orderId ? { ...order, status: "canceled" as const, statusReason: "تم إلغاء الطلب بناءً على طلب العميلة." } : order);
       setOrders(next);
       writeCustomerOrders(next, user.uid);
       setSyncMessage("تم إلغاء الطلب بنجاح.");
@@ -82,7 +82,7 @@ export default function AccountPage() {
             if (!order.trackingToken) return order;
             try {
               const tracked = await fetchOrderTracking(order.orderId, order.trackingToken);
-              return { ...order, status: tracked.status, externalDelivery: tracked.externalDelivery };
+              return { ...order, status: tracked.status, externalDelivery: tracked.externalDelivery, ambassadorPhone: tracked.ambassadorPhone, statusReason: tracked.statusReason, statusReasonImageUrl: tracked.statusReasonImageUrl };
             } catch {
               return order;
             }
@@ -139,7 +139,7 @@ export default function AccountPage() {
         {orders.length > 0 && <div className="order-filters">{([['all', 'الكل', orders.length], ['active', 'الجارية', counts.active], ['postponed', 'المؤجلة', counts.postponed], ['canceled', 'الملغية', counts.canceled], ['completed', 'المكتملة', counts.completed]] as const).filter(([value, , count]) => value === "all" || count > 0).map(([value, label, count]) => <button key={value} className={filter === value ? "active" : ""} onClick={() => setFilter(value)}>{label}<b>{count}</b></button>)}</div>}
         {orders.length === 0 ? <div className="account-empty"><ShoppingBag /><h3>لا توجد طلبات لهذا الحساب</h3><p>{user ? "أي طلب تسجلينه بهذا الحساب سيظهر هنا وحده، ولن تظهر طلبات الحسابات الأخرى." : "بعد إتمام أول طلب كضيفة سيظهر رقمه وحالته هنا."}</p><Link className="secondary-button" href="/#collection">ابدئي التسوق</Link></div>
           : visibleOrders.length === 0 ? <div className="orders-filter-empty"><PackageCheck /><p>لا توجد طلبات في هذه الحالة.</p></div>
-          : <div className="saved-orders">{visibleOrders.map((order) => <OrderCard key={order.orderId} orderId={order.orderId} status={order.status} createdAt={order.createdAt} total={order.total} itemCount={order.itemCount} items={order.items} delivery={order.externalDelivery} onReorder={order.status === "canceled" ? () => reorder(order) : undefined} reordering={reorderingOrderId === order.orderId} onCancel={["pending", "processing"].includes(order.status) ? () => void cancelOrder(order.orderId) : undefined} canceling={cancelingOrderId === order.orderId} compact />)}</div>}
+          : <div className="saved-orders">{visibleOrders.map((order) => <OrderCard key={order.orderId} orderId={order.orderId} status={order.status} createdAt={order.createdAt} total={order.total} itemCount={order.itemCount} items={order.items} delivery={order.externalDelivery} ambassadorPhone={order.ambassadorPhone} statusReason={order.statusReason} statusReasonImageUrl={order.statusReasonImageUrl} onReorder={order.status === "canceled" ? () => reorder(order) : undefined} reordering={reorderingOrderId === order.orderId} onCancel={["pending", "processing"].includes(order.status) ? () => void cancelOrder(order.orderId) : undefined} canceling={cancelingOrderId === order.orderId} compact />)}</div>}
       </section>
     </div>
   </div>;
