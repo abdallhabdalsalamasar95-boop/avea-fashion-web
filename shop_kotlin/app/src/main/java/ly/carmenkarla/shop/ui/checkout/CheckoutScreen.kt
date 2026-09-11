@@ -84,7 +84,7 @@ fun CheckoutScreen(onBack: () -> Unit, onDone: () -> Unit) {
             return@LaunchedEffect
         }
         shippingLoading = true
-        shipping = app.repository.shippingFor(city, area)
+        shipping = app.repository.shippingFor(city, area, address)
         shippingLoading = false
     }
     val matches = remember(search, destinations) {

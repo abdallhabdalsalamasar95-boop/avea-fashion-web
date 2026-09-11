@@ -129,12 +129,12 @@ class ShopRepository(private val baseUrl: String) {
         runCatching { api.ambassadorShareToken("Bearer $idToken").token }.getOrDefault("")
     }
 
-    suspend fun shippingFor(city: String, area: String = ""): Double = withContext(Dispatchers.IO) {
+    suspend fun shippingFor(city: String, area: String = "", address: String = ""): Double = withContext(Dispatchers.IO) {
         val normalizedCity = city.trim()
         val fallback = SHIPPING_COSTS[normalizedCity] ?: DEFAULT_SHIPPING
         if (normalizedCity.isBlank()) return@withContext 0.0
         runCatching {
-            api.shippingCost(normalizedCity, area.trim()).amount
+            api.shippingCost(normalizedCity, area.trim(), address.trim()).amount
         }.map { it.coerceAtLeast(0.0) }.getOrDefault(fallback)
     }
 
