@@ -144,17 +144,18 @@ export async function fetchDeliveryDestinations(signal?: AbortSignal): Promise<R
 export async function fetchShippingCost(
   city: string,
   area: string,
+  address = "",
   signal?: AbortSignal,
-): Promise<{ amount: number; source: "api" | "fallback"; providerAvailable: boolean }> {
+): Promise<{ amount: number; source: "api" | "cache" | "fallback"; providerAvailable: boolean }> {
   const payload = record(
     await getJson(
-      `/delivery/darb-sabeel/shipping-cost?city=${encodeURIComponent(city)}&area=${encodeURIComponent(area)}`,
+      `/delivery/darb-sabeel/shipping-cost?city=${encodeURIComponent(city)}&area=${encodeURIComponent(area)}&address=${encodeURIComponent(address)}`,
       signal,
     ),
   );
   return {
     amount: Number(payload.amount ?? 0),
-    source: String(payload.source ?? "fallback") === "api" ? "api" : "fallback",
+    source: payload.source === "api" || payload.source === "cache" ? payload.source : "fallback",
     providerAvailable: payload.providerAvailable === true,
   };
 }
