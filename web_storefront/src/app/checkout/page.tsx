@@ -45,6 +45,8 @@ function CheckoutPageContent() {
   const [sharedOrder, setSharedOrder] = useState<AmbassadorShare | null>(null);
   const [shareLoaded, setShareLoaded] = useState(false);
   const [shippingCost, setShippingCost] = useState<number>(fallbackShipping["طرابلس"]);
+  const [shippingSource, setShippingSource] = useState<"api" | "cache" | "fallback">("fallback");
+  const [shippingLoading, setShippingLoading] = useState(false);
   const checkoutAttemptId = useRef("");
   const profileInitialized = useRef(false);
   useEffect(() => {
@@ -83,18 +85,29 @@ function CheckoutPageContent() {
   useEffect(() => {
     if (!customer.city.trim()) {
       setShippingCost(0);
+      setShippingSource("fallback");
       return;
     }
     const controller = new AbortController();
-    fetchShippingCost(customer.city, customer.area, controller.signal)
+    setShippingLoading(true);
+    fetchShippingCost(customer.city, customer.area, customer.address, controller.signal)
       .then((quote) => {
-        if (!controller.signal.aborted && Number.isFinite(quote.amount)) setShippingCost(Math.max(0, quote.amount));
+        if (!controller.signal.aborted && Number.isFinite(quote.amount)) {
+          setShippingCost(Math.max(0, quote.amount));
+          setShippingSource(quote.source);
+        }
       })
       .catch(() => {
-        if (!controller.signal.aborted) setShippingCost(fallbackShipping[customer.city] ?? fallbackShipping["أخرى"]);
+        if (!controller.signal.aborted) {
+          setShippingCost(fallbackShipping[customer.city] ?? fallbackShipping["أخرى"]);
+          setShippingSource("fallback");
+        }
+      })
+      .finally(() => {
+        if (!controller.signal.aborted) setShippingLoading(false);
       });
     return () => controller.abort();
-  }, [customer.area, customer.city]);
+  }, [customer.address, customer.area, customer.city]);
 
   const pricing = useMemo(() => {
     const coupon = content.coupons?.find((item) => item.enabled !== false && Number(item.enabled ?? 1) !== 0 && item.code.toUpperCase() === appliedCouponCode && checkoutTotal >= (item.minSubtotal ?? 0));
@@ -177,7 +190,7 @@ function CheckoutPageContent() {
     <section className="form-card checkout-details-card"><div className="form-card-head"><span><MapPin /></span><div><small>بيانات أساسية</small><h2>بيانات {ambassador ? "العميلة" : "التوصيل"}</h2></div></div><div className="form-grid"><label><span>الاسم الكامل *</span><input required autoComplete="name" placeholder="الاسم الثلاثي" value={customer.name} onChange={(e) => setCustomer({ ...customer, name: e.target.value })} /></label><label><span>رقم الهاتف *</span><input required autoComplete="tel" inputMode="tel" dir="ltr" placeholder="+218..." value={customer.phone} onChange={(e) => setCustomer({ ...customer, phone: e.target.value })} /></label><DeliveryLocationFields value={customer} onChange={setCustomer} /><label className="full"><span>العنوان بالتفصيل *</span><input required autoComplete="street-address" placeholder="الشارع، رقم المنزل، أقرب نقطة دالة" value={customer.address} onChange={(e) => setCustomer({ ...customer, address: e.target.value })} /></label></div>
     <div className="checkout-extras"><div className="cod-option"><span><CheckCircle2 /><b>الدفع عند الاستلام</b></span><small>ادفعي عند وصول الطلب</small></div><div className="block-label coupon-field"><span>كود الخصم <small>اختياري</small></span><div className="coupon-apply-row"><input dir="ltr" value={couponCode} onChange={(e) => { setCouponCode(e.target.value.toUpperCase()); if (appliedCouponCode) { setAppliedCouponCode(""); setCouponFeedback(""); } }} placeholder="أدخلي الكود" /><button type="button" onClick={appliedCouponCode ? removeCoupon : applyCoupon}>{appliedCouponCode ? "إزالة" : "تطبيق"}</button></div></div>{couponFeedback && <small className={pricing.coupon ? "coupon-valid" : "coupon-invalid"}>{pricing.coupon ? `${couponFeedback}${pricing.discount > 0 ? ` — وفّرتِ ${pricing.discount.toFixed(2)} د.ل` : ""}` : couponFeedback}</small>}<label className="block-label"><span>ملاحظة للطلب <small>اختياري</small></span><textarea rows={2} value={note} onChange={(e) => setNote(e.target.value)} placeholder="أي تفاصيل إضافية للتوصيل" /></label></div></section>
     {appearance.checkoutConfirmPosition === "afterCustomer" && confirmPanel}</div>
-    <aside className="order-summary checkout-summary"><div className="summary-heading"><span><ShoppingBag /></span><div><small>{itemCount} {itemCount === 1 ? "قطعة" : "قطع"}</small><h2>مراجعة الطلب</h2></div></div><div className="checkout-items">{cart.map((item) => <div className="mini-line" key={item.lineId}><ProductImage src={item.imageUrl} alt={item.name} /><span><b>{item.name}</b><small>{item.quantity} × {item.price} د.ل</small>{ambassador && !isCustomerSharedCheckout && <em>عمولتك {lineCommission(item, commission).toFixed(2)} د.ل</em>}</span></div>)}</div><hr/><div><span>المجموع</span><strong>{pricing.subtotal.toFixed(2)} د.ل</strong></div>{pricing.discount > 0 && <div className="discount"><span>الخصم</span><strong>- {pricing.discount.toFixed(2)} د.ل</strong></div>}<div><span>التوصيل (لشركة التوصيل)</span><strong>{pricing.shippingCost.toFixed(2)} د.ل</strong></div>{ambassador && !isCustomerSharedCheckout && <div className="commission-summary compact"><span><CircleDollarSign /> عمولتك المتوقعة</span><strong>{expectedCommission.toFixed(2)} د.ل</strong></div>}<hr/><div className="summary-total"><span>إجمالي المنتجات</span><strong>{pricing.grandTotal.toFixed(2)} د.ل</strong></div><small className="secure-note">أجرة التوصيل لا تدخل في إجمالي المتجر وتُدفع لشركة التوصيل.</small>{appearance.checkoutConfirmPosition === "summary" && confirmPanel}</aside>
+    <aside className="order-summary checkout-summary"><div className="summary-heading"><span><ShoppingBag /></span><div><small>{itemCount} {itemCount === 1 ? "قطعة" : "قطع"}</small><h2>مراجعة الطلب</h2></div></div><div className="checkout-items">{cart.map((item) => <div className="mini-line" key={item.lineId}><ProductImage src={item.imageUrl} alt={item.name} /><span><b>{item.name}</b><small>{item.quantity} × {item.price} د.ل</small>{ambassador && !isCustomerSharedCheckout && <em>عمولتك {lineCommission(item, commission).toFixed(2)} د.ل</em>}</span></div>)}</div><hr/><div><span>المجموع</span><strong>{pricing.subtotal.toFixed(2)} د.ل</strong></div>{pricing.discount > 0 && <div className="discount"><span>الخصم</span><strong>- {pricing.discount.toFixed(2)} د.ل</strong></div>}<div><span>التوصيل (لشركة التوصيل)</span><strong>{shippingLoading ? "جاري الحساب..." : `${pricing.shippingCost.toFixed(2)} د.ل`}</strong><small>{shippingSource === "api" ? "من درب السبيل" : shippingSource === "cache" ? "من آخر سعر محفوظ" : "سعر تقريبي مؤقت"}</small></div>{ambassador && !isCustomerSharedCheckout && <div className="commission-summary compact"><span><CircleDollarSign /> عمولتك المتوقعة</span><strong>{expectedCommission.toFixed(2)} د.ل</strong></div>}<hr/><div className="summary-total"><span>إجمالي المنتجات</span><strong>{pricing.grandTotal.toFixed(2)} د.ل</strong></div><small className="secure-note">أجرة التوصيل لا تدخل في إجمالي المتجر وتُدفع لشركة التوصيل.</small>{appearance.checkoutConfirmPosition === "summary" && confirmPanel}</aside>
   </form></div>;
 }
 
