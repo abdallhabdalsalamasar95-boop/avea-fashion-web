@@ -48,7 +48,6 @@ export function ProductCard({ product }: { product: Product }) {
         <Link href={`/product/?id=${encodeURIComponent(product.id)}`} aria-label={`عرض ${product.name}`}>
           <ProductImage src={product.imageUrl ?? product.imageUrls[0]} alt={product.name} />
         </Link>
-        {discount > 0 && <span className="sale-badge">-{discount}%</span>}
         {soldOut && <span className="stock-badge">نفد المخزون</span>}
         <div className="product-media-actions">
           <button className={favorite ? "product-card-favorite active" : "product-card-favorite"} onClick={() => { toggleFavorite(product.id); showToast(favorite ? "تمت الإزالة من المفضلة" : "تم الحفظ في المفضلة"); }} aria-label={favorite ? "إزالة من المفضلة" : "إضافة للمفضلة"} title={favorite ? "إزالة من المفضلة" : "إضافة للمفضلة"}>
@@ -67,7 +66,10 @@ export function ProductCard({ product }: { product: Product }) {
       <div className="product-info">
         <div className="product-card-summary">
           <div className="product-card-copy">
-            <Link href={`/product/?id=${encodeURIComponent(product.id)}`}><h3>{product.name}</h3></Link>
+            <div className="product-title-row">
+              <Link href={`/product/?id=${encodeURIComponent(product.id)}`}><h3>{product.name}</h3></Link>
+              {discount > 0 && <span className="sale-badge inline">-{discount}%</span>}
+            </div>
             <div className="price"><strong>{money(product.price)} د.ل</strong>{product.oldPrice && product.oldPrice > product.price && <del>{money(product.oldPrice)} د.ل</del>}</div>
           </div>
           {ambassador && <small className="product-commission"><i>عمولتك</i><strong>{money(ambassadorCommission)} د.ل</strong></small>}

@@ -1452,30 +1452,53 @@ body.category-sheet-open{overflow:hidden}.category-floating-tools{position:fixed
   transform: scale(1.025);
 }
 
-/* Discount Badge: Top-Left in product card */
-.sale-badge {
-  position: absolute !important;
-  top: 9px !important;
-  left: 9px !important;
-  right: auto !important;
-  z-index: 6 !important;
+/* Product Card Title & Inline Discount Alignment */
+.product-title-row {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  gap: 6px !important;
+  margin-bottom: 4px !important;
+}
+.product-title-row a {
+  min-width: 0 !important;
+  flex: 1 !important;
+}
+.product-title-row h3 {
+  margin: 0 !important;
+  font-size: 13px !important;
+  font-weight: 700 !important;
+  color: #21191d !important;
+  white-space: nowrap !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  font-family: var(--font-arabic) !important;
+  line-height: 1.35 !important;
+}
+.sale-badge.inline {
+  position: static !important;
+  z-index: auto !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  flex-shrink: 0 !important;
   background: #111111 !important;
   color: #ffffff !important;
   border-radius: 6px !important;
   font-weight: 800 !important;
-  padding: 3px 7px !important;
-  font-size: 10px !important;
+  padding: 2px 6px !important;
+  font-size: 9px !important;
   line-height: 1.2 !important;
-  border: 1px solid rgba(255, 255, 255, 0.2) !important;
-  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.18) !important;
+  border: 1px solid rgba(255, 255, 255, 0.15) !important;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1) !important;
   letter-spacing: 0.2px !important;
 }
 
-/* Favorite & Action Controls: Top-Right of product card */
+/* Transparent Corner Favorite Heart */
 .product-media-actions {
   position: absolute !important;
-  top: 9px !important;
-  right: 9px !important;
+  top: 8px !important;
+  right: 8px !important;
   left: auto !important;
   z-index: 6 !important;
   display: flex !important;
@@ -1489,32 +1512,38 @@ body.category-sheet-open{overflow:hidden}.category-floating-tools{position:fixed
   height: 32px !important;
   min-height: 32px !important;
   border-radius: 50% !important;
-  background: rgba(255, 255, 255, 0.96) !important;
-  color: #111111 !important;
-  border: 1px solid rgba(0, 0, 0, 0.08) !important;
-  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.12) !important;
+  background: rgba(0, 0, 0, 0.22) !important;
+  backdrop-filter: blur(8px) !important;
+  -webkit-backdrop-filter: blur(8px) !important;
+  color: #ffffff !important;
+  border: 1px solid rgba(255, 255, 255, 0.35) !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15) !important;
   display: grid !important;
   place-items: center !important;
   cursor: pointer !important;
-  transition: transform 0.2s ease, background-color 0.2s ease !important;
+  transition: transform 0.2s ease, background-color 0.2s ease, border-color 0.2s ease !important;
   padding: 0 !important;
 }
 .product-card-favorite:hover {
-  transform: scale(1.06) !important;
+  transform: scale(1.08) !important;
+  background: rgba(0, 0, 0, 0.35) !important;
+  border-color: rgba(255, 255, 255, 0.5) !important;
 }
 .product-card-favorite svg {
-  color: #111111 !important;
-  width: 15px !important;
-  height: 15px !important;
+  color: #ffffff !important;
+  width: 16px !important;
+  height: 16px !important;
+  stroke: #ffffff !important;
 }
 .product-card-favorite.active {
-  background: #111111 !important;
-  border-color: #111111 !important;
+  background: rgba(17, 17, 17, 0.78) !important;
+  border-color: #ffffff !important;
   color: #ffffff !important;
 }
 .product-card-favorite.active svg {
   fill: #ffffff !important;
   color: #ffffff !important;
+  stroke: #ffffff !important;
 }
 .product-media-actions .product-card-share .ambassador-share-button {
   width: 28px !important;
@@ -1522,12 +1551,19 @@ body.category-sheet-open{overflow:hidden}.category-floating-tools{position:fixed
   height: 28px !important;
   min-height: 28px !important;
   border-radius: 50% !important;
-  background: rgba(255, 255, 255, 0.92) !important;
-  border: 1px solid rgba(0, 0, 0, 0.08) !important;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08) !important;
+  background: rgba(0, 0, 0, 0.22) !important;
+  backdrop-filter: blur(8px) !important;
+  -webkit-backdrop-filter: blur(8px) !important;
+  border: 1px solid rgba(255, 255, 255, 0.3) !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12) !important;
   display: grid !important;
   place-items: center !important;
+  color: #ffffff !important;
   padding: 0 !important;
+}
+.product-media-actions .product-card-share .ambassador-share-button svg {
+  color: #ffffff !important;
+  stroke: #ffffff !important;
 }
 
 /* Product Info & Strict Vertical Alignment Across Cards */
