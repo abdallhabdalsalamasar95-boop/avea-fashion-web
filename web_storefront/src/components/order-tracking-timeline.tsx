@@ -30,7 +30,6 @@ export function OrderTrackingTimeline({ status, delivery, compact = false, order
     ? [...forwardSteps.slice(0, 3), { status: "returning" as const, label: "راجعة" }, { status: "returned" as const, label: "تم الإرجاع" }]
     : forwardSteps;
   const currentRank = isReturn ? (status === "returned" ? 4 : 3) : status === "postponed" ? 0 : (rank[status] ?? -1);
-  const events = [...(delivery?.timeline ?? [])].sort((a, b) => Date.parse(a.timestamp ?? "") - Date.parse(b.timestamp ?? ""));
   const tracking = delivery?.referenceCode || delivery?.trackingNumber || delivery?.shipmentId;
 
   return <section className={`tracking-panel${compact ? " compact" : ""}`}>
@@ -49,14 +48,8 @@ export function OrderTrackingTimeline({ status, delivery, compact = false, order
         </div>;
       })}
     </div>}
-    {status === "postponed" && <div className="tracking-outcome postponed"><PauseCircle /><span><strong>تم تأجيل التوصيل</strong><small>هذه الحالة واردة مباشرة من درب السبيل. سيظهر أي موعد أو تحديث جديد هنا تلقائيًا.</small></span></div>}
-    {status === "canceled" && <div className="tracking-outcome canceled"><Ban /><span><strong>تم إلغاء الشحنة</strong><small>{delivery?.lastError || "ألغت شركة التوصيل الشحنة أو حُذفت من درب السبيل."}</small><a href={`https://wa.me/218921397674?text=${encodeURIComponent(`مرحبًا، أحتاج مساعدة بخصوص الطلب ${orderId}${delivery?.lastError ? ` — ${delivery.lastError}` : ""}`)}`} target="_blank" rel="noreferrer">تواصل مع الدعم عبر واتساب</a></span></div>}
-    {status !== "canceled" && !compact && events.length > 0 && <div className="tracking-events">
-      {events.map((event, index) => <article key={event.id || `${event.type}-${index}`}>
-        <i />
-        <div><strong>{event.descriptionAr || event.descriptionEn || "تحديث على الشحنة"}</strong>{event.timestamp && <time>{new Intl.DateTimeFormat("ar-LY", { dateStyle: "medium", timeStyle: "short" }).format(new Date(event.timestamp))}</time>}</div>
-      </article>)}
-    </div>}
+    {status === "postponed" && <div className="tracking-outcome postponed"><PauseCircle /><span><strong>تم تأجيل التوصيل</strong><small>سيتم تحديث موعد التوصيل عند توفره.</small></span></div>}
+    {status === "canceled" && <div className="tracking-outcome canceled"><Ban /><span><strong>تم إلغاء الشحنة</strong><small>تواصلي مع الدعم إذا احتجتِ إلى المساعدة.</small><a href={`https://wa.me/218921397674?text=${encodeURIComponent(`مرحبًا، أحتاج مساعدة بخصوص الطلب ${orderId}`)}`} target="_blank" rel="noreferrer">تواصل مع الدعم عبر واتساب</a></span></div>}
     {delivery?.lastSyncAtMs && <small className="tracking-sync">آخر تحديث: {new Intl.DateTimeFormat("ar-LY", { dateStyle: "short", timeStyle: "short" }).format(delivery.lastSyncAtMs)}</small>}
   </section>;
 }
