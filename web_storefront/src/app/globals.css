@@ -1050,7 +1050,9 @@ body.category-sheet-open{overflow:hidden}.category-floating-tools{position:fixed
 @media(max-width:560px){.account-address-link{min-height:72px;grid-template-columns:39px minmax(0,1fr) 16px;gap:9px;padding:10px 12px;border-radius:9px}.account-address-link:hover{transform:none}.account-address-icon{width:39px;height:39px}.account-address-icon svg{width:18px}.account-address-copy strong{font-size:17px}.account-address-copy em{font-size:8px}.address-page{width:calc(100% - 24px);padding-block:16px 42px}.address-back-link{margin-bottom:9px}.address-page-head{gap:10px;margin-bottom:11px}.address-page-head>span{width:40px;height:40px}.address-page-head h1{font-size:24px}.address-page-head p{font-size:9px;line-height:1.6}.address-form-card{padding:12px;border-radius:9px}.address-form{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px 7px}.address-form label.full{grid-column:1/-1}.address-form input,.address-form select{min-height:43px;padding:8px;font-size:10px}.address-form-actions{gap:8px}.address-form-actions .primary-button{min-height:41px;padding-inline:15px}.address-privacy{align-items:flex-start;margin-top:10px;padding-top:10px}}
 
 /* Unified 4:5 Product Photography Ratio & Luxury Detail Images */
-.product-media { aspect-ratio: 4 / 5 !important; border-radius: 10px; overflow: hidden; background: #f6f1ef; }
+.product-card { padding-top: 14px !important; overflow: visible !important; }
+.product-media { aspect-ratio: 4 / 5 !important; border-radius: 10px; overflow: visible !important; position: relative !important; background: transparent; margin-bottom: 10px !important; }
+.product-media > a { display: block; width: 100%; height: 100%; border-radius: 10px !important; overflow: hidden !important; background: #f6f1ef; box-shadow: 0 3px 12px rgba(45, 29, 36, 0.04); }
 .product-media img { width: 100%; height: 100%; object-fit: cover !important; transition: transform 0.45s ease; }
 .product-card:hover .product-media img { transform: scale(1.03); }
 .detail-grid .main-image { aspect-ratio: 4 / 5; width: 100%; max-height: 580px; display: grid; place-items: center; background: #fbf9f8; border-radius: 14px; overflow: hidden; position: relative; border: 1px solid #ede5e2; }
@@ -1229,13 +1231,30 @@ body.category-sheet-open{overflow:hidden}.category-floating-tools{position:fixed
 /* Floating App Install Prompt - Completely Removed to keep layout clean & uncluttered */
 .app-install-prompt { display: none !important; }
 
-/* Black Luxury Heart (Favorite) & Discount Badges */
+/* Black Luxury Heart (Favorite) & Discount Badges (Visible Overlapping Header) */
 .sale-badge {
+  position: absolute !important;
+  top: -10px !important;
+  right: 8px !important;
+  z-index: 10 !important;
   background: #111111 !important;
   color: #ffffff !important;
   border-radius: 6px !important;
   font-weight: 800 !important;
-  border: 1px solid rgba(255, 255, 255, 0.15) !important;
+  padding: 4px 8px !important;
+  font-size: 10px !important;
+  line-height: 1.2 !important;
+  border: 1px solid rgba(255, 255, 255, 0.22) !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.18) !important;
+}
+.product-media-actions {
+  position: absolute !important;
+  top: -10px !important;
+  left: 8px !important;
+  z-index: 10 !important;
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 5px !important;
 }
 .suggested-discount-tag {
   background: #111111 !important;
@@ -1247,11 +1266,25 @@ body.category-sheet-open{overflow:hidden}.category-floating-tools{position:fixed
   padding: 2px 5px !important;
 }
 .product-card-favorite {
+  width: 30px !important;
+  height: 30px !important;
+  border-radius: 50% !important;
+  background: rgba(255, 255, 255, 0.96) !important;
   color: #111111 !important;
-  border-color: rgba(0, 0, 0, 0.1) !important;
+  border: 1px solid rgba(0, 0, 0, 0.12) !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.14) !important;
+  display: grid !important;
+  place-items: center !important;
+  cursor: pointer !important;
+  transition: transform 0.2s ease, background 0.2s ease !important;
+}
+.product-card-favorite:hover {
+  transform: scale(1.08) !important;
 }
 .product-card-favorite svg {
   color: #111111 !important;
+  width: 15px !important;
+  height: 15px !important;
 }
 .product-card-favorite.active {
   background: #111111 !important;
