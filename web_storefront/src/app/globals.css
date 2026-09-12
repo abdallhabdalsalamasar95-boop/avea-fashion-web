@@ -1494,30 +1494,51 @@ body.category-sheet-open{overflow:hidden}.category-floating-tools{position:fixed
   letter-spacing: 0.2px !important;
 }
 
-/* Transparent Corner Favorite Heart */
+/* Stock Badge: Compact, Translucent & Clean */
+.stock-badge {
+  position: absolute !important;
+  top: 6px !important;
+  left: 6px !important;
+  right: auto !important;
+  z-index: 5 !important;
+  background: rgba(17, 17, 17, 0.45) !important;
+  backdrop-filter: blur(8px) !important;
+  -webkit-backdrop-filter: blur(8px) !important;
+  color: #ffffff !important;
+  border: 1px solid rgba(255, 255, 255, 0.22) !important;
+  border-radius: 4px !important;
+  font-size: 8px !important;
+  font-weight: 700 !important;
+  padding: 2px 5px !important;
+  line-height: 1.2 !important;
+  letter-spacing: 0.2px !important;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.12) !important;
+}
+
+/* Transparent Corner Favorite Heart (Right Corner & Ultra-Compact) */
 .product-media-actions {
   position: absolute !important;
-  top: 8px !important;
-  right: 8px !important;
+  top: 6px !important;
+  right: 6px !important;
   left: auto !important;
   z-index: 6 !important;
   display: flex !important;
   flex-direction: column !important;
-  gap: 5px !important;
+  gap: 4px !important;
   align-items: center !important;
 }
 .product-card-favorite {
-  width: 32px !important;
-  min-width: 32px !important;
-  height: 32px !important;
-  min-height: 32px !important;
+  width: 22px !important;
+  min-width: 22px !important;
+  height: 22px !important;
+  min-height: 22px !important;
   border-radius: 50% !important;
   background: rgba(0, 0, 0, 0.22) !important;
-  backdrop-filter: blur(8px) !important;
-  -webkit-backdrop-filter: blur(8px) !important;
+  backdrop-filter: blur(6px) !important;
+  -webkit-backdrop-filter: blur(6px) !important;
   color: #ffffff !important;
   border: 1px solid rgba(255, 255, 255, 0.35) !important;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15) !important;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.12) !important;
   display: grid !important;
   place-items: center !important;
   cursor: pointer !important;
@@ -1525,18 +1546,18 @@ body.category-sheet-open{overflow:hidden}.category-floating-tools{position:fixed
   padding: 0 !important;
 }
 .product-card-favorite:hover {
-  transform: scale(1.08) !important;
+  transform: scale(1.1) !important;
   background: rgba(0, 0, 0, 0.35) !important;
-  border-color: rgba(255, 255, 255, 0.5) !important;
+  border-color: rgba(255, 255, 255, 0.55) !important;
 }
 .product-card-favorite svg {
   color: #ffffff !important;
-  width: 16px !important;
-  height: 16px !important;
+  width: 11px !important;
+  height: 11px !important;
   stroke: #ffffff !important;
 }
 .product-card-favorite.active {
-  background: rgba(17, 17, 17, 0.78) !important;
+  background: rgba(17, 17, 17, 0.8) !important;
   border-color: #ffffff !important;
   color: #ffffff !important;
 }
@@ -1546,16 +1567,16 @@ body.category-sheet-open{overflow:hidden}.category-floating-tools{position:fixed
   stroke: #ffffff !important;
 }
 .product-media-actions .product-card-share .ambassador-share-button {
-  width: 28px !important;
-  min-width: 28px !important;
-  height: 28px !important;
-  min-height: 28px !important;
+  width: 20px !important;
+  min-width: 20px !important;
+  height: 20px !important;
+  min-height: 20px !important;
   border-radius: 50% !important;
   background: rgba(0, 0, 0, 0.22) !important;
-  backdrop-filter: blur(8px) !important;
-  -webkit-backdrop-filter: blur(8px) !important;
+  backdrop-filter: blur(6px) !important;
+  -webkit-backdrop-filter: blur(6px) !important;
   border: 1px solid rgba(255, 255, 255, 0.3) !important;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12) !important;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1) !important;
   display: grid !important;
   place-items: center !important;
   color: #ffffff !important;
@@ -1564,6 +1585,8 @@ body.category-sheet-open{overflow:hidden}.category-floating-tools{position:fixed
 .product-media-actions .product-card-share .ambassador-share-button svg {
   color: #ffffff !important;
   stroke: #ffffff !important;
+  width: 10px !important;
+  height: 10px !important;
 }
 
 /* Product Info & Strict Vertical Alignment Across Cards */
