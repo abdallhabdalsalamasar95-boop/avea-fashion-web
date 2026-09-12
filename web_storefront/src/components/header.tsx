@@ -8,7 +8,6 @@ import type { CSSProperties } from "react";
 import { useStore } from "@/components/store-provider";
 import { useAuth } from "@/components/auth-provider";
 import { LocaleToggle } from "@/components/locale-toggle";
-import { AppInstallPrompt } from "@/components/app-install-prompt";
 import { fetchAppContent } from "@/lib/api";
 import { AppContent } from "@/lib/types";
 
@@ -52,7 +51,6 @@ export function Header() {
         </div>
       </div>}
       <div className="nav-shell container">
-        <AppInstallPrompt />
         <Link className="brand brand-logo" href="/" aria-label="كارمن كارلا الرئيسية">
           <img src="/logo-wide.png" alt="Carmen Karla" />
         </Link>

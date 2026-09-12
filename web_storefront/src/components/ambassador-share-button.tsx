@@ -4,6 +4,7 @@ import { Check, Copy, Globe2, LoaderCircle, MessageCircle, Share2 } from "lucide
 import { useState } from "react";
 import { useAuth } from "@/components/auth-provider";
 import { useAmbassador } from "@/components/ambassador-context";
+import { useToast } from "@/components/toast-provider";
 import { createAmbassadorShare } from "@/lib/api";
 
 type Props = {
@@ -15,9 +16,10 @@ type Props = {
   compact?: boolean;
 };
 
-export function AmbassadorShareButton({ buildPath, title, text, label = "مشاركة مع الزبونة", className = "", compact = false }: Props) {
+export function AmbassadorShareButton({ buildPath, title, text, label = "مشاركة", className = "", compact = false }: Props) {
   const { user } = useAuth();
   const { ambassador } = useAmbassador();
+  const { showToast } = useToast();
   const [state, setState] = useState<"idle" | "loading" | "copied">("idle");
   const [menuOpen, setMenuOpen] = useState(false);
   const [shareUrl, setShareUrl] = useState("");
@@ -47,7 +49,12 @@ export function AmbassadorShareButton({ buildPath, title, text, label = "مشا�
     }
   };
 
-  const copy = async () => { await navigator.clipboard.writeText(shareUrl); setState("copied"); window.setTimeout(() => setState("idle"), 2200); };
+  const copy = async () => {
+    await navigator.clipboard.writeText(shareUrl);
+    setState("copied");
+    showToast("تم نسخ رابط المشاركة");
+    window.setTimeout(() => setState("idle"), 2200);
+  };
   const openShare = (url: string) => { window.open(url, "_blank", "noopener,noreferrer"); setMenuOpen(false); };
   return <span className={`ambassador-share-wrap ${compact ? "compact" : ""} ${className}`}>
     <button type="button" className="ambassador-share-button" onClick={share} disabled={state === "loading"} aria-label={label} title={label}>

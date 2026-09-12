@@ -1226,7 +1226,47 @@ body.category-sheet-open{overflow:hidden}.category-floating-tools{position:fixed
   .tracking-create-account .secondary-button { width: 100%; text-align: center; justify-content: center; min-height: 44px; }
 }
 
-@media(max-width:350px){.address-form{grid-template-columns:1fr}.address-form label.full,.address-form-actions{grid-column:auto}.address-form-actions{align-items:stretch;flex-direction:column}.address-form-actions .primary-button{width:100%}.address-form-actions>a{justify-content:center}}
+/* Floating App Install Prompt - Completely Removed to keep layout clean & uncluttered */
+.app-install-prompt { display: none !important; }
+
+/* Luxury Ambient Toast Notifications System */
+.luxury-toast-container { position: fixed; top: 20px; right: 50%; transform: translateX(50%); z-index: 100000; display: flex; flex-direction: column; gap: 8px; pointer-events: none; width: min(92vw, 380px); }
+.luxury-toast-item { pointer-events: auto; display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 10px 14px; border-radius: 12px; background: #1c1518; color: #ffffff; border: 1px solid rgba(255, 255, 255, 0.12); box-shadow: 0 12px 30px rgba(0, 0, 0, 0.28); font-size: 11px; font-weight: 700; font-family: var(--font-arabic); animation: toast-slide-down 0.28s cubic-bezier(0.16, 1, 0.3, 1) both; }
+.luxury-toast-item.success .toast-icon { color: #5eead4; }
+.luxury-toast-item.info .toast-icon { color: #cbd5e1; }
+.toast-icon { display: grid; place-items: center; width: 18px; height: 18px; flex-shrink: 0; }
+.toast-icon svg { width: 16px; height: 16px; }
+.toast-text { flex: 1; text-align: start; line-height: 1.4; }
+.toast-close { background: transparent; border: 0; color: rgba(255, 255, 255, 0.6); display: grid; place-items: center; padding: 2px; cursor: pointer; border-radius: 4px; }
+.toast-close:hover { color: #ffffff; }
+.toast-close svg { width: 14px; height: 14px; }
+@keyframes toast-slide-down { from { opacity: 0; transform: translateY(-12px) scale(0.96); } to { opacity: 1; transform: translateY(0) scale(1); } }
+
+/* Ultra-Compact, Minimal & Sleek Share Buttons */
+.ambassador-share-button { min-height: 32px !important; height: 32px !important; padding: 0 10px !important; border-radius: 8px !important; font-size: 10px !important; font-weight: 700 !important; border: 1px solid rgba(0, 0, 0, 0.09) !important; background: #ffffff !important; color: #3c3035 !important; transition: all 0.2s ease !important; }
+.ambassador-share-button:active { transform: scale(0.96) !important; }
+.ambassador-share-button svg { width: 13px !important; height: 13px !important; }
+.ambassador-share-wrap.compact .ambassador-share-button { width: 30px !important; min-width: 30px !important; height: 30px !important; min-height: 30px !important; padding: 0 !important; border-radius: 50% !important; display: grid !important; place-items: center !important; }
+.product-media-actions .product-card-share .ambassador-share-button { width: 28px !important; height: 28px !important; border-radius: 50% !important; background: rgba(255, 255, 255, 0.94) !important; border: 1px solid rgba(0, 0, 0, 0.08) !important; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08) !important; }
+
+/* Tracking Hero Share Button */
+.tracking-share-button { min-height: 28px !important; height: 28px !important; padding: 0 10px !important; border-radius: 20px !important; border: 1px solid rgba(255, 255, 255, 0.18) !important; background: rgba(255, 255, 255, 0.08) !important; color: #ffffff !important; font-size: 10px !important; font-weight: 700 !important; letter-spacing: 0.2px !important; display: inline-flex !important; align-items: center !important; gap: 5px !important; cursor: pointer !important; transition: all 0.2s ease !important; }
+.tracking-share-button:hover { background: rgba(255, 255, 255, 0.16) !important; border-color: rgba(255, 255, 255, 0.3) !important; }
+.tracking-share-button:active { transform: scale(0.96) !important; }
+.tracking-share-button svg { width: 13px !important; height: 13px !important; }
+.tracking-share-button.copied { background: rgba(212, 175, 55, 0.25) !important; border-color: #d4af37 !important; color: #fff8e7 !important; }
+
+/* Frosted Glass Sticky Bar on Mobile (iPhone safe-area optimized) */
+@media(max-width:850px){
+  .mobile-bottom-nav { background: rgba(255, 255, 255, 0.88) !important; backdrop-filter: blur(18px) saturate(180%) !important; -webkit-backdrop-filter: blur(18px) saturate(180%) !important; border-top: 1px solid rgba(0, 0, 0, 0.06) !important; }
+  .sticky-mobile-bar { background: rgba(255, 255, 255, 0.92) !important; backdrop-filter: blur(18px) saturate(180%) !important; -webkit-backdrop-filter: blur(18px) saturate(180%) !important; border-top: 1px solid rgba(0, 0, 0, 0.07) !important; padding: 8px 12px calc(8px + env(safe-area-inset-bottom)) !important; }
+}
+
+/* Subtle Dusty Rose badges for suggested models & luxury hover */
+.suggested-discount-tag { background: #ab5774 !important; font-size: 9px !important; font-weight: 800 !important; letter-spacing: 0.2px !important; border-radius: 4px !important; padding: 2px 5px !important; }
+.suggested-product-card { transition: transform 0.24s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.24s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.24s ease !important; }
+.suggested-product-card:hover { transform: translateY(-2px) !important; box-shadow: 0 8px 22px rgba(45, 29, 36, 0.06) !important; border-color: #dfd4d2 !important; }
+
 /* خلفية الموقع المريحة للعين */
 body {
 	background-color: #fffaf7;

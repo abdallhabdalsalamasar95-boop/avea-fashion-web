@@ -5,7 +5,7 @@ import { AuthProvider } from "@/components/auth-provider";
 import { AmbassadorProvider } from "@/components/ambassador-context";
 import { StoreProvider } from "@/components/store-provider";
 import { SiteAppearanceProvider } from "@/components/site-appearance-provider";
-import { AppInstallPrompt } from "@/components/app-install-prompt";
+import { ToastProvider } from "@/components/toast-provider";
 import { PresenceBeacon } from "@/components/presence-beacon";
 import { PwaRegister } from "@/components/pwa-register";
 import { SocialLinks } from "@/components/social-links";
@@ -63,12 +63,13 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
           <AmbassadorProvider>
             <StoreProvider>
               <SiteAppearanceProvider>
-                <PwaRegister />
-                <PresenceBeacon />
-                <Header />
-                <main>{children}</main>
-                <SocialLinks />
-                <AppInstallPrompt />
+                <ToastProvider>
+                  <PwaRegister />
+                  <PresenceBeacon />
+                  <Header />
+                  <main>{children}</main>
+                  <SocialLinks />
+                </ToastProvider>
               </SiteAppearanceProvider>
             </StoreProvider>
           </AmbassadorProvider>

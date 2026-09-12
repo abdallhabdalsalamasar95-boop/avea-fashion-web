@@ -6,6 +6,7 @@ import { useAmbassador } from "@/components/ambassador-context";
 import { AmbassadorShareButton } from "@/components/ambassador-share-button";
 import { ProductImage } from "@/components/product-image";
 import { useStore } from "@/components/store-provider";
+import { useToast } from "@/components/toast-provider";
 import { lineCommission } from "@/lib/commission";
 import { animateProductToCart } from "@/lib/cart-animation";
 import { Product } from "@/lib/types";
@@ -15,6 +16,7 @@ const money = (value: number) => new Intl.NumberFormat("ar-LY", { maximumFractio
 export function ProductCard({ product }: { product: Product }) {
   const { isFavorite, toggleFavorite, addToCart } = useStore();
   const { ambassador, commission } = useAmbassador();
+  const { showToast } = useToast();
   const favorite = isFavorite(product.id);
   const soldOut = product.outOfStock || product.availableStock === 0;
   const discount = product.oldPrice && product.oldPrice > product.price
@@ -37,6 +39,7 @@ export function ProductCard({ product }: { product: Product }) {
       commissionPercent: product.commissionPercent,
     });
     animateProductToCart(event.currentTarget);
+    showToast(`تمت إضافة ${product.name} إلى السلة`);
   };
 
   return (
@@ -48,14 +51,14 @@ export function ProductCard({ product }: { product: Product }) {
         {discount > 0 && <span className="sale-badge">-{discount}%</span>}
         {soldOut && <span className="stock-badge">نفد المخزون</span>}
         <div className="product-media-actions">
-          <button className={favorite ? "product-card-favorite active" : "product-card-favorite"} onClick={() => toggleFavorite(product.id)} aria-label={favorite ? "إزالة من المفضلة" : "إضافة للمفضلة"} title={favorite ? "إزالة من المفضلة" : "إضافة للمفضلة"}>
+          <button className={favorite ? "product-card-favorite active" : "product-card-favorite"} onClick={() => { toggleFavorite(product.id); showToast(favorite ? "تمت الإزالة من المفضلة" : "تم الحفظ في المفضلة"); }} aria-label={favorite ? "إزالة من المفضلة" : "إضافة للمفضلة"} title={favorite ? "إزالة من المفضلة" : "إضافة للمفضلة"}>
             <Heart fill={favorite ? "currentColor" : "none"} />
           </button>
           <AmbassadorShareButton
             className="product-card-share"
             title={product.name}
             text={ambassador ? `اختيار خاص لكِ من شريك Carmen Karla المعتمد ${ambassador.ambassadorName}. شاهدي التفاصيل وأكملي طلبك بكل سهولة.` : `شاهدي هذا المنتج المميز من Carmen Karla.`}
-            label="مشاركة المنتج"
+            label="مشاركة"
             compact
             buildPath={(token) => `/product/?id=${encodeURIComponent(product.id)}${token ? `&ref=${encodeURIComponent(token)}` : ""}`}
           />

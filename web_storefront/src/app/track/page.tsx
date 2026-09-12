@@ -31,6 +31,7 @@ import { ProductImage } from "@/components/product-image";
 import { SuggestedProducts } from "@/components/suggested-products";
 import { AuthPanel } from "@/components/auth-panel";
 import { useAuth } from "@/components/auth-provider";
+import { useToast } from "@/components/toast-provider";
 import { writeCustomerOrders, readCustomerOrders } from "@/lib/customer-storage";
 import { OrderProductLine, OrderStatus, TrackedOrder, SavedCustomerOrder } from "@/lib/types";
 
@@ -60,6 +61,7 @@ function TrackingView() {
   const orderId = params.get("order") || "";
   const token = params.get("token") || "";
   const { user } = useAuth();
+  const { showToast } = useToast();
   const [order, setOrder] = useState<TrackedOrder | null>(null);
   const [error, setError] = useState("");
   const [copied, setCopied] = useState(false);
@@ -130,10 +132,12 @@ function TrackingView() {
     try {
       await navigator.clipboard.writeText(url);
       setCopied(true);
-      setTimeout(() => setCopied(false), 2500);
+      showToast("تم نسخ رابط التتبع بنجاح");
+      setTimeout(() => setCopied(false), 2200);
     } catch {
       setCopied(true);
-      setTimeout(() => setCopied(false), 2500);
+      showToast("تم نسخ رابط التتبع");
+      setTimeout(() => setCopied(false), 2200);
     }
   };
 
@@ -183,9 +187,9 @@ function TrackingView() {
         <div className="tracking-hero-content">
           <div className="tracking-hero-top">
             <small>متابعة سهلة</small>
-            <button className="tracking-share-button" onClick={handleShare} aria-label="مشاركة رابط التتبع">
+            <button className={`tracking-share-button ${copied ? "copied" : ""}`} onClick={handleShare} aria-label="مشاركة رابط التتبع">
               {copied ? <Check /> : <Share2 />}
-              <span>{copied ? "تم النسخ" : "مشاركة الرابط"}</span>
+              <span>{copied ? "تم النسخ" : "مشاركة"}</span>
             </button>
           </div>
           <h1>تتبع الطلب #{order.orderId.replace(/^o_/, "").slice(-8)}</h1>

@@ -9,6 +9,7 @@ import { AmbassadorShareButton } from "@/components/ambassador-share-button";
 import { ProductImage } from "@/components/product-image";
 import { SuggestedProducts } from "@/components/suggested-products";
 import { useStore } from "@/components/store-provider";
+import { useToast } from "@/components/toast-provider";
 import { fetchAmbassadorShare, fetchProducts } from "@/lib/api";
 import { decodeAmbassadorNameFromShareToken, readAmbassadorShare, saveAmbassadorShare, seedAmbassadorShareToken } from "@/lib/ambassador-share";
 import { commissionRate, lineCommission } from "@/lib/commission";
@@ -59,6 +60,7 @@ function ProductDetails() {
   const [bodyHeight, setBodyHeight] = useState("");
   const { addToCart, isFavorite, toggleFavorite } = useStore();
   const { ambassador, commission } = useAmbassador();
+  const { showToast } = useToast();
 
   useEffect(() => {
     const controller = new AbortController();
@@ -139,6 +141,7 @@ function ProductDetails() {
     });
     animateProductToCart(event.currentTarget);
     setAdded(true);
+    showToast(`تمت إضافة ${product.name} إلى السلة`);
     window.setTimeout(() => setAdded(false), 2200);
   };
 
@@ -186,7 +189,7 @@ function ProductDetails() {
           <div className="purchase-row">
             <button className="primary-button buy-now-main" onClick={buyNow} disabled={incomplete || soldOut}><Zap /> اشتري الآن</button>
             <button className="primary-button add-main" onClick={add} disabled={incomplete || soldOut}>{added ? <><Check /> تمت الإضافة</> : <><ShoppingBag /> إضافة للسلة</>}</button>
-            <button className={isFavorite(product.id) ? "icon-action wish-main active" : "icon-action wish-main"} onClick={() => toggleFavorite(product.id)} aria-label="إضافة للمفضلة" title="إضافة للمفضلة"><Heart fill={isFavorite(product.id) ? "currentColor" : "none"} /></button>
+            <button className={isFavorite(product.id) ? "icon-action wish-main active" : "icon-action wish-main"} onClick={() => { toggleFavorite(product.id); showToast(isFavorite(product.id) ? "تمت الإزالة من المفضلة" : "تم الحفظ في المفضلة"); }} aria-label="إضافة للمفضلة" title="إضافة للمفضلة"><Heart fill={isFavorite(product.id) ? "currentColor" : "none"} /></button>
             <AmbassadorShareButton
               compact
               className="icon-action purchase-share"
@@ -206,7 +209,7 @@ function ProductDetails() {
 
     {/* Mobile Sticky Bottom Purchase Bar */}
     <aside className="sticky-mobile-bar">
-      <button className={isFavorite(product.id) ? "icon-action wish-main active" : "icon-action wish-main"} onClick={() => toggleFavorite(product.id)} aria-label="إضافة للمفضلة"><Heart fill={isFavorite(product.id) ? "currentColor" : "none"} /></button>
+      <button className={isFavorite(product.id) ? "icon-action wish-main active" : "icon-action wish-main"} onClick={() => { toggleFavorite(product.id); showToast(isFavorite(product.id) ? "تمت الإزالة من المفضلة" : "تم الحفظ في المفضلة"); }} aria-label="إضافة للمفضلة"><Heart fill={isFavorite(product.id) ? "currentColor" : "none"} /></button>
       <AmbassadorShareButton
         compact
         className="icon-action purchase-share"
