@@ -73,11 +73,25 @@ export function AmbassadorPortal() {
   const loadDashboard = useCallback(async (showProgress = true) => {
     if (!user || dashboardRequestActive.current) return;
     dashboardRequestActive.current = true;
+
+    if (typeof window !== "undefined") {
+      try {
+        const cached = sessionStorage.getItem(`carmen-karla.ambassador-orders.${user.uid}`);
+        if (cached) {
+          const parsed = JSON.parse(cached);
+          if (Array.isArray(parsed) && parsed.length > 0) {
+            setOrders(parsed);
+            showProgress = false;
+          }
+        }
+      } catch {}
+    }
+
     if (showProgress) setOrdersLoading(true);
     setError("");
     try {
       const controller = new AbortController();
-      const timer = window.setTimeout(() => controller.abort(), 8000);
+      const timer = window.setTimeout(() => controller.abort(), 15000);
       try {
         const token = await user.getIdToken();
         const [items, content, withdrawalSummary] = await Promise.all([
@@ -86,6 +100,11 @@ export function AmbassadorPortal() {
           fetchAmbassadorWithdrawals(token, controller.signal).catch(() => null),
         ]);
         setOrders(items);
+        if (typeof window !== "undefined") {
+          try {
+            sessionStorage.setItem(`carmen-karla.ambassador-orders.${user.uid}`, JSON.stringify(items));
+          } catch {}
+        }
         if (withdrawalSummary) setWithdrawal(withdrawalSummary);
         setCommission({
           defaultPercent: content.commission?.defaultPercent ?? 7,
@@ -95,12 +114,14 @@ export function AmbassadorPortal() {
         window.clearTimeout(timer);
       }
     } catch {
-      setError("حسابك مفعّل. بيانات الطلبات ستظهر عند توفر خدمة التحديث.");
+      if (orders.length === 0) {
+        setError("حسابك مفعّل. بيانات الطلبات ستظهر عند توفر خدمة التحديث.");
+      }
     } finally {
       dashboardRequestActive.current = false;
       setOrdersLoading(false);
     }
-  }, [user]);
+  }, [user, orders.length]);
 
   const requestWithdrawal = async () => {
     if (!user || withdrawalLoading || !withdrawal.canRequest) return;
@@ -217,7 +238,7 @@ export function AmbassadorPortal() {
       <section className="ambassador-orders-panel">
         <div className="ambassador-panel-title"><div><small>آخر النشاط</small><h3>طلبات عميلاتك</h3></div><b>{orders.length}</b></div>
         {ordersLoading && orders.length === 0 ? <div className="ambassador-orders-loading"><span /><p>جاري تحديث الطلبات...</p></div> : orders.length === 0 ? <div className="ambassador-no-orders"><ShoppingBag /><h4>ابدئي أول عملية بيع</h4><p>اختاري المنتجات وأدخلي بيانات عميلتك عند إتمام الطلب.</p><Link href="/#collection">تصفّح المنتجات</Link></div>
-          : <div className="ambassador-order-list">{orders.map((order) => <OrderCard compact key={order.orderId} orderId={order.orderId} status={order.status} createdAt={order.createdAtMs} total={order.grandTotal} itemCount={order.itemsCount} items={order.payload?.items} delivery={order.externalDelivery} ambassadorPhone={order.ambassadorPhone} statusReason={order.statusReason} statusReasonImageUrl={order.statusReasonImageUrl} customer={{ name: order.customerName, phone: order.customerPhone, city: order.customerCity, address: order.customerAddress }} footerExtra={<span className="order-card-commission">عمولتك <strong>{["canceled", "returned"].includes(order.status) ? "0.00" : orderCommission(order, commission.defaultPercent, commission.perProductEnabled).toFixed(2)} د.ل</strong></span>} onCancel={["pending", "processing"].includes(order.status) ? () => void cancelOrder(order.orderId) : undefined} canceling={cancelingOrderId === order.orderId} />)}</div>}
+          : <div className="ambassador-order-list">{orders.map((order) => <OrderCard compact key={order.orderId} orderId={order.orderId} status={order.status} createdAt={order.createdAtMs} total={order.grandTotal} itemCount={order.itemsCount} items={order.payload?.items} delivery={order.externalDelivery} trackingToken={order.trackingToken} ambassadorPhone={order.ambassadorPhone} statusReason={order.statusReason} statusReasonImageUrl={order.statusReasonImageUrl} customer={{ name: order.customerName, phone: order.customerPhone, city: order.customerCity, address: order.customerAddress }} footerExtra={<span className="order-card-commission">عمولتك <strong>{["canceled", "returned"].includes(order.status) ? "0.00" : orderCommission(order, commission.defaultPercent, commission.perProductEnabled).toFixed(2)} د.ل</strong></span>} onCancel={["pending", "processing"].includes(order.status) ? () => void cancelOrder(order.orderId) : undefined} canceling={cancelingOrderId === order.orderId} />)}</div>}
       </section>
       <aside className="ambassador-side-panel">
         <div className="ambassador-profile-card"><small>ملف المندوبة</small><h3>{profile.ambassadorName}</h3><p><Phone /> {profile.ambassadorPhone}</p><p>{profile.ambassadorAddress}</p><button onClick={() => setEditing(true)}>تحديث البيانات</button></div>

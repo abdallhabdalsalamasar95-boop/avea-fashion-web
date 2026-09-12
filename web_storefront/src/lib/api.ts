@@ -290,6 +290,22 @@ export async function fetchOrderTracking(orderId: string, trackingToken: string,
     status: normalizedOrderStatus(item.status, externalDelivery),
     createdAtMs: Number(item.createdAtMs ?? 0),
     updatedAtMs: Number(item.updatedAtMs ?? 0),
+    total: Number(item.grandTotal ?? 0),
+    itemCount: Number(item.itemsCount ?? 0),
+    items: Array.isArray(item.items) ? item.items.map((raw) => {
+      const line = record(raw);
+      return {
+        productId: line.productId == null ? undefined : String(line.productId),
+        productCode: line.productCode == null ? undefined : String(line.productCode),
+        name: line.name == null ? undefined : String(line.name),
+        imageUrl: line.imageUrl == null ? undefined : String(line.imageUrl),
+        size: line.size == null ? undefined : String(line.size),
+        length: line.length == null ? undefined : String(line.length),
+        color: line.color == null ? undefined : String(line.color),
+        price: line.price == null ? undefined : Number(line.price),
+        quantity: line.quantity == null ? undefined : Number(line.quantity),
+      } satisfies OrderProductLine;
+    }) : [],
     externalDelivery,
     ambassadorPhone: String(item.ambassadorPhone ?? "") || undefined,
     statusReason: String(item.statusReason ?? "") || undefined,
@@ -385,6 +401,7 @@ const normalizeAmbassadorOrder = (value: unknown): AmbassadorOrder => {
     customerCity: String(row.customerCity ?? row.city ?? customer.city ?? ""),
     grandTotal: Number(row.grandTotal ?? pricing.grandTotal ?? 0),
     itemsCount: Number(row.itemsCount ?? items.reduce((sum, item) => sum + item.quantity, 0)),
+    trackingToken: String(row.trackingToken ?? "") || undefined,
     payload: { items },
     ambassadorSummary: {
       estimatedCommission: Number(summary.estimatedCommission ?? 0),
