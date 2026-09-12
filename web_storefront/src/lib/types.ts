@@ -160,6 +160,7 @@ export interface ExternalDeliveryTracking {
   shipmentId?: string;
   trackingNumber?: string;
   courierPhone?: string;
+  courierName?: string;
   referenceCode?: string;
   providerStatus?: string;
   syncStatus?: string;
@@ -175,11 +176,15 @@ export interface TrackedOrder {
   updatedAtMs: number;
   total?: number;
   itemCount?: number;
+  shippingCost?: number;
+  customerCity?: string;
+  customerArea?: string;
   items?: OrderProductLine[];
   externalDelivery: ExternalDeliveryTracking;
   ambassadorPhone?: string;
   statusReason?: string;
   statusReasonImageUrl?: string;
+  statusReasonImageUrls?: string[];
 }
 
 export interface OrderProductLine {
@@ -208,6 +213,12 @@ export interface SavedCustomerOrder {
   orderChannel?: "customer" | "ambassador";
   ambassadorPhone?: string;
   statusReason?: string;
+  statusReasonImageUrl?: string;
+  statusReasonImageUrls?: string[];
+  shippingCost?: number;
+  customerCity?: string;
+  customerArea?: string;
+}
   statusReasonImageUrl?: string;
 }
 

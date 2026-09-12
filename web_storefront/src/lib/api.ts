@@ -263,6 +263,7 @@ const normalizeDeliveryTracking = (value: unknown): ExternalDeliveryTracking => 
     shipmentId: source.shipmentId == null ? undefined : String(source.shipmentId),
     trackingNumber: source.trackingNumber == null ? undefined : String(source.trackingNumber),
     courierPhone: source.courierPhone == null ? undefined : String(source.courierPhone),
+    courierName: source.courierName == null ? undefined : String(source.courierName),
     referenceCode: source.referenceCode == null ? undefined : String(source.referenceCode),
     providerStatus: source.providerStatus == null ? undefined : String(source.providerStatus),
     syncStatus: source.syncStatus == null ? undefined : String(source.syncStatus),
@@ -310,6 +311,12 @@ export async function fetchOrderTracking(orderId: string, trackingToken: string,
     ambassadorPhone: String(item.ambassadorPhone ?? "") || undefined,
     statusReason: String(item.statusReason ?? "") || undefined,
     statusReasonImageUrl: String(item.statusReasonImageUrl ?? "") || undefined,
+    statusReasonImageUrls: Array.isArray(item.statusReasonImageUrls)
+      ? item.statusReasonImageUrls.map((x) => String(x || "").trim()).filter(Boolean)
+      : (item.statusReasonImageUrl ? [String(item.statusReasonImageUrl).trim()] : undefined),
+    shippingCost: item.shippingCost == null ? undefined : Number(item.shippingCost),
+    customerCity: item.customerCity == null ? undefined : String(item.customerCity),
+    customerArea: item.customerArea == null ? undefined : String(item.customerArea),
   };
 }
 

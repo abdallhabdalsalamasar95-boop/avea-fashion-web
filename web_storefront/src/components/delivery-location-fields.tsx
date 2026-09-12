@@ -46,7 +46,7 @@ export function DeliveryLocationFields({ value, onChange }: Props) {
 
   const cities = useMemo(() => {
     const available = Object.keys(destinations);
-    const source = available.length ? available : fallbackCities;
+    const source = Array.from(new Set([...fallbackCities, ...available]));
     return value.city && !source.includes(value.city) ? [value.city, ...source] : source;
   }, [destinations, value.city]);
   const areas = useMemo(() => destinations[value.city] ?? fallbackAreas[value.city] ?? [], [destinations, value.city]);

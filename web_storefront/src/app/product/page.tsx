@@ -7,6 +7,7 @@ import { useSearchParams } from "next/navigation";
 import { useAmbassador } from "@/components/ambassador-context";
 import { AmbassadorShareButton } from "@/components/ambassador-share-button";
 import { ProductImage } from "@/components/product-image";
+import { SuggestedProducts } from "@/components/suggested-products";
 import { useStore } from "@/components/store-provider";
 import { fetchAmbassadorShare, fetchProducts } from "@/lib/api";
 import { decodeAmbassadorNameFromShareToken, readAmbassadorShare, saveAmbassadorShare, seedAmbassadorShareToken } from "@/lib/ambassador-share";
@@ -199,6 +200,9 @@ function ProductDetails() {
         <ul className="detail-benefits"><li><Check /> الدفع عند الاستلام</li><li><Check /> توصيل لجميع مدن ليبيا</li><li><Check /> خدمة عملاء لمتابعة طلبك</li></ul>
       </div>
     </div>
+
+    {/* Suggested Products Section */}
+    <SuggestedProducts currentProductId={product.id} category={product.category} limit={4} />
 
     {/* Mobile Sticky Bottom Purchase Bar */}
     <aside className="sticky-mobile-bar">
