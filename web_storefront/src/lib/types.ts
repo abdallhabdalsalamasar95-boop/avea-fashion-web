@@ -173,6 +173,9 @@ export interface TrackedOrder {
   status: OrderStatus;
   createdAtMs: number;
   updatedAtMs: number;
+  total?: number;
+  itemCount?: number;
+  items?: OrderProductLine[];
   externalDelivery: ExternalDeliveryTracking;
   ambassadorPhone?: string;
   statusReason?: string;
@@ -231,6 +234,7 @@ export interface AmbassadorOrder {
   customerCity: string;
   grandTotal: number;
   itemsCount: number;
+  trackingToken?: string;
   payload?: {
     items?: OrderProductLine[];
   };
