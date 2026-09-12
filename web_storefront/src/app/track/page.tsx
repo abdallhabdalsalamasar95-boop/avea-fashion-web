@@ -185,13 +185,7 @@ function TrackingView() {
       <header className="tracking-share-hero">
         <ShieldCheck />
         <div className="tracking-hero-content">
-          <div className="tracking-hero-top">
-            <small>متابعة سهلة</small>
-            <button className={`tracking-share-button ${copied ? "copied" : ""}`} onClick={handleShare} aria-label="مشاركة رابط التتبع">
-              {copied ? <Check /> : <Share2 />}
-              <span>{copied ? "تم النسخ" : "مشاركة"}</span>
-            </button>
-          </div>
+          <small>متابعة سهلة</small>
           <h1>تتبع الطلب #{order.orderId.replace(/^o_/, "").slice(-8)}</h1>
           <p>احتفظي بهذه الصفحة لمعرفة آخر حالة لطلبك.</p>
         </div>
