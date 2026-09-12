@@ -1475,35 +1475,42 @@ body.category-sheet-open{overflow:hidden}.category-floating-tools{position:fixed
   font-family: var(--font-arabic) !important;
   line-height: 1.35 !important;
 }
-.sale-badge.inline {
-  position: static !important;
-  z-index: auto !important;
+/* Translucent Left Corner Discount Badge (Matching the Heart Style) */
+.sale-badge {
+  position: absolute !important;
+  top: 6px !important;
+  left: 6px !important;
+  right: auto !important;
+  z-index: 6 !important;
+  height: 22px !important;
+  min-height: 22px !important;
+  padding: 0 6px !important;
+  border-radius: 11px !important;
+  background: rgba(0, 0, 0, 0.22) !important;
+  backdrop-filter: blur(6px) !important;
+  -webkit-backdrop-filter: blur(6px) !important;
+  color: #ffffff !important;
+  border: 1px solid rgba(255, 255, 255, 0.35) !important;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.12) !important;
+  font-size: 9px !important;
+  font-weight: 800 !important;
   display: inline-flex !important;
   align-items: center !important;
   justify-content: center !important;
-  flex-shrink: 0 !important;
-  background: #111111 !important;
-  color: #ffffff !important;
-  border-radius: 6px !important;
-  font-weight: 800 !important;
-  padding: 2px 6px !important;
-  font-size: 9px !important;
-  line-height: 1.2 !important;
-  border: 1px solid rgba(255, 255, 255, 0.15) !important;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1) !important;
   letter-spacing: 0.2px !important;
+  line-height: 1 !important;
 }
 
 /* Stock Badge: Compact, Translucent & Clean */
 .stock-badge {
   position: absolute !important;
-  top: 6px !important;
+  top: 32px !important;
   left: 6px !important;
   right: auto !important;
   z-index: 5 !important;
   background: rgba(17, 17, 17, 0.45) !important;
-  backdrop-filter: blur(8px) !important;
-  -webkit-backdrop-filter: blur(8px) !important;
+  backdrop-filter: blur(6px) !important;
+  -webkit-backdrop-filter: blur(6px) !important;
   color: #ffffff !important;
   border: 1px solid rgba(255, 255, 255, 0.22) !important;
   border-radius: 4px !important;
