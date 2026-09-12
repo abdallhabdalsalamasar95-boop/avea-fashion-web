@@ -7,6 +7,7 @@ import { OrderStatus, SavedCustomerOrder } from "@/lib/types";
 import { AuthPanel } from "@/components/auth-panel";
 import { useAuth } from "@/components/auth-provider";
 import { OrderCard } from "@/components/order-card";
+import { OrderFilterToolbar, OrderStatusFilter, SortOrder, TimeframeFilter } from "@/components/order-filter-toolbar";
 import { useStore } from "@/components/store-provider";
 import { CartItem } from "@/lib/types";
 import { cancelCustomerOrder, fetchCustomerOrders, fetchOrderTracking } from "@/lib/api";
@@ -21,7 +22,10 @@ export default function AccountPage() {
   const { user, loading: authLoading } = useAuth();
   const { addToCart } = useStore();
   const [orders, setOrders] = useState<SavedCustomerOrder[]>([]);
-  const [filter, setFilter] = useState<"all" | "active" | "postponed" | "canceled" | "completed">("all");
+  const [statusFilter, setStatusFilter] = useState<OrderStatusFilter>("all");
+  const [searchQuery, setSearchQuery] = useState("");
+  const [timeframe, setTimeframe] = useState<TimeframeFilter>("all");
+  const [sortOrder, setSortOrder] = useState<SortOrder>("newest");
   const [syncing, setSyncing] = useState(false);
   const [syncMessage, setSyncMessage] = useState("");
   const [cancelingOrderId, setCancelingOrderId] = useState("");
@@ -104,17 +108,81 @@ export default function AccountPage() {
   }, [authLoading, user]);
 
   const counts = useMemo(() => ({
+    all: orders.length,
     active: orders.filter((order) => ["pending", "processing", "shipped", "returning"].includes(order.status)).length,
+    completed: orders.filter((order) => ["delivered", "returned"].includes(order.status)).length,
     postponed: orders.filter((order) => order.status === "postponed").length,
     canceled: orders.filter((order) => order.status === "canceled").length,
-    completed: orders.filter((order) => ["delivered", "returned"].includes(order.status)).length,
   }), [orders]);
-  const visibleOrders = useMemo(() => orders.filter((order) => {
-    if (filter === "all") return true;
-    if (filter === "active") return ["pending", "processing", "shipped", "returning"].includes(order.status);
-    if (filter === "completed") return ["delivered", "returned"].includes(order.status);
-    return order.status === filter;
-  }), [filter, orders]);
+
+  const filteredOrders = useMemo(() => {
+    let list = [...orders];
+
+    // Status Filter
+    if (statusFilter === "active") {
+      list = list.filter((order) => ["pending", "processing", "shipped", "returning"].includes(order.status));
+    } else if (statusFilter === "completed") {
+      list = list.filter((order) => ["delivered", "returned"].includes(order.status));
+    } else if (statusFilter === "postponed") {
+      list = list.filter((order) => order.status === "postponed");
+    } else if (statusFilter === "canceled") {
+      list = list.filter((order) => order.status === "canceled");
+    }
+
+    // Search Query (orderId, items name, productCode)
+    const q = searchQuery.trim().toLowerCase();
+    if (q) {
+      list = list.filter((order) => {
+        const orderIdMatch = order.orderId.toLowerCase().includes(q) || order.orderId.replace(/^o_/, "").slice(-8).toLowerCase().includes(q);
+        const itemMatch = (order.items || []).some((it) => (it.name || "").toLowerCase().includes(q) || (it.productCode || "").toLowerCase().includes(q));
+        const courierMatch = (order.externalDelivery?.courierPhone || "").includes(q);
+        return orderIdMatch || itemMatch || courierMatch;
+      });
+    }
+
+    // Timeframe Filter
+    const now = Date.now();
+    if (timeframe === "today") {
+      const startOfDay = new Date().setHours(0, 0, 0, 0);
+      list = list.filter((order) => order.createdAt >= startOfDay);
+    } else if (timeframe === "week") {
+      const oneWeekAgo = now - 7 * 24 * 60 * 60 * 1000;
+      list = list.filter((order) => order.createdAt >= oneWeekAgo);
+    } else if (timeframe === "month") {
+      const oneMonthAgo = now - 30 * 24 * 60 * 60 * 1000;
+      list = list.filter((order) => order.createdAt >= oneMonthAgo);
+    } else if (timeframe === "three_months") {
+      const threeMonthsAgo = now - 90 * 24 * 60 * 60 * 1000;
+      list = list.filter((order) => order.createdAt >= threeMonthsAgo);
+    }
+
+    // Sort Order
+    if (sortOrder === "newest") {
+      list.sort((a, b) => b.createdAt - a.createdAt);
+    } else if (sortOrder === "oldest") {
+      list.sort((a, b) => a.createdAt - b.createdAt);
+    } else if (sortOrder === "highest_price") {
+      list.sort((a, b) => (b.total || 0) - (a.total || 0));
+    }
+
+    return list;
+  }, [orders, statusFilter, searchQuery, timeframe, sortOrder]);
+
+  const summaryStats = useMemo(() => {
+    const delivered = filteredOrders.filter((o) => o.status === "delivered");
+    return {
+      totalSales: filteredOrders.reduce((sum, o) => sum + (o.total || 0), 0),
+      deliveredCount: delivered.length,
+      canceledCount: filteredOrders.filter((o) => o.status === "canceled").length,
+    };
+  }, [filteredOrders]);
+
+  const handleResetFilters = () => {
+    setStatusFilter("all");
+    setSearchQuery("");
+    setTimeframe("all");
+    setSortOrder("newest");
+  };
 
   return <div className="container inner-page account-page">
     <div className="page-title account-title"><span>مساحتك الخاصة</span><h1>حسابي وطلباتي</h1></div>
@@ -136,10 +204,35 @@ export default function AccountPage() {
       <section className="account-card orders-card" id="orders">
         <div className="account-card-title orders-title"><div><PackageCheck /></div><span><small>{user ? "طلبات هذا الحساب فقط" : "طلبات الضيف على هذا الجهاز"}</small><h2>طلباتي</h2></span><i className={syncing ? "syncing" : ""}><RefreshCw /></i></div>
         {syncMessage && <p className="orders-sync-message">{syncMessage}</p>}
-        {orders.length > 0 && <div className="order-filters">{([['all', 'الكل', orders.length], ['active', 'الجارية', counts.active], ['postponed', 'المؤجلة', counts.postponed], ['canceled', 'الملغية', counts.canceled], ['completed', 'المكتملة', counts.completed]] as const).filter(([value, , count]) => value === "all" || count > 0).map(([value, label, count]) => <button key={value} className={filter === value ? "active" : ""} onClick={() => setFilter(value)}>{label}<b>{count}</b></button>)}</div>}
-        {orders.length === 0 ? <div className="account-empty"><ShoppingBag /><h3>لا توجد طلبات لهذا الحساب</h3><p>{user ? "أي طلب تسجلينه بهذا الحساب سيظهر هنا وحده، ولن تظهر طلبات الحسابات الأخرى." : "بعد إتمام أول طلب كضيفة سيظهر رقمه وحالته هنا."}</p><Link className="secondary-button" href="/#collection">ابدئي التسوق</Link></div>
-          : visibleOrders.length === 0 ? <div className="orders-filter-empty"><PackageCheck /><p>لا توجد طلبات في هذه الحالة.</p></div>
-          : <div className="saved-orders">{visibleOrders.map((order) => <OrderCard key={order.orderId} orderId={order.orderId} status={order.status} createdAt={order.createdAt} total={order.total} itemCount={order.itemCount} items={order.items} delivery={order.externalDelivery} trackingToken={order.trackingToken} ambassadorPhone={order.ambassadorPhone} statusReason={order.statusReason} statusReasonImageUrl={order.statusReasonImageUrl} onReorder={order.status === "canceled" ? () => reorder(order) : undefined} reordering={reorderingOrderId === order.orderId} onCancel={["pending", "processing"].includes(order.status) ? () => void cancelOrder(order.orderId) : undefined} canceling={cancelingOrderId === order.orderId} compact />)}</div>}
+        {orders.length > 0 && (
+          <OrderFilterToolbar
+            statusFilter={statusFilter}
+            onStatusChange={setStatusFilter}
+            counts={counts}
+            searchQuery={searchQuery}
+            onSearchChange={setSearchQuery}
+            searchPlaceholder="بحث برقم الطلب أو اسم القطعة..."
+            timeframe={timeframe}
+            onTimeframeChange={setTimeframe}
+            sortOrder={sortOrder}
+            onSortChange={setSortOrder}
+            onReset={handleResetFilters}
+            totalFilteredCount={filteredOrders.length}
+            totalOriginalCount={orders.length}
+          />
+        )}
+        {orders.length === 0 ? (
+          <div className="account-empty"><ShoppingBag /><h3>لا توجد طلبات لهذا الحساب</h3><p>{user ? "أي طلب تسجلينه بهذا الحساب سيظهر هنا وحده، ولن تظهر طلبات الحسابات الأخرى." : "بعد إتمام أول طلب كضيفة سيظهر رقمه وحالته هنا."}</p><Link className="secondary-button" href="/#collection">ابدئي التسوق</Link></div>
+        ) : filteredOrders.length === 0 ? (
+          <div className="orders-filter-empty">
+            <PackageCheck />
+            <h3>لا توجد طلبات تطابق هذا التصنيف حاليًا</h3>
+            <p>جربي تغيير خيارات الفلتر أو البحث لعرض باقي الطلبات.</p>
+            <button type="button" className="secondary-button reset-filter-action" onClick={handleResetFilters}>إعادة ضبط الفلاتر</button>
+          </div>
+        ) : (
+          <div className="saved-orders">{filteredOrders.map((order) => <OrderCard key={order.orderId} orderId={order.orderId} status={order.status} createdAt={order.createdAt} total={order.total} itemCount={order.itemCount} items={order.items} delivery={order.externalDelivery} trackingToken={order.trackingToken} ambassadorPhone={order.ambassadorPhone} statusReason={order.statusReason} statusReasonImageUrl={order.statusReasonImageUrl} onReorder={order.status === "canceled" ? () => reorder(order) : undefined} reordering={reorderingOrderId === order.orderId} onCancel={["pending", "processing"].includes(order.status) ? () => void cancelOrder(order.orderId) : undefined} canceling={cancelingOrderId === order.orderId} compact />)}</div>
+        )}
       </section>
     </div>
   </div>;

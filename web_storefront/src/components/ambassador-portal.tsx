@@ -6,6 +6,7 @@ import { FormEvent, useCallback, useEffect, useMemo, useRef, useState } from "re
 import { AuthPanel } from "@/components/auth-panel";
 import { AmbassadorShareButton } from "@/components/ambassador-share-button";
 import { OrderCard } from "@/components/order-card";
+import { OrderFilterToolbar, OrderStatusFilter, SortOrder, TimeframeFilter } from "@/components/order-filter-toolbar";
 import { useAuth } from "@/components/auth-provider";
 import { getAmbassadorProfile, saveAmbassadorProfile, validPhone } from "@/lib/ambassador-profile";
 import { cancelAmbassadorOrder, fetchAmbassadorOrders, fetchAmbassadorWithdrawals, fetchAppContent, submitAmbassadorWithdrawal } from "@/lib/api";
@@ -59,6 +60,10 @@ export function AmbassadorPortal() {
   const { user, loading: authLoading } = useAuth();
   const [profile, setProfile] = useState<AmbassadorProfile | null>(null);
   const [orders, setOrders] = useState<AmbassadorOrder[]>([]);
+  const [statusFilter, setStatusFilter] = useState<OrderStatusFilter>("all");
+  const [searchQuery, setSearchQuery] = useState("");
+  const [timeframe, setTimeframe] = useState<TimeframeFilter>("all");
+  const [sortOrder, setSortOrder] = useState<SortOrder>("newest");
   const [commission, setCommission] = useState({ defaultPercent: 7, perProductEnabled: true });
   const [profileLoading, setProfileLoading] = useState(true);
   const [ordersLoading, setOrdersLoading] = useState(false);
@@ -184,6 +189,85 @@ export function AmbassadorPortal() {
     return () => window.clearInterval(timer);
   }, [user, profile, editing, loadDashboard]);
 
+  const counts = useMemo(() => ({
+    all: orders.length,
+    active: orders.filter((order) => ["pending", "processing", "shipped", "returning"].includes(order.status)).length,
+    completed: orders.filter((order) => ["delivered", "returned"].includes(order.status)).length,
+    postponed: orders.filter((order) => order.status === "postponed").length,
+    canceled: orders.filter((order) => order.status === "canceled").length,
+  }), [orders]);
+
+  const filteredOrders = useMemo(() => {
+    let list = [...orders];
+
+    // Status Filter
+    if (statusFilter === "active") {
+      list = list.filter((order) => ["pending", "processing", "shipped", "returning"].includes(order.status));
+    } else if (statusFilter === "completed") {
+      list = list.filter((order) => ["delivered", "returned"].includes(order.status));
+    } else if (statusFilter === "postponed") {
+      list = list.filter((order) => order.status === "postponed");
+    } else if (statusFilter === "canceled") {
+      list = list.filter((order) => order.status === "canceled");
+    }
+
+    // Search Query (orderId, customerName, customerPhone, customerCity, item names)
+    const q = searchQuery.trim().toLowerCase();
+    if (q) {
+      list = list.filter((order) => {
+        const orderIdMatch = order.orderId.toLowerCase().includes(q) || order.orderId.replace(/^o_/, "").slice(-8).toLowerCase().includes(q);
+        const customerMatch = (order.customerName || "").toLowerCase().includes(q) || (order.customerPhone || "").includes(q) || (order.customerCity || "").toLowerCase().includes(q);
+        const itemMatch = (order.payload?.items || []).some((it) => (it.name || "").toLowerCase().includes(q) || (it.productCode || "").toLowerCase().includes(q));
+        return orderIdMatch || customerMatch || itemMatch;
+      });
+    }
+
+    // Timeframe Filter
+    const now = Date.now();
+    if (timeframe === "today") {
+      const startOfDay = new Date().setHours(0, 0, 0, 0);
+      list = list.filter((order) => order.createdAtMs >= startOfDay);
+    } else if (timeframe === "week") {
+      const oneWeekAgo = now - 7 * 24 * 60 * 60 * 1000;
+      list = list.filter((order) => order.createdAtMs >= oneWeekAgo);
+    } else if (timeframe === "month") {
+      const oneMonthAgo = now - 30 * 24 * 60 * 60 * 1000;
+      list = list.filter((order) => order.createdAtMs >= oneMonthAgo);
+    } else if (timeframe === "three_months") {
+      const threeMonthsAgo = now - 90 * 24 * 60 * 60 * 1000;
+      list = list.filter((order) => order.createdAtMs >= threeMonthsAgo);
+    }
+
+    // Sort Order
+    if (sortOrder === "newest") {
+      list.sort((a, b) => b.createdAtMs - a.createdAtMs);
+    } else if (sortOrder === "oldest") {
+      list.sort((a, b) => a.createdAtMs - b.createdAtMs);
+    } else if (sortOrder === "highest_price") {
+      list.sort((a, b) => (b.grandTotal || 0) - (a.grandTotal || 0));
+    }
+
+    return list;
+  }, [orders, statusFilter, searchQuery, timeframe, sortOrder]);
+
+  const filteredStats = useMemo(() => {
+    const delivered = filteredOrders.filter((order) => order.status === "delivered");
+    const earned = delivered.reduce((sum, order) => sum + orderCommission(order, commission.defaultPercent, commission.perProductEnabled), 0);
+    return {
+      totalSales: filteredOrders.reduce((sum, order) => sum + order.grandTotal, 0),
+      totalCommission: earned,
+      deliveredCount: delivered.length,
+      canceledCount: filteredOrders.filter((order) => order.status === "canceled").length,
+    };
+  }, [filteredOrders, commission]);
+
+  const handleResetFilters = () => {
+    setStatusFilter("all");
+    setSearchQuery("");
+    setTimeframe("all");
+    setSortOrder("newest");
+  };
+
   const stats = useMemo(() => {
     const delivered = orders.filter((order) => order.status === "delivered");
     const pending = orders.filter((order) => !["delivered", "canceled", "returned"].includes(order.status));
@@ -236,9 +320,66 @@ export function AmbassadorPortal() {
 
     <div className="ambassador-dashboard-grid">
       <section className="ambassador-orders-panel">
-        <div className="ambassador-panel-title"><div><small>آخر النشاط</small><h3>طلبات عميلاتك</h3></div><b>{orders.length}</b></div>
-        {ordersLoading && orders.length === 0 ? <div className="ambassador-orders-loading"><span /><p>جاري تحديث الطلبات...</p></div> : orders.length === 0 ? <div className="ambassador-no-orders"><ShoppingBag /><h4>ابدئي أول عملية بيع</h4><p>اختاري المنتجات وأدخلي بيانات عميلتك عند إتمام الطلب.</p><Link href="/#collection">تصفّح المنتجات</Link></div>
-          : <div className="ambassador-order-list">{orders.map((order) => <OrderCard compact key={order.orderId} orderId={order.orderId} status={order.status} createdAt={order.createdAtMs} total={order.grandTotal} itemCount={order.itemsCount} items={order.payload?.items} delivery={order.externalDelivery} trackingToken={order.trackingToken} ambassadorPhone={order.ambassadorPhone} statusReason={order.statusReason} statusReasonImageUrl={order.statusReasonImageUrl} customer={{ name: order.customerName, phone: order.customerPhone, city: order.customerCity, address: order.customerAddress }} footerExtra={<span className="order-card-commission">عمولتك <strong>{["canceled", "returned"].includes(order.status) ? "0.00" : orderCommission(order, commission.defaultPercent, commission.perProductEnabled).toFixed(2)} د.ل</strong></span>} onCancel={["pending", "processing"].includes(order.status) ? () => void cancelOrder(order.orderId) : undefined} canceling={cancelingOrderId === order.orderId} />)}</div>}
+        <div className="ambassador-panel-title">
+          <div><small>آخر النشاط</small><h3>طلبات عميلاتك</h3></div>
+          <b>{filteredOrders.length} من {orders.length}</b>
+        </div>
+        
+        {orders.length > 0 && (
+          <OrderFilterToolbar
+            statusFilter={statusFilter}
+            onStatusChange={setStatusFilter}
+            counts={counts}
+            searchQuery={searchQuery}
+            onSearchChange={setSearchQuery}
+            searchPlaceholder="بحث برقم الطلب، اسم أو هاتف العميلة، أو القطعة..."
+            timeframe={timeframe}
+            onTimeframeChange={setTimeframe}
+            sortOrder={sortOrder}
+            onSortChange={setSortOrder}
+            onReset={handleResetFilters}
+            totalFilteredCount={filteredOrders.length}
+            totalOriginalCount={orders.length}
+            summaryStats={filteredStats}
+          />
+        )}
+
+        {ordersLoading && orders.length === 0 ? (
+          <div className="ambassador-orders-loading"><span /><p>جاري تحديث الطلبات...</p></div>
+        ) : orders.length === 0 ? (
+          <div className="ambassador-no-orders"><ShoppingBag /><h4>ابدئي أول عملية بيع</h4><p>اختاري المنتجات وأدخلي بيانات عميلتك عند إتمام الطلب.</p><Link href="/#collection">تصفّح المنتجات</Link></div>
+        ) : filteredOrders.length === 0 ? (
+          <div className="orders-filter-empty">
+            <PackageCheck />
+            <h3>لا توجد طلبات تطابق هذا التصنيف حاليًا</h3>
+            <p>جربي تعديل خيارات البحث أو التصفية لإظهار الطلبات.</p>
+            <button type="button" className="secondary-button reset-filter-action" onClick={handleResetFilters}>إعادة ضبط الفلاتر</button>
+          </div>
+        ) : (
+          <div className="ambassador-order-list">
+            {filteredOrders.map((order) => (
+              <OrderCard
+                compact
+                key={order.orderId}
+                orderId={order.orderId}
+                status={order.status}
+                createdAt={order.createdAtMs}
+                total={order.grandTotal}
+                itemCount={order.itemsCount}
+                items={order.payload?.items}
+                delivery={order.externalDelivery}
+                trackingToken={order.trackingToken}
+                ambassadorPhone={order.ambassadorPhone}
+                statusReason={order.statusReason}
+                statusReasonImageUrl={order.statusReasonImageUrl}
+                customer={{ name: order.customerName, phone: order.customerPhone, city: order.customerCity, address: order.customerAddress }}
+                footerExtra={<span className="order-card-commission">عمولتك <strong>{["canceled", "returned"].includes(order.status) ? "0.00" : orderCommission(order, commission.defaultPercent, commission.perProductEnabled).toFixed(2)} د.ل</strong></span>}
+                onCancel={["pending", "processing"].includes(order.status) ? () => void cancelOrder(order.orderId) : undefined}
+                canceling={cancelingOrderId === order.orderId}
+              />
+            ))}
+          </div>
+        )}
       </section>
       <aside className="ambassador-side-panel">
         <div className="ambassador-profile-card"><small>ملف المندوبة</small><h3>{profile.ambassadorName}</h3><p><Phone /> {profile.ambassadorPhone}</p><p>{profile.ambassadorAddress}</p><button onClick={() => setEditing(true)}>تحديث البيانات</button></div>
