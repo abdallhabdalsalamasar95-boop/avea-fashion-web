@@ -303,12 +303,7 @@ export function AmbassadorPortal() {
       <div><span><BadgeCheck /> رابط شراكتك</span><h3>شاركي المتجر باسمك</h3><p>أي زبونة تفتح الرابط وتطلب، يظهر لها اسمك في الصفحة الرئيسية وتُسجّل العمولة في حسابك تلقائيًا.</p></div>
       <AmbassadorShareButton buildPath={(token) => `/?ref=${encodeURIComponent(token)}`} title="شاركي واربحِي" text={`تسوّقي من Carmen Karla عن طريق شريكتنا المعتمدة ${profile.ambassadorName}.`} label="شاركي واربحِي" />
     </section>
-    <div className="ambassador-stat-grid">
-      <article><span><TrendingUp /></span><small>إجمالي المبيعات</small><strong>{stats.sales.toFixed(2)} د.ل</strong><em>{stats.delivered} طلب موصّل</em></article>
-      <article className="earned"><span><WalletCards /></span><small>إجمالي أرباحك</small><strong>{stats.totalCommission.toFixed(2)} د.ل</strong><em>من الطلبات الموصّلة فقط</em></article>
-      <article><span><Clock3 /></span><small>عمولة معلقة</small><strong>{stats.pending.toFixed(2)} د.ل</strong><em>المعتمد بعد التوصيل: {stats.earned.toFixed(2)} د.ل</em></article>
-      <article><span><PackageCheck /></span><small>نسبة نجاح التوصيل</small><strong>{stats.deliveryRate.toFixed(0)}%</strong><em>{stats.delivered} طلب موصّل</em></article>
-    </div>
+
 
     <section className="ambassador-withdrawal-card">
       <div className="withdrawal-icon"><Landmark /></div>

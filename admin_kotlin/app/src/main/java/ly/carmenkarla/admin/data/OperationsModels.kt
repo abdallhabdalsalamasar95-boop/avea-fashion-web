@@ -22,6 +22,7 @@ data class OrderLine(
     val color: String = "",
     val quantity: Int = 0,
     val price: Double = 0.0,
+    val commissionPercent: Double = 0.0,
     val imageUrl: String = "",
 )
 
@@ -43,8 +44,13 @@ data class OrderPayload(
 @Serializable
 data class AmbassadorSummary(
     val isAmbassadorOrder: Boolean = false,
+    val ambassadorUid: String = "",
     val ambassadorName: String = "",
     val ambassadorPhone: String = "",
+    val ambassadorEmail: String = "",
+    val grossSales: Double = 0.0,
+    val estimatedCommission: Double = 0.0,
+    val commissionPercent: Double = 0.0,
     val commissionTotal: Double = 0.0,
 )
 
@@ -63,8 +69,47 @@ data class Order(
     val source: String = "",
     val payload: OrderPayload = OrderPayload(),
     val ambassadorSummary: AmbassadorSummary = AmbassadorSummary(),
+    val commission: OrderCommission = OrderCommission(),
     val externalDelivery: ExternalDelivery = ExternalDelivery(),
-)
+    val trackingToken: String = "",
+) {
+    val deliveryLocationLabel: String
+        get() {
+            val provider = externalDelivery.providerStatus.lowercase()
+            return when (status) {
+                "pending" -> "المنتج محجوز للطلب"
+                "processing" -> "الطلب قيد التحضير في المخزن"
+                "shipped" -> if (provider.contains("assigned") || provider.contains("picked") || provider.contains("courier") || provider.contains("driver")) "الطلب عند المندوب" else "الطلب لدى شركة التوصيل • قيد التوصيل"
+                "postponed" -> "مؤجل من شركة التوصيل"
+                "delivered" -> "تم تسليم المنتج للزبونة"
+                "returning" -> "الطلب راجع مع المندوب"
+                "returned" -> "المرتجع وصل إلى المخزن"
+                "canceled" -> "الطلب ملغي والمنتج عاد للمخزون"
+                else -> if (externalDelivery.status == "created") "الطلب لدى شركة التوصيل" else "لم يُرسل لشركة التوصيل"
+            }
+        }
+
+    fun fallbackCommission(defaultPercent: Double = 7.0, perProductEnabled: Boolean = true): Double {
+        val summary = ambassadorSummary
+        val direct = summary.commissionTotal.takeIf { it > 0 }
+            ?: summary.estimatedCommission.takeIf { it > 0 }
+        if (direct != null) return direct
+
+        val gross = summary.grossSales.takeIf { it > 0 } ?: grandTotal.takeIf { it > 0 } ?: payload.pricing.grandTotal
+        val summaryPercent = summary.commissionPercent.takeIf { it > 0 } ?: defaultPercent
+        if (summary.grossSales > 0 && summary.commissionPercent > 0) {
+            return gross * summaryPercent.coerceIn(0.0, 100.0) / 100.0
+        }
+
+        val linesValue = payload.items.sumOf { line ->
+            val percent = if (perProductEnabled && line.commissionPercent > 0) line.commissionPercent else summaryPercent
+            (line.price * line.quantity) * percent.coerceIn(0.0, 100.0) / 100.0
+        }
+        if (linesValue > 0) return linesValue
+
+        return gross * summaryPercent.coerceIn(0.0, 100.0) / 100.0
+    }
+}
 
 @Serializable
 data class OrdersResponse(
@@ -135,6 +180,7 @@ data class Withdrawal(
     val amount: Double = 0.0,
     val status: String = "pending",
     val createdAtMs: Long = 0,
+    val updatedAtMs: Long = 0,
 )
 
 @Serializable
@@ -178,6 +224,12 @@ data class AccountingSummary(
     val costOfGoods: Double = 0.0,
     val grossProfit: Double = 0.0,
     val ambassadorCommissions: Double = 0.0,
+    val approvedAmbassadorCommissions: Double = 0.0,
+    val pendingAmbassadorCommissions: Double = 0.0,
+    val pipelineAmbassadorCommissions: Double = 0.0,
+    val availableAmbassadorBalance: Double = 0.0,
+    val reservedWithdrawalBalance: Double = 0.0,
+    val ambassadorCount: Int = 0,
     val expenses: Double = 0.0,
     val netProfit: Double = 0.0,
     val inventoryPieces: Int = 0,
@@ -185,7 +237,9 @@ data class AccountingSummary(
     val inventorySaleValue: Double = 0.0,
     val inventoryPotentialProfit: Double = 0.0,
     val missingCostProducts: Int = 0,
+    val missingCostSoldPieces: Int = 0,
     val topProducts: List<TopProduct> = emptyList(),
+    val topAmbassadors: List<AmbassadorFinanceProfile> = emptyList(),
 )
 
 @Serializable

@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <style name="Theme.CarmenKarlaShop" parent="android:Theme.Material.Light.NoActionBar">
+        <item name="android:windowBackground">@color/brand_canvas</item>
+        <item name="android:statusBarColor">@color/brand_canvas</item>
+        <item name="android:windowLightStatusBar">true</item>
+        <!-- Android 12+ shows its own splash; blank the icon so only our welcome screen appears. -->
+        <item name="android:windowSplashScreenBackground">@color/brand_canvas</item>
+        <item name="android:windowSplashScreenAnimatedIcon">@drawable/splash_no_icon</item>
+        <item name="android:windowSplashScreenIconBackgroundColor">@android:color/transparent</item>
+    </style>
+</resources>

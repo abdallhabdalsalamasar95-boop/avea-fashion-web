@@ -73,15 +73,30 @@ class Repository(private val context: Context) {
     fun invalidate() {
         cachedApi = null
         cachedBaseUrl = ""
+        cachedOrders = null
+    }
+
+    private var cachedOrders: List<Order>? = null
+
+    fun invalidateOrders() {
+        cachedOrders = null
     }
 
     suspend fun dashboard(): DashboardSummary = withContext(Dispatchers.IO) { api().dashboard() }
 
-    suspend fun orders(status: String = ""): List<Order> = withContext(Dispatchers.IO) {
-        api().orders(status = status).items
+    suspend fun orders(status: String = "", forceRefresh: Boolean = false): List<Order> = withContext(Dispatchers.IO) {
+        if (!forceRefresh && status.isBlank() && !cachedOrders.isNullOrEmpty()) {
+            return@withContext cachedOrders!!
+        }
+        val items = api().orders(status = status).items
+        if (status.isBlank()) {
+            cachedOrders = items
+        }
+        items
     }
 
     suspend fun setOrderStatus(orderId: String, status: String) = withContext(Dispatchers.IO) {
+        invalidateOrders()
         val response = api().updateOrderStatus(
             orderId,
             JsonObject(mapOf("status" to JsonPrimitive(status))),
@@ -98,6 +113,7 @@ class Repository(private val context: Context) {
         customerName: String,
         customerPhone: String,
     ) = withContext(Dispatchers.IO) {
+        invalidateOrders()
         val response = api().createExternalSale(
             JsonObject(
                 mapOf(
@@ -118,12 +134,86 @@ class Repository(private val context: Context) {
         if (!response.ok) error(response.error.ifBlank { "تعذر حفظ المبيعة الخارجية" })
     }
 
+    suspend fun deleteAdminOrder(id: String) = withContext(Dispatchers.IO) {
+        invalidateOrders()
+        val response = api().deleteAdminOrder(id)
+        if (!response.ok) error(response.error.ifBlank { "تعذر حذف المبيعة الخارجية" })
+    }
+
     suspend fun dispatchOrder(orderId: String) = withContext(Dispatchers.IO) {
+        invalidateOrders()
         val response = api().dispatchToDarbSabeel(orderId)
         if (!response.ok) error(response.error.ifBlank { "تعذر إرسال الطلب لدرب السبيل" })
     }
 
     suspend fun ambassadors(): AmbassadorsResponse = withContext(Dispatchers.IO) { api().ambassadors() }
+
+    suspend fun ambassadorFinanceSummary(): AmbassadorFinanceSummaryResponse =
+        withContext(Dispatchers.IO) { api().ambassadorFinanceSummary() }
+
+    suspend fun ambassadorFinanceDetail(key: String): AmbassadorFinanceDetailResponse =
+        withContext(Dispatchers.IO) { api().ambassadorFinanceDetail(key) }
+
+    suspend fun createManualCommission(
+        profile: AmbassadorFinanceProfile,
+        amount: Double,
+        note: String,
+        status: String = "approved",
+    ): AmbassadorCommissionRecord = withContext(Dispatchers.IO) {
+        val response = api().createManualCommission(
+            JsonObject(
+                mapOf(
+                    "ambassadorKey" to JsonPrimitive(profile.key),
+                    "ambassadorUid" to JsonPrimitive(profile.uid),
+                    "ambassadorName" to JsonPrimitive(profile.name),
+                    "ambassadorEmail" to JsonPrimitive(profile.email),
+                    "ambassadorPhone" to JsonPrimitive(profile.phone),
+                    "amount" to JsonPrimitive(amount),
+                    "note" to JsonPrimitive(note),
+                    "status" to JsonPrimitive(status),
+                ),
+            ),
+        )
+        response.item
+    }
+
+    suspend fun updateOrderCommission(
+        orderId: String,
+        status: String,
+        approvedAmount: Double,
+        note: String,
+    ): AmbassadorCommissionRecord = withContext(Dispatchers.IO) {
+        val response = api().updateOrderCommission(
+            orderId,
+            JsonObject(
+                mapOf(
+                    "status" to JsonPrimitive(status),
+                    "approvedAmount" to JsonPrimitive(approvedAmount),
+                    "note" to JsonPrimitive(note),
+                ),
+            ),
+        )
+        response.item
+    }
+
+    suspend fun updateManualCommission(
+        recordId: String,
+        status: String,
+        approvedAmount: Double,
+        note: String,
+    ): AmbassadorCommissionRecord = withContext(Dispatchers.IO) {
+        val response = api().updateManualCommission(
+            recordId,
+            JsonObject(
+                mapOf(
+                    "status" to JsonPrimitive(status),
+                    "approvedAmount" to JsonPrimitive(approvedAmount),
+                    "note" to JsonPrimitive(note),
+                ),
+            ),
+        )
+        response.item
+    }
 
     suspend fun customers(activeDays: Int = 60): CustomersResponse =
         withContext(Dispatchers.IO) { api().customers(activeDays) }

@@ -244,6 +244,13 @@ function TrackingView() {
             </div>
             <p className="reason-text">{reasonText}</p>
 
+            {(currentStatus === "returning" || currentStatus === "returned") && (
+              <div className="returning-items-warning">
+                <strong>القطع المُرجعة:</strong>
+                <p>هذه القطع قيد الإرجاع إلى المخزن. سيتم إعادة النظر في طلبك بعد استلام المنتجات.</p>
+              </div>
+            )}
+
             {/* Multiple Reason Images Gallery */}
             {reasonImages.length > 0 && (
               <div className="reason-gallery">

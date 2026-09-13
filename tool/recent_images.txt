@@ -1,0 +1,25 @@
+﻿D:\flutter_projects\CarmenKarla\design\photo_2026-08-20_01-01-38.jpg | 08-20 01:02 | 49KB
+D:\flutter_projects\CarmenKarla\design\photo.jpg | 08-20 01:02 | 93KB
+C:\Users\libya\Desktop\لقطة الشاشة 2026-08-17 203814.png | 08-17 20:38 | 503KB
+C:\Users\libya\Desktop\AVEA-Fashion-GitHub\web_storefront\public\icon.png | 08-16 04:59 | 245KB
+C:\Users\libya\Desktop\AVEA-Fashion-GitHub\web_storefront\public\icon-512.png | 08-16 04:59 | 245KB
+C:\Users\libya\Desktop\AVEA-Fashion-GitHub\web_storefront\public\icon-192.png | 08-16 04:59 | 38KB
+C:\Users\libya\Desktop\AVEA-Fashion-GitHub\web_storefront\public\apple-touch-icon.png | 08-16 04:59 | 34KB
+C:\Users\libya\Desktop\AVEA-Fashion-GitHub\web\splash\img\light-4x.png | 08-16 04:59 | 144KB
+C:\Users\libya\Desktop\AVEA-Fashion-GitHub\web\splash\img\light-3x.png | 08-16 04:59 | 100KB
+C:\Users\libya\Desktop\AVEA-Fashion-GitHub\web\splash\img\light-2x.png | 08-16 04:59 | 58KB
+C:\Users\libya\Desktop\AVEA-Fashion-GitHub\web\splash\img\light-1x.png | 08-16 04:59 | 24KB
+C:\Users\libya\Desktop\AVEA-Fashion-GitHub\web\splash\img\dark-4x.png | 08-16 04:59 | 144KB
+C:\Users\libya\Desktop\AVEA-Fashion-GitHub\web\splash\img\dark-3x.png | 08-16 04:59 | 100KB
+C:\Users\libya\Desktop\AVEA-Fashion-GitHub\web\splash\img\dark-2x.png | 08-16 04:59 | 58KB
+C:\Users\libya\Desktop\AVEA-Fashion-GitHub\web\splash\img\dark-1x.png | 08-16 04:59 | 24KB
+C:\Users\libya\Desktop\AVEA-Fashion-GitHub\web\icons\Icon-maskable-512.png | 08-16 04:59 | 21KB
+C:\Users\libya\Desktop\AVEA-Fashion-GitHub\web\icons\Icon-maskable-192.png | 08-16 04:59 | 5KB
+C:\Users\libya\Desktop\AVEA-Fashion-GitHub\web\icons\Icon-512.png | 08-16 04:59 | 8KB
+C:\Users\libya\Desktop\AVEA-Fashion-GitHub\web\icons\Icon-192.png | 08-16 04:59 | 5KB
+C:\Users\libya\Desktop\AVEA-Fashion-GitHub\web\favicon.png | 08-16 04:59 | 1KB
+C:\Users\libya\Desktop\AVEA-Fashion-GitHub\macos\Runner\Assets.xcassets\AppIcon.appiconset\app_icon_512.png | 08-16 04:59 | 36KB
+C:\Users\libya\Desktop\AVEA-Fashion-GitHub\macos\Runner\Assets.xcassets\AppIcon.appiconset\app_icon_64.png | 08-16 04:59 | 2KB
+C:\Users\libya\Desktop\AVEA-Fashion-GitHub\macos\Runner\Assets.xcassets\AppIcon.appiconset\app_icon_16.png | 08-16 04:59 | 1KB
+C:\Users\libya\Desktop\AVEA-Fashion-GitHub\macos\Runner\Assets.xcassets\AppIcon.appiconset\app_icon_256.png | 08-16 04:59 | 14KB
+C:\Users\libya\Desktop\AVEA-Fashion-GitHub\macos\Runner\Assets.xcassets\AppIcon.appiconset\app_icon_32.png | 08-16 04:59 | 1KB

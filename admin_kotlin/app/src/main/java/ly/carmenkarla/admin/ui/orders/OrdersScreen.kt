@@ -4,12 +4,14 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
@@ -20,12 +22,16 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ContentCopy
 import androidx.compose.material.icons.filled.LocalShipping
+import androidx.compose.material.icons.filled.Share
 import androidx.compose.material3.AssistChip
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.ExposedDropdownMenuBox
+import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -83,10 +89,16 @@ fun OrdersScreen() {
     // Loaded unfiltered so every chip can show a live count and switching needs no refetch.
     LaunchedEffect(reload) {
         error = ""
-        orders = null
-        runCatching { repository.orders() }
+        val force = reload > 0
+        if (orders == null) {
+            val fastCached = runCatching { repository.orders(forceRefresh = false) }.getOrNull()
+            if (!fastCached.isNullOrEmpty()) {
+                orders = fastCached
+            }
+        }
+        runCatching { repository.orders(forceRefresh = force) }
             .onSuccess { orders = it }
-            .onFailure { error = it.message ?: "تعذر تحميل الطلبات" }
+            .onFailure { if (orders == null) error = it.message ?: "تعذر تحميل الطلبات" }
     }
 
     fun refresh() {
@@ -207,6 +219,16 @@ fun OrdersScreen() {
                                 busyOrderId = ""
                             }
                         },
+                        onDeleteExternal = { orderId ->
+                            busyOrderId = orderId
+                            message = ""
+                            scope.launch {
+                                runCatching { repository.deleteAdminOrder(orderId) }
+                                    .onSuccess { message = "تم حذف المبيعة وإرجاع الكمية للمخزون ✓"; refresh() }
+                                    .onFailure { message = it.message ?: "تعذر حذف المبيعة" }
+                                busyOrderId = ""
+                            }
+                        },
                     )
                 }
             }
@@ -225,13 +247,17 @@ fun OrdersScreen() {
     }
 }
 
+@OptIn(androidx.compose.material3.ExperimentalMaterial3Api::class)
 @Composable
 private fun ExternalSaleDialog(onDismiss: () -> Unit, onSaved: () -> Unit) {
     val repository = AdminApp.instance.repository
     val scope = rememberCoroutineScope()
     var products by remember { mutableStateOf<List<Product>>(emptyList()) }
+    var productsBaseUrl by remember { mutableStateOf("") }
     var selected by remember { mutableStateOf<Product?>(null) }
     var query by remember { mutableStateOf("") }
+    var productMenuOpen by remember { mutableStateOf(false) }
+    var sizeMenuOpen by remember { mutableStateOf(false) }
     var size by remember { mutableStateOf("") }
     var color by remember { mutableStateOf("") }
     var quantity by remember { mutableStateOf("1") }
@@ -241,8 +267,13 @@ private fun ExternalSaleDialog(onDismiss: () -> Unit, onSaved: () -> Unit) {
     var saving by remember { mutableStateOf(false) }
     var error by remember { mutableStateOf("") }
 
-    LaunchedEffect(Unit) { products = runCatching { repository.products() }.getOrDefault(emptyList()) }
+    LaunchedEffect(Unit) {
+        productsBaseUrl = repository.settings.currentBaseUrl().trimEnd('/')
+        products = runCatching { repository.products() }.getOrDefault(emptyList())
+    }
     val filtered = products.filter { query.isBlank() || it.name.contains(query, true) || it.productCode.contains(query, true) }
+    val productOptions = filtered.ifEmpty { selected?.let { listOf(it) } ?: emptyList() }
+    val sizeOptions = selected?.sizes.orEmpty().filter { it.isNotBlank() }
     val selectedStock = selected?.sizeQuantities?.get(size)?.takeIf { size.isNotBlank() }
         ?: selected?.availableStock ?: 0
 
@@ -251,18 +282,86 @@ private fun ExternalSaleDialog(onDismiss: () -> Unit, onSaved: () -> Unit) {
         title = { Text("مبيعة خارجية") },
         text = {
             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                OutlinedTextField(query, { query = it }, label = { Text("ابحث عن المنتج") }, singleLine = true)
-                if (selected == null) {
-                    LazyColumn(Modifier.heightIn(max = 150.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                        items(filtered, key = { it.id }) { product ->
-                            TextButton(onClick = { selected = product; salePrice = product.price.toString(); query = product.name }) {
-                                Text("${product.name} · مخزون ${product.availableStock}", maxLines = 1, overflow = TextOverflow.Ellipsis)
+                ExposedDropdownMenuBox(
+                    expanded = productMenuOpen,
+                    onExpandedChange = { productMenuOpen = !productMenuOpen },
+                ) {
+                    OutlinedTextField(
+                        value = selected?.name ?: query,
+                        onValueChange = { query = it; if (selected != null) selected = null; productMenuOpen = true },
+                        readOnly = false,
+                        label = { Text("اختر المنتج") },
+                        trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = productMenuOpen) },
+                        modifier = Modifier
+                            .menuAnchor()
+                            .fillMaxWidth(),
+                    )
+                    ExposedDropdownMenu(
+                        expanded = productMenuOpen,
+                        onDismissRequest = { productMenuOpen = false },
+                    ) {
+                        productOptions.forEach { product ->
+                            DropdownMenuItem(
+                                text = {
+                                    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                                        val image = product.imageUrl.ifBlank { product.imageUrls.firstOrNull().orEmpty() }
+                                        if (image.isNotBlank()) AsyncImage(
+                                            model = if (image.startsWith("http")) image else productsBaseUrl + if (image.startsWith("/")) image else "/$image",
+                                            contentDescription = product.name,
+                                            contentScale = ContentScale.Crop,
+                                            modifier = Modifier.size(42.dp).clip(RoundedCornerShape(6.dp)),
+                                        )
+                                        Text("${product.name} • مخزون ${product.availableStock}", maxLines = 1, overflow = TextOverflow.Ellipsis)
+                                    }
+                                },
+                                onClick = {
+                                    selected = product
+                                    salePrice = product.price.toString()
+                                    size = ""
+                                    color = ""
+                                    query = product.name
+                                    productMenuOpen = false
+                                    error = ""
+                                },
+                            )
+                        }
+                    }
+                }
+
+                if (selected != null) {
+                    Text("المنتج: ${selected!!.name}", style = MaterialTheme.typography.titleSmall)
+                    if (sizeOptions.isNotEmpty()) {
+                        ExposedDropdownMenuBox(
+                            expanded = sizeMenuOpen,
+                            onExpandedChange = { sizeMenuOpen = !sizeMenuOpen },
+                        ) {
+                            OutlinedTextField(
+                                value = size.ifBlank { "اختر المقاس" },
+                                onValueChange = {},
+                                readOnly = true,
+                                label = { Text("المقاس") },
+                                trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = sizeMenuOpen) },
+                                modifier = Modifier
+                                    .menuAnchor()
+                                    .fillMaxWidth(),
+                            )
+                            ExposedDropdownMenu(
+                                expanded = sizeMenuOpen,
+                                onDismissRequest = { sizeMenuOpen = false },
+                            ) {
+                                sizeOptions.forEach { option ->
+                                    DropdownMenuItem(
+                                        text = { Text(option) },
+                                        onClick = {
+                                            size = option
+                                            sizeMenuOpen = false
+                                            error = ""
+                                        },
+                                    )
+                                }
                             }
                         }
                     }
-                } else {
-                    Text("المنتج: ${selected!!.name}", style = MaterialTheme.typography.titleSmall)
-                    if (selected!!.sizes.isNotEmpty()) OutlinedTextField(size, { size = it }, label = { Text("المقاس (اختياري)") }, singleLine = true)
                     if (selected!!.colors.isNotEmpty()) OutlinedTextField(color, { color = it }, label = { Text("اللون (اختياري)") }, singleLine = true)
                     Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                         OutlinedTextField(quantity, { quantity = it }, label = { Text("الكمية") }, singleLine = true, modifier = Modifier.weight(1f))
@@ -271,20 +370,24 @@ private fun ExternalSaleDialog(onDismiss: () -> Unit, onSaved: () -> Unit) {
                     Text("المخزون المتاح: $selectedStock", style = MaterialTheme.typography.labelSmall)
                     OutlinedTextField(customerName, { customerName = it }, label = { Text("اسم العميل (اختياري)") }, singleLine = true)
                     OutlinedTextField(customerPhone, { customerPhone = it }, label = { Text("هاتف العميل (اختياري)") }, singleLine = true)
-                    TextButton(onClick = { selected = null; query = "" }) { Text("تغيير المنتج") }
+                    TextButton(onClick = { selected = null; query = ""; size = ""; color = ""; salePrice = ""; error = "" }) { Text("تغيير المنتج") }
                 }
                 if (error.isNotBlank()) Text(error, color = MaterialTheme.colorScheme.error)
             }
         },
         confirmButton = {
             Button(
-                enabled = !saving && selected != null,
+                enabled = !saving && selected != null && (selected!!.sizes.isEmpty() || size.isNotBlank()),
                 onClick = {
                     val product = selected ?: return@Button
                     val count = quantity.toIntOrNull() ?: 0
                     val price = salePrice.toDoubleOrNull() ?: 0.0
                     if (count < 1 || price <= 0 || count > selectedStock) {
                         error = "تحقق من الكمية والسعر والمخزون"
+                        return@Button
+                    }
+                    if (product.sizes.isNotEmpty() && size.isBlank()) {
+                        error = "اختر المقاس أولاً"
                         return@Button
                     }
                     saving = true
@@ -308,6 +411,7 @@ private fun OrderCard(
     busy: Boolean,
     onStatus: (String) -> Unit,
     onDispatch: () -> Unit,
+    onDeleteExternal: (String) -> Unit,
 ) {
     var expanded by remember { mutableStateOf(false) }
     val shortId = order.orderId.takeLast(6)
@@ -343,6 +447,11 @@ private fun OrderCard(
                 "${order.customerPhone} · ${order.city}",
                 style = MaterialTheme.typography.labelMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+            Text(
+                "موقع القطعة: ${order.deliveryLocationLabel}",
+                style = MaterialTheme.typography.labelSmall,
+                color = MaterialTheme.colorScheme.secondary,
             )
             Text(
                 "${order.itemsCount} قطعة · ${"%.2f".format(order.grandTotal)} د.ل",
@@ -407,6 +516,29 @@ private fun OrderCard(
                     style = MaterialTheme.typography.labelSmall,
                     color = MaterialTheme.colorScheme.error,
                 )
+            }
+
+            val trackingLink = if (order.trackingToken.isNotBlank()) {
+                "https://karmencarla.onrender.com/track/?order=${java.net.URLEncoder.encode(order.orderId, "UTF-8")}&token=${java.net.URLEncoder.encode(order.trackingToken, "UTF-8")}"
+            } else {
+                "https://karmencarla.onrender.com/track/?order=${java.net.URLEncoder.encode(order.orderId, "UTF-8")}"
+            }
+            val clipboard = LocalClipboardManager.current
+            OutlinedButton(
+                onClick = { clipboard.setText(AnnotatedString(trackingLink)) },
+                modifier = Modifier.fillMaxWidth(),
+            ) {
+                Icon(Icons.Default.Share, null, Modifier.size(16.dp))
+                Spacer(Modifier.width(6.dp))
+                Text("متابعة الطلبية ونسخ رابط التتبع")
+            }
+
+            if (order.source == "external_sale") {
+                OutlinedButton(
+                    onClick = { onDeleteExternal(order.orderId) },
+                    enabled = !busy,
+                    modifier = Modifier.fillMaxWidth(),
+                ) { Text("إلغاء / حذف المبيعة وإرجاع المخزون") }
             }
 
             if (expanded) {

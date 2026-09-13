@@ -59,11 +59,32 @@ interface AdminApi {
     @POST("admin/orders/external-sale")
     suspend fun createExternalSale(@Body body: JsonObject): OrderActionResponse
 
+    @DELETE("admin/orders/{id}")
+    suspend fun deleteAdminOrder(@Path("id") id: String): SimpleResponse
+
     @POST("orders/{id}/delivery/darb-sabeel")
     suspend fun dispatchToDarbSabeel(@Path("id") id: String): OrderActionResponse
 
     @GET("admin/ambassadors")
     suspend fun ambassadors(): AmbassadorsResponse
+
+    @GET("admin/ambassadors/summary")
+    suspend fun ambassadorFinanceSummary(
+        @Query("fromMs") fromMs: Long = 0,
+        @Query("toMs") toMs: Long = 0,
+    ): AmbassadorFinanceSummaryResponse
+
+    @GET("admin/ambassadors/detail")
+    suspend fun ambassadorFinanceDetail(@Query("key") key: String): AmbassadorFinanceDetailResponse
+
+    @POST("admin/ambassador-commissions/manual")
+    suspend fun createManualCommission(@Body body: JsonObject): CommissionActionResponse
+
+    @PUT("admin/ambassador-commissions/order/{id}")
+    suspend fun updateOrderCommission(@Path("id") id: String, @Body body: JsonObject): CommissionActionResponse
+
+    @PUT("admin/ambassador-commissions/{id}")
+    suspend fun updateManualCommission(@Path("id") id: String, @Body body: JsonObject): CommissionActionResponse
 
     @GET("admin/customers")
     suspend fun customers(@Query("activeDays") activeDays: Int = 60): CustomersResponse

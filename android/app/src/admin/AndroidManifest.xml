@@ -1,0 +1,20 @@
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
+    <!-- The admin app only embeds the cloud dashboard. Customer notifications
+         and advertising are deliberately excluded from this flavor. -->
+    <uses-permission
+        android:name="android.permission.POST_NOTIFICATIONS"
+        tools:node="remove" />
+
+    <application
+        android:icon="@drawable/admin_launcher_icon"
+        android:roundIcon="@drawable/admin_launcher_icon"
+        tools:replace="android:icon">
+        <meta-data
+            android:name="com.google.android.gms.ads.APPLICATION_ID"
+            tools:node="remove" />
+        <meta-data
+            android:name="com.google.firebase.messaging.default_notification_channel_id"
+            tools:node="remove" />
+    </application>
+</manifest>

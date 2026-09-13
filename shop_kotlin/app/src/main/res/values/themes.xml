@@ -1,0 +1,9 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <style name="Theme.CarmenKarlaShop" parent="android:Theme.Material.Light.NoActionBar">
+        <!-- Matches the welcome screen so the cold start never flashes a different colour. -->
+        <item name="android:windowBackground">@color/brand_canvas</item>
+        <item name="android:statusBarColor">@color/brand_canvas</item>
+        <item name="android:windowLightStatusBar">true</item>
+    </style>
+</resources>

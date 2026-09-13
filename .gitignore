@@ -1,0 +1,17 @@
+/build/
+**/build/
+**/.gradle/
+**/.next/
+**/.turbo/
+**/node_modules/
+.dart_tool/
+.packages
+.flutter-plugins
+.flutter-plugins-dependencies
+.idea/
+.vscode/
+*.iml
+android/.gradle/
+**/google-services.json
+**/GoogleService-Info.plist
+.env

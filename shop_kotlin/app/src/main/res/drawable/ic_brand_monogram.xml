@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- CK monogram on a 100x100 grid; the C is a 250 degree arc opening to the right. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="100dp"
+    android:height="100dp"
+    android:viewportWidth="100"
+    android:viewportHeight="100">
+    <path
+        android:pathData="M48.58,37.52 A15.23,15.23 0 1 0 48.58,62.48"
+        android:strokeColor="#C08B76"
+        android:strokeWidth="3.9"
+        android:strokeLineCap="round"
+        android:strokeLineJoin="round" />
+    <path
+        android:pathData="M62.11,33.2 L62.11,66.8"
+        android:strokeColor="#C08B76"
+        android:strokeWidth="3.9"
+        android:strokeLineCap="round" />
+    <path
+        android:pathData="M62.11,50 L75.4,33.2"
+        android:strokeColor="#C08B76"
+        android:strokeWidth="3.9"
+        android:strokeLineCap="round" />
+    <path
+        android:pathData="M62.11,50 L75.4,66.8"
+        android:strokeColor="#C08B76"
+        android:strokeWidth="3.9"
+        android:strokeLineCap="round" />
+</vector>
