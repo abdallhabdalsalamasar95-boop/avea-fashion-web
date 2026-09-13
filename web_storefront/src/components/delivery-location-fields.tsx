@@ -49,7 +49,9 @@ export function DeliveryLocationFields({ value, onChange }: Props) {
     const source = Array.from(new Set([...fallbackCities, ...available]));
     return value.city && !source.includes(value.city) ? [value.city, ...source] : source;
   }, [destinations, value.city]);
-  const areas = useMemo(() => destinations[value.city] ?? fallbackAreas[value.city] ?? [], [destinations, value.city]);
+  const areas = useMemo(() => (destinations[value.city] ?? fallbackAreas[value.city] ?? [])
+    // "طرابلس" is a city label, not a selectable delivery area within Tripoli.
+    .filter((area) => !(normalize(value.city) === "طرابلس" && normalize(area) === "طرابلس")), [destinations, value.city]);
 
   const matches = useMemo(() => {
     const term = normalize(query);

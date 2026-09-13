@@ -3,6 +3,7 @@ package ly.carmenkarla.shop.ui.ambassador
 import android.content.Intent
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -18,6 +19,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
@@ -44,6 +46,7 @@ import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Tab
@@ -677,6 +680,9 @@ private fun AmbassadorOrderCard(order: AmbassadorOrder, onCancel: (String) -> Un
             StatusPill(order.status)
         }
         if (order.customerPhone.isNotBlank()) Text(order.customerPhone, style = MaterialTheme.typography.bodySmall)
+        if (order.customerAddress.isNotBlank()) {
+            Text(order.customerAddress, style = MaterialTheme.typography.bodySmall)
+        }
         Text(
             listOfNotNull(
                 order.customerCity.takeIf { it.isNotBlank() },
@@ -705,6 +711,16 @@ private fun AmbassadorOrderCard(order: AmbassadorOrder, onCancel: (String) -> Un
         }
         val code = order.externalDelivery.referenceCode.ifBlank { order.externalDelivery.trackingNumber }
         if (code.isNotBlank()) Text("رقم الشحنة: $code", style = MaterialTheme.typography.labelSmall)
+        if (order.status == "returning") {
+            Text(
+                "الطلب قيد الإرجاع إلى المخزن ولا يعتبر متاحًا حاليًا.",
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.error,
+            )
+        }
+        if (order.statusReason.isNotBlank()) {
+            Text("ملاحظة الحالة: ${order.statusReason}", style = MaterialTheme.typography.labelSmall)
+        }
         if (order.trackingToken.isNotBlank()) {
             OutlinedButton(
                 onClick = {
@@ -760,6 +776,10 @@ private fun OrdersTab(
     onStartOrder: () -> Unit,
     onCancel: (String) -> Unit,
 ) {
+    var query by remember { mutableStateOf("") }
+    var statusFilter by remember { mutableStateOf("all") }
+    var timeframe by remember { mutableStateOf("all") }
+    var sortOrder by remember { mutableStateOf("newest") }
     if (orders == null) {
         Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
             CircularProgressIndicator(Modifier.size(30.dp))
@@ -791,6 +811,40 @@ private fun OrdersTab(
         return
     }
 
+    val now = System.currentTimeMillis()
+    val visibleOrders = orders
+        .filter { order ->
+            when (statusFilter) {
+                "active" -> order.status in setOf("pending", "processing", "shipped", "returning")
+                "completed" -> order.status in setOf("delivered", "returned")
+                "postponed", "canceled" -> order.status == statusFilter
+                else -> true
+            }
+        }
+        .filter { order ->
+            val term = query.trim()
+            term.isBlank() || order.orderId.contains(term, true) ||
+                order.customerName.contains(term, true) || order.customerPhone.contains(term) ||
+                order.customerCity.contains(term, true) || order.customerAddress.contains(term, true) ||
+                order.payload.items.any { it.name.contains(term, true) || it.productCode.contains(term, true) }
+        }
+        .filter { order ->
+            when (timeframe) {
+                "today" -> order.createdAtMs >= now - 24L * 60 * 60 * 1000
+                "week" -> order.createdAtMs >= now - 7L * 24 * 60 * 60 * 1000
+                "month" -> order.createdAtMs >= now - 30L * 24 * 60 * 60 * 1000
+                "three_months" -> order.createdAtMs >= now - 90L * 24 * 60 * 60 * 1000
+                else -> true
+            }
+        }
+        .sortedWith(
+            when (sortOrder) {
+                "oldest" -> compareBy { it.createdAtMs }
+                "highest_price" -> compareByDescending<AmbassadorOrder> { it.grandTotal }
+                else -> compareByDescending { it.createdAtMs }
+            },
+        )
+
     LazyColumn(
         Modifier.fillMaxSize(),
         contentPadding = PaddingValues(16.dp),
@@ -801,62 +855,44 @@ private fun OrdersTab(
                 Text(message, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.error)
             }
         }
-        items(orders, key = { it.orderId }) { order ->
-            Column(
-                Modifier
-                    .fillMaxWidth()
-                    .clip(RoundedCornerShape(16.dp))
-                    .background(MaterialTheme.colorScheme.surface)
-                    .border(1.dp, MaterialTheme.colorScheme.outlineVariant, RoundedCornerShape(16.dp))
-                    .padding(14.dp),
-                verticalArrangement = Arrangement.spacedBy(5.dp),
-            ) {
-                Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                    Text(
-                        order.customerName.ifBlank { "#${order.orderId.takeLast(6)}" },
-                        style = MaterialTheme.typography.titleSmall,
-                    )
-                    StatusPill(order.status)
-                }
-                if (order.customerPhone.isNotBlank()) {
-                    Text(order.customerPhone, style = MaterialTheme.typography.bodySmall)
-                }
-                Text(
-                    listOfNotNull(
-                        order.customerCity.takeIf { it.isNotBlank() },
-                        formatDate(order.createdAtMs).takeIf { it.isNotBlank() },
-                        "${order.itemsCount} قطعة",
-                    ).joinToString(" · "),
-                    style = MaterialTheme.typography.labelSmall,
-                )
-                if (order.payload.items.isNotEmpty()) {
-                    LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                        items(order.payload.items) { line ->
-                            OrderLineThumb(line.imageUrl, line.size)
-                        }
-                    }
-                }
-                Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                    Text(formatMoney(order.grandTotal), style = MaterialTheme.typography.titleSmall)
-                    val commission = order.ambassadorSummary.commission
-                    if (commission > 0) {
-                        Text(
-                            "عمولتك ${formatMoney(commission)}",
-                            style = MaterialTheme.typography.labelMedium,
-                            color = MaterialTheme.colorScheme.primary,
-                            fontWeight = FontWeight.SemiBold,
-                        )
-                    }
-                }
-                val code = order.externalDelivery.referenceCode
-                    .ifBlank { order.externalDelivery.trackingNumber }
-                if (code.isNotBlank()) {
-                    Text("رقم الشحنة: $code", style = MaterialTheme.typography.labelSmall)
-                }
-                if (order.isCancelable) {
-                    OutlinedButton(onClick = { onCancel(order.orderId) }) { Text("إلغاء الطلب") }
+        item {
+            OutlinedTextField(
+                value = query,
+                onValueChange = { query = it },
+                label = { Text("بحث برقم الطلب أو العميلة أو القطعة") },
+                singleLine = true,
+                modifier = Modifier.fillMaxWidth(),
+            )
+        }
+        item {
+            Row(Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                listOf("all" to "الكل", "active" to "النشطة", "completed" to "المكتملة", "postponed" to "المؤجلة", "canceled" to "الملغاة").forEach { (id, label) ->
+                    FilterChip(selected = statusFilter == id, onClick = { statusFilter = id }, label = { Text(label) })
                 }
             }
+        }
+        item {
+            Row(Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                listOf("all" to "كل الفترات", "today" to "اليوم", "week" to "7 أيام", "month" to "30 يوم", "three_months" to "3 أشهر").forEach { (id, label) ->
+                    FilterChip(selected = timeframe == id, onClick = { timeframe = id }, label = { Text(label) })
+                }
+            }
+        }
+        item {
+            Row(Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                listOf("newest" to "الأحدث", "oldest" to "الأقدم", "highest_price" to "الأعلى قيمة").forEach { (id, label) ->
+                    FilterChip(selected = sortOrder == id, onClick = { sortOrder = id }, label = { Text(label) })
+                }
+            }
+        }
+        item {
+            Text("${visibleOrders.size} من ${orders.size} طلب", style = MaterialTheme.typography.labelMedium)
+        }
+        if (visibleOrders.isEmpty()) {
+            item { Text("لا توجد طلبات تطابق البحث أو الفلاتر.", style = MaterialTheme.typography.bodyMedium) }
+        }
+        items(visibleOrders, key = { it.orderId }) { order ->
+            AmbassadorOrderCard(order, onCancel)
         }
     }
 }
