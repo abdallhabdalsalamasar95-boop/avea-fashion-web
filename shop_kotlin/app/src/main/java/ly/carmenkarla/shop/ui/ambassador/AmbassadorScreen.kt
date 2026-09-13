@@ -727,6 +727,13 @@ private fun AmbassadorOrderCard(order: AmbassadorOrder, onCancel: (String) -> Un
                         color = MaterialTheme.colorScheme.error,
                     )
                 }
+                if (order.status == "returned") {
+                    Text(
+                        "تم استلام الشحنة المرتجعة في المخزن، وسيتم تحديد حالة القطع بعد الفحص.",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
                 if (order.statusReason.isNotBlank()) {
                     val title = when (order.status) {
                         "postponed" -> "سبب التأجيل"
@@ -853,7 +860,7 @@ private fun OrdersTab(
             when (statusFilter) {
                 "active" -> order.status in setOf("pending", "processing", "shipped", "returning")
                 "completed" -> order.status in setOf("delivered", "returned")
-                "postponed", "canceled" -> order.status == statusFilter
+                "postponed", "canceled", "returning" -> order.status == statusFilter
                 else -> true
             }
         }
@@ -862,6 +869,8 @@ private fun OrdersTab(
             term.isBlank() || order.orderId.contains(term, true) ||
                 order.customerName.contains(term, true) || order.customerPhone.contains(term) ||
                 order.customerCity.contains(term, true) || order.customerAddress.contains(term, true) ||
+                order.externalDelivery.referenceCode.contains(term, true) ||
+                order.externalDelivery.trackingNumber.contains(term, true) ||
                 order.payload.items.any { it.name.contains(term, true) || it.productCode.contains(term, true) }
         }
         .filter { order ->
@@ -902,7 +911,7 @@ private fun OrdersTab(
         }
         item {
             Row(Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                listOf("all" to "الكل", "active" to "النشطة", "completed" to "المكتملة", "postponed" to "المؤجلة", "canceled" to "الملغاة").forEach { (id, label) ->
+                listOf("all" to "الكل", "active" to "النشطة", "completed" to "المكتملة", "postponed" to "المؤجلة", "returning" to "قيد الإرجاع", "canceled" to "الملغاة").forEach { (id, label) ->
                     FilterChip(selected = statusFilter == id, onClick = { statusFilter = id }, label = { Text(label) })
                 }
             }
@@ -923,6 +932,16 @@ private fun OrdersTab(
         }
         item {
             Text("${visibleOrders.size} من ${orders.size} طلب", style = MaterialTheme.typography.labelMedium)
+        }
+        if (query.isNotBlank() || statusFilter != "all" || timeframe != "all" || sortOrder != "newest") {
+            item {
+                TextButton(onClick = {
+                    query = ""
+                    statusFilter = "all"
+                    timeframe = "all"
+                    sortOrder = "newest"
+                }) { Text("إعادة ضبط الفلاتر") }
+            }
         }
         if (visibleOrders.isEmpty()) {
             item { Text("لا توجد طلبات تطابق البحث أو الفلاتر.", style = MaterialTheme.typography.bodyMedium) }

@@ -22,8 +22,8 @@ android {
         applicationId = "ly.carmenkarla.shop"
         minSdk = 24
         targetSdk = 35
-        versionCode = 13
-        versionName = "1.0.4"
+        versionCode = 14
+        versionName = "1.0.5"
     }
 
     buildTypes {
