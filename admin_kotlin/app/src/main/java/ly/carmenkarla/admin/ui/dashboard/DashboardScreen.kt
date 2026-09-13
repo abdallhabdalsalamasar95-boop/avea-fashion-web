@@ -268,8 +268,19 @@ fun DashboardScreen(
                 horizontalArrangement = Arrangement.spacedBy(12.dp),
                 verticalArrangement = Arrangement.spacedBy(12.dp),
             ) {
-                operationalSummary?.let { data ->
-                    item(span = { GridItemSpan(2) }) { OperationalSummaryCard(data) }
+                item(span = { GridItemSpan(2) }) {
+                    OperationalSummaryCard(
+                        operationalSummary ?: OperationalDashboardSummary(
+                            totalOrders = data.orders.total,
+                            counts = ly.carmenkarla.admin.data.OperationalOrderCounts(
+                                pending = data.orders.pending,
+                                processing = data.orders.processing,
+                                shipped = data.orders.shipped,
+                                delivered = data.orders.delivered,
+                                canceled = data.orders.canceled,
+                            ),
+                        ),
+                    )
                 }
                 item(span = { GridItemSpan(2) }) { DashboardHeroCard(data, presence) }
                 item(span = { GridItemSpan(2) }) { LiveVisitorsCard(presence, onOpenLiveVisitors) }
