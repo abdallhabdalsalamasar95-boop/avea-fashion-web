@@ -32,7 +32,7 @@ function CheckoutPageContent() {
   const { user, loading: authLoading } = useAuth();
   const { ambassador, commission, loading: ambassadorLoading } = useAmbassador();
   const appearance = useSiteAppearance();
-  const [customer, setCustomer] = useState<CheckoutCustomer>({ name: "", phone: "", address: "", city: "طرابلس", area: "" });
+  const [customer, setCustomer] = useState<CheckoutCustomer>({ name: "", phone: "", address: "", city: "", area: "" });
   const [couponCode, setCouponCode] = useState("");
   const [appliedCouponCode, setAppliedCouponCode] = useState("");
   const [couponFeedback, setCouponFeedback] = useState("");
@@ -71,7 +71,7 @@ function CheckoutPageContent() {
     if (authLoading || ambassadorLoading || !shareLoaded || profileInitialized.current) return;
     profileInitialized.current = true;
     if (ambassador || sharedOrder) {
-      setCustomer({ name: "", phone: "", address: "", city: "طرابلس", area: "" });
+      setCustomer({ name: "", phone: "", address: "", city: "", area: "" });
       return;
     }
     try {
@@ -150,7 +150,7 @@ function CheckoutPageContent() {
   const submit = async (event: FormEvent) => {
     event.preventDefault(); setError("");
     if (!checkoutCart.length) return setError("لم يتم اختيار منتج للشراء.");
-    if (!customer.name.trim() || !customer.phone.trim() || !customer.area.trim() || !customer.address.trim()) return setError("يرجى تعبئة جميع بيانات التوصيل.");
+    if (!customer.name.trim() || !customer.phone.trim() || !customer.city.trim() || !customer.area.trim() || !customer.address.trim()) return setError("يرجى اختيار المدينة والمنطقة من القائمة وإكمال بيانات التوصيل.");
     setSending(true);
     const id = checkoutAttemptId.current || `o_${Date.now()}_${crypto.randomUUID().slice(0, 8)}`;
     checkoutAttemptId.current = id;

@@ -90,6 +90,7 @@ export function DeliveryLocationFields({ value, onChange }: Props) {
       {normalize(query).length >= 2 && matches.length === 0 && !loading && <small className="location-provider-note">لا توجد منطقة مطابقة في قائمة شركة التوصيل. اختاري المدينة ثم المنطقة من القائمة.</small>}
     </label>
     <label><span>المدينة *</span><select required value={value.city} onChange={(event) => onChange({ ...value, city: event.target.value, area: "" })}>
+      <option value="" disabled>اختاري المدينة</option>
       {cities.map((city) => <option key={city} value={city}>{city}</option>)}
     </select></label>
     <label><span>المنطقة *</span>{areas.length

@@ -8,7 +8,7 @@ import { useAuth } from "@/components/auth-provider";
 import { CheckoutCustomer } from "@/lib/types";
 import { readCustomerProfile, writeCustomerProfile } from "@/lib/customer-storage";
 
-const emptyProfile: CheckoutCustomer = { name: "", phone: "", address: "", city: "طرابلس", area: "" };
+const emptyProfile: CheckoutCustomer = { name: "", phone: "", address: "", city: "", area: "" };
 
 export default function AddressPage() {
   const { user, loading: authLoading } = useAuth();
