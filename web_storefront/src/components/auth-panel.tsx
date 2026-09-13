@@ -1,9 +1,13 @@
 "use client";
 
 import { FirebaseError } from "firebase/app";
-import { Check, Eye, EyeOff, Lock, LogOut, Mail, Sparkles, UserRound } from "lucide-react";
+import { Check, Eye, EyeOff, Lock, LogOut, Mail, MapPin, Phone, Sparkles, UserRound } from "lucide-react";
 import { FormEvent, useState } from "react";
 import { useAuth } from "@/components/auth-provider";
+import { auth } from "@/lib/firebase";
+import { writeCustomerProfile } from "@/lib/customer-storage";
+import { CheckoutCustomer } from "@/lib/types";
+import { API_BASE_URL } from "@/lib/api";
 
 const messages: Record<string, string> = {
   "auth/invalid-credential": "البريد الإلكتروني / رقم الهاتف أو كلمة المرور غير صحيحة.",
@@ -38,6 +42,10 @@ export function AuthPanel({ onSuccess, title, subtitle }: AuthPanelProps = {}) {
   const { user, loading, login, register, google, resetPassword, logout } = useAuth();
   const [identifier, setIdentifier] = useState("");
   const [password, setPassword] = useState("");
+  const [name, setName] = useState("");
+  const [phone, setPhone] = useState("");
+  const [city, setCity] = useState("");
+  const [address, setAddress] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(true);
   const [mode, setMode] = useState<"login" | "register" | "forgot">("login");
@@ -83,11 +91,25 @@ export function AuthPanel({ onSuccess, title, subtitle }: AuthPanelProps = {}) {
       setMessage("كلمة المرور يجب أن لا تقل عن 6 خانات.");
       return;
     }
+    if (mode === "register" && (name.trim().length < 2 || phone.trim().length < 8 || city.trim().length < 2 || address.trim().length < 4)) {
+      setMessage("أكملي الاسم والهاتف والمدينة والعنوان أولًا.");
+      return;
+    }
     void run(async () => {
       if (mode === "login") {
         await login(cleanId, password);
       } else {
         await register(cleanId, password);
+        const customer: CheckoutCustomer = { name: name.trim(), phone: phone.trim(), city: city.trim(), area: "", address: address.trim() };
+        writeCustomerProfile(customer);
+        const token = await auth.currentUser?.getIdToken();
+        if (token) {
+          await fetch(`${API_BASE_URL}/customers/me/profile`, {
+            method: "PUT",
+            headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+            body: JSON.stringify(customer),
+          });
+        }
       }
     });
   };
@@ -158,6 +180,13 @@ export function AuthPanel({ onSuccess, title, subtitle }: AuthPanelProps = {}) {
             onChange={(e) => setIdentifier(e.target.value)}
           />
         </div>
+
+        {mode === "register" && <>
+          <div className="auth-input-group"><UserRound className="input-icon" /><input required type="text" autoComplete="name" placeholder="الاسم الكامل" value={name} onChange={(e) => setName(e.target.value)} /></div>
+          <div className="auth-input-group"><Phone className="input-icon" /><input required type="tel" dir="ltr" autoComplete="tel" placeholder="رقم الهاتف" value={phone} onChange={(e) => setPhone(e.target.value)} /></div>
+          <div className="auth-input-group"><MapPin className="input-icon" /><input required type="text" placeholder="المدينة" value={city} onChange={(e) => setCity(e.target.value)} /></div>
+          <div className="auth-input-group"><MapPin className="input-icon" /><input required type="text" autoComplete="street-address" placeholder="العنوان بالتفصيل" value={address} onChange={(e) => setAddress(e.target.value)} /></div>
+        </>}
 
         {mode !== "forgot" && (
           <div className="auth-input-group">

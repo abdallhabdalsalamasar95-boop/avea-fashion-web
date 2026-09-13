@@ -1,11 +1,11 @@
 import { updateProfile, User } from "firebase/auth";
 import { AmbassadorProfile } from "@/lib/types";
+import { API_BASE_URL } from "@/lib/api";
 
 const PROFILE_TIMEOUT_MS = 8000;
 export const AMBASSADOR_PROFILE_UPDATED_EVENT = "avea:ambassador-profile-updated";
 const FIREBASE_PROJECT_ID = process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID || "carmenkarlaapp";
 const FIRESTORE_DOCUMENTS_URL = `https://firestore.googleapis.com/v1/projects/${FIREBASE_PROJECT_ID}/databases/(default)/documents`;
-const API_BASE_URL = (process.env.NEXT_PUBLIC_API_BASE_URL || "https://carmenkarla-backend.onrender.com").replace(/\/$/, "");
 
 function withTimeout<T>(promise: Promise<T>, message: string): Promise<T> {
   return new Promise<T>((resolve, reject) => {

@@ -20,7 +20,7 @@
 const DEFAULT_API_BASE_URL =
   typeof window !== "undefined" &&
   (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1")
-    ? "https://carmenkarla-backend.onrender.com"
+    ? "http://localhost:8080"
     : "https://carmenkarla-backend.onrender.com";
 
 export const API_BASE_URL = (

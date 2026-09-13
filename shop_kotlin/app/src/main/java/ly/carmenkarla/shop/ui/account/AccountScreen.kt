@@ -517,6 +517,11 @@ private fun SignInPane(onSignedIn: () -> Unit) {
     val context = LocalContext.current
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
+    var name by remember { mutableStateOf("") }
+    var phone by remember { mutableStateOf("") }
+    var city by remember { mutableStateOf("") }
+    var address by remember { mutableStateOf("") }
+    var ambassadorMode by remember { mutableStateOf(false) }
     var registerMode by remember { mutableStateOf(false) }
     var busy by remember { mutableStateOf(false) }
     var message by remember { mutableStateOf("") }
@@ -602,10 +607,69 @@ private fun SignInPane(onSignedIn: () -> Unit) {
             }
         }
         item {
+            if (registerMode) {
+                Row(
+                    Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                ) {
+                    Button(
+                        onClick = { ambassadorMode = false },
+                        modifier = Modifier.weight(1f),
+                    ) { Text("زبونة") }
+                    Button(
+                        onClick = { ambassadorMode = true },
+                        modifier = Modifier.weight(1f),
+                    ) { Text("مندوبة") }
+                }
+            }
+        }
+        if (registerMode) {
+            item {
+                OutlinedTextField(
+                    value = name,
+                    onValueChange = { name = it },
+                    label = { Text("الاسم الكامل") },
+                    singleLine = true,
+                    shape = RoundedCornerShape(10.dp),
+                    modifier = Modifier.fillMaxWidth(),
+                )
+            }
+            item {
+                OutlinedTextField(
+                    value = phone,
+                    onValueChange = { phone = it },
+                    label = { Text("رقم الهاتف") },
+                    singleLine = true,
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Phone),
+                    shape = RoundedCornerShape(10.dp),
+                    modifier = Modifier.fillMaxWidth(),
+                )
+            }
+            item {
+                OutlinedTextField(
+                    value = city,
+                    onValueChange = { city = it },
+                    label = { Text("المدينة") },
+                    singleLine = true,
+                    shape = RoundedCornerShape(10.dp),
+                    modifier = Modifier.fillMaxWidth(),
+                )
+            }
+            item {
+                OutlinedTextField(
+                    value = address,
+                    onValueChange = { address = it },
+                    label = { Text("العنوان بالتفصيل") },
+                    shape = RoundedCornerShape(10.dp),
+                    modifier = Modifier.fillMaxWidth(),
+                )
+            }
+        }
+        item {
             OutlinedTextField(
                 value = email,
                 onValueChange = { email = it },
-                label = { Text("البريد الإلكتروني") },
+                label = { Text(if (registerMode && !ambassadorMode) "رقم الهاتف أو البريد الإلكتروني" else "البريد الإلكتروني") },
                 singleLine = true,
                 shape = RoundedCornerShape(10.dp),
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
@@ -632,12 +696,21 @@ private fun SignInPane(onSignedIn: () -> Unit) {
         item {
             Button(
                 onClick = {
+                    val authIdentifier = if (registerMode && !ambassadorMode) {
+                        phone.trim().filter { it.isDigit() }.let { digits -> if (digits.length >= 8) "$digits@carmenkarla.ly" else email.trim() }
+                    } else email.trim()
                     busy = true
                     message = ""
                     scope.launch {
                         runCatching {
-                            if (registerMode) app.account.register(email, password)
-                            else app.account.signIn(email, password)
+                            if (registerMode) {
+                                app.account.register(authIdentifier, password)
+                                val details = ly.carmenkarla.shop.data.CustomerDetails(name.trim(), phone.trim(), city.trim(), address = address.trim())
+                                app.rememberCustomer(details)
+                                val token = app.account.idToken()
+                                if (ambassadorMode) app.repository.saveAmbassadorProfile(token, name, phone, address)
+                                else app.repository.saveCustomerProfile(token, details)
+                            } else app.account.signIn(email, password)
                         }
                             .onSuccess {
                                 password = ""
@@ -647,7 +720,7 @@ private fun SignInPane(onSignedIn: () -> Unit) {
                         busy = false
                     }
                 },
-                enabled = !busy && email.isNotBlank() && password.length >= 6,
+                enabled = !busy && (if (registerMode && !ambassadorMode) phone.isNotBlank() else email.isNotBlank()) && password.length >= 6,
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(48.dp),

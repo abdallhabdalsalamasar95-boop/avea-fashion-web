@@ -41,6 +41,12 @@ interface ShopApi {
 
     @GET("customers/me/orders")
     suspend fun accountOrders(@Header("Authorization") authorization: String): AccountOrdersResponse
+    
+        @PUT("customers/me/profile")
+        suspend fun saveCustomerProfile(
+            @Header("Authorization") authorization: String,
+            @Body body: JsonObject,
+        ): SimpleResponse
 
     @GET("ambassadors/me/profile")
     suspend fun ambassadorProfile(@Header("Authorization") authorization: String): AmbassadorProfileResponse

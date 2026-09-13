@@ -75,7 +75,7 @@ export default function AccountPage() {
     let active = true;
     let currentOrders: SavedCustomerOrder[] = readCustomerOrders(user?.uid).filter((order) => order.orderChannel !== "ambassador").map((order) => ({ ...order, status: normalizedStatus(order.status) }));
     setOrders(currentOrders);
-    setFilter("all");
+    setStatusFilter("all");
 
     const refresh = async () => {
       setSyncing(true);
