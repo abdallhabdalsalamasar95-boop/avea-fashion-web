@@ -87,7 +87,7 @@ export function DeliveryLocationFields({ value, onChange }: Props) {
           </button>
         </li>)}
       </ul>}
-      {normalize(query).length >= 2 && matches.length === 0 && !loading && <small className="location-provider-note">لا توجد نتيجة مطابقة، اختاري المدينة والمنطقة يدويًا.</small>}
+      {normalize(query).length >= 2 && matches.length === 0 && !loading && <small className="location-provider-note">لا توجد منطقة مطابقة في قائمة شركة التوصيل. اختاري المدينة ثم المنطقة من القائمة.</small>}
     </label>
     <label><span>المدينة *</span><select required value={value.city} onChange={(event) => onChange({ ...value, city: event.target.value, area: "" })}>
       {cities.map((city) => <option key={city} value={city}>{city}</option>)}
@@ -97,8 +97,10 @@ export function DeliveryLocationFields({ value, onChange }: Props) {
           <option value="">اختاري المنطقة</option>
           {areas.map((area) => <option key={area} value={area}>{area}</option>)}
         </select>
-      : <input required autoComplete="address-level3" placeholder={loading ? "جاري تحميل المناطق..." : "اكتبي المنطقة"} value={value.area} onChange={(event) => onChange({ ...value, area: event.target.value })} />}
-      {!loading && !providerAvailable && <small className="location-provider-note">تعذر تحميل القائمة الآن، يمكنكِ كتابة المنطقة يدويًا.</small>}
+      : <select required disabled value="">
+          <option value="">{loading ? "جاري تحميل المناطق..." : "اختاري مدينة لها مناطق متاحة"}</option>
+        </select>}
+      {!loading && !providerAvailable && <small className="location-provider-note">تعذر تحميل قائمة مناطق شركة التوصيل. حدّثي الصفحة ثم اختاري المنطقة من القائمة.</small>}
     </label>
   </>;
 }

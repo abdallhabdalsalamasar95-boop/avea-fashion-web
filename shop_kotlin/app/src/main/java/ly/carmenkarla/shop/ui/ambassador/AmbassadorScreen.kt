@@ -662,6 +662,7 @@ private fun AmbassadorOrdersSection(
 
 @Composable
 private fun AmbassadorOrderCard(order: AmbassadorOrder, onCancel: (String) -> Unit) {
+    val context = LocalContext.current
     Column(
         Modifier
             .fillMaxWidth()
@@ -704,6 +705,29 @@ private fun AmbassadorOrderCard(order: AmbassadorOrder, onCancel: (String) -> Un
         }
         val code = order.externalDelivery.referenceCode.ifBlank { order.externalDelivery.trackingNumber }
         if (code.isNotBlank()) Text("رقم الشحنة: $code", style = MaterialTheme.typography.labelSmall)
+        if (order.trackingToken.isNotBlank()) {
+            OutlinedButton(
+                onClick = {
+                    val link = "${ly.carmenkarla.shop.data.STOREFRONT_URL}/track/?order=" +
+                        java.net.URLEncoder.encode(order.orderId, "UTF-8") +
+                        "&token=" + java.net.URLEncoder.encode(order.trackingToken, "UTF-8")
+                    context.startActivity(
+                        Intent.createChooser(
+                            Intent(Intent.ACTION_SEND).apply {
+                                type = "text/plain"
+                                putExtra(Intent.EXTRA_TEXT, "تابعي حالة طلبك من Carmen Karla:\n$link")
+                            },
+                            "مشاركة رابط تتبع الطلب",
+                        ),
+                    )
+                },
+                modifier = Modifier.fillMaxWidth(),
+            ) {
+                Icon(Icons.Default.Share, null, Modifier.size(16.dp))
+                Spacer(Modifier.width(6.dp))
+                Text("مشاركة التتبع")
+            }
+        }
         if (order.isCancelable) OutlinedButton(onClick = { onCancel(order.orderId) }) { Text("إلغاء الطلب") }
     }
 }

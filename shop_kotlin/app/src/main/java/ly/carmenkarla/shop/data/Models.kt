@@ -387,6 +387,7 @@ data class AmbassadorOrder(
     val orderId: String = "",
     val status: String = "pending",
     val createdAtMs: Long = 0,
+    val trackingToken: String = "",
     val customerName: String = "",
     val customerPhone: String = "",
     val customerCity: String = "",
