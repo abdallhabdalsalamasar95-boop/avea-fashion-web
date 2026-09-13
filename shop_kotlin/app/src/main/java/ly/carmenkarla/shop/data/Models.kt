@@ -393,6 +393,8 @@ data class AmbassadorOrder(
     val customerAddress: String = "",
     val customerCity: String = "",
     val statusReason: String = "",
+    val statusReasonImageUrl: String = "",
+    val statusReasonImageUrls: List<String> = emptyList(),
     @Serializable(with = LenientDouble::class) val grandTotal: Double = 0.0,
     @Serializable(with = LenientInt::class) val itemsCount: Int = 0,
     val payload: AmbassadorOrderPayload = AmbassadorOrderPayload(),

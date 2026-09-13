@@ -1,8 +1,10 @@
 package ly.carmenkarla.shop.ui.ambassador
 
 import android.content.Intent
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -666,22 +668,20 @@ private fun AmbassadorOrdersSection(
 @Composable
 private fun AmbassadorOrderCard(order: AmbassadorOrder, onCancel: (String) -> Unit) {
     val context = LocalContext.current
+    var expanded by remember { mutableStateOf(false) }
     Column(
         Modifier
             .fillMaxWidth()
             .clip(RoundedCornerShape(16.dp))
             .background(MaterialTheme.colorScheme.surface)
             .border(1.dp, MaterialTheme.colorScheme.outlineVariant, RoundedCornerShape(16.dp))
+            .clickable { expanded = !expanded }
             .padding(14.dp),
         verticalArrangement = Arrangement.spacedBy(5.dp),
     ) {
         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
             Text(order.customerName.ifBlank { "#${order.orderId.takeLast(6)}" }, style = MaterialTheme.typography.titleSmall)
             StatusPill(order.status)
-        }
-        if (order.customerPhone.isNotBlank()) Text(order.customerPhone, style = MaterialTheme.typography.bodySmall)
-        if (order.customerAddress.isNotBlank()) {
-            Text(order.customerAddress, style = MaterialTheme.typography.bodySmall)
         }
         Text(
             listOfNotNull(
@@ -711,15 +711,51 @@ private fun AmbassadorOrderCard(order: AmbassadorOrder, onCancel: (String) -> Un
         }
         val code = order.externalDelivery.referenceCode.ifBlank { order.externalDelivery.trackingNumber }
         if (code.isNotBlank()) Text("رقم الشحنة: $code", style = MaterialTheme.typography.labelSmall)
-        if (order.status == "returning") {
-            Text(
-                "الطلب قيد الإرجاع إلى المخزن ولا يعتبر متاحًا حاليًا.",
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.error,
-            )
-        }
-        if (order.statusReason.isNotBlank()) {
-            Text("ملاحظة الحالة: ${order.statusReason}", style = MaterialTheme.typography.labelSmall)
+        Text(
+            if (expanded) "إخفاء التفاصيل" else "عرض التفاصيل",
+            style = MaterialTheme.typography.labelSmall,
+            color = MaterialTheme.colorScheme.primary,
+        )
+        AnimatedVisibility(expanded) {
+            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                if (order.customerPhone.isNotBlank()) Text("هاتف العميلة: ${order.customerPhone}", style = MaterialTheme.typography.bodySmall)
+                if (order.customerAddress.isNotBlank()) Text("العنوان: ${order.customerAddress}", style = MaterialTheme.typography.bodySmall)
+                if (order.status == "returning") {
+                    Text(
+                        "الطلب قيد الإرجاع إلى المخزن. لا تُحتسب عمولته ولا تعتبر القطع متاحة للبيع قبل الفحص.",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.error,
+                    )
+                }
+                if (order.statusReason.isNotBlank()) {
+                    val title = when (order.status) {
+                        "postponed" -> "سبب التأجيل"
+                        "canceled" -> "سبب الإلغاء"
+                        "returning" -> "سبب الإرجاع"
+                        "returned" -> "ملاحظة المرتجع"
+                        else -> "ملاحظة الحالة"
+                    }
+                    Text("$title: ${order.statusReason}", style = MaterialTheme.typography.bodySmall)
+                }
+                val reasonImages = (order.statusReasonImageUrls + order.statusReasonImageUrl)
+                    .filter { it.isNotBlank() }
+                    .distinct()
+                if (reasonImages.isNotEmpty()) {
+                    Text("صور من شركة التوصيل", style = MaterialTheme.typography.labelMedium)
+                    LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        items(reasonImages.take(6)) { imageUrl ->
+                            AsyncImage(
+                                model = imageUrl,
+                                contentDescription = "صورة سبب الحالة",
+                                contentScale = ContentScale.Crop,
+                                modifier = Modifier
+                                    .size(width = 100.dp, height = 120.dp)
+                                    .clip(RoundedCornerShape(8.dp)),
+                            )
+                        }
+                    }
+                }
+            }
         }
         if (order.trackingToken.isNotBlank()) {
             OutlinedButton(
