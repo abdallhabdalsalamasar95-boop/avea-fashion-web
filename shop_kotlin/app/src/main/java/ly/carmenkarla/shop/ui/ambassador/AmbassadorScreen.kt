@@ -29,6 +29,9 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.AutoAwesome
 import androidx.compose.material.icons.filled.CheckCircle
+import androidx.compose.material.icons.filled.ContentCopy
+import androidx.compose.material.icons.filled.KeyboardArrowDown
+import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material.icons.filled.LocalShipping
 import androidx.compose.material.icons.filled.Payments
 import androidx.compose.material.icons.filled.Person
@@ -41,9 +44,12 @@ import androidx.compose.material.icons.filled.SupportAgent
 import androidx.compose.material.icons.filled.TrendingUp
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LinearProgressIndicator
@@ -74,10 +80,13 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
@@ -229,15 +238,6 @@ fun AmbassadorScreen(onBack: (() -> Unit)?, onStartOrder: () -> Unit) {
                                     .onFailure { message = it.message.orEmpty() }
                             }
                         },
-                        onCancel = { orderId ->
-                            scope.launch {
-                                message = ""
-                                val token = app.account.idToken()
-                                runCatching { app.repository.cancelAmbassadorOrder(token, orderId) }
-                                    .onSuccess { reload++ }
-                                    .onFailure { message = it.message.orEmpty() }
-                            }
-                        },
                     )
                     else -> OrdersTab(
                         orders = orders,
@@ -269,7 +269,6 @@ private fun DashboardTab(
     onEditProfile: () -> Unit,
     onShare: () -> Unit,
     onWithdraw: () -> Unit,
-    onCancel: (String) -> Unit,
 ) {
     val stats = statsOf(orders.orEmpty())
     val context = LocalContext.current
@@ -429,14 +428,6 @@ private fun DashboardTab(
                 Text(profile.ambassadorAddress, style = MaterialTheme.typography.bodySmall)
                 TextButton(onClick = onEditProfile) { Text("تحديث البيانات") }
             }
-        }
-
-        item {
-            AmbassadorOrdersSection(
-                orders = orders,
-                onStartOrder = onStartOrder,
-                onCancel = onCancel,
-            )
         }
     }
 }
@@ -606,70 +597,9 @@ private fun WithdrawalCard(wallet: WithdrawalSummary?, onWithdraw: () -> Unit) {
 }
 
 @Composable
-private fun AmbassadorOrdersSection(
-    orders: List<AmbassadorOrder>?,
-    onStartOrder: () -> Unit,
-    onCancel: (String) -> Unit,
-) {
-    Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
-        Row(
-            Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.Bottom,
-        ) {
-            Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
-                Text("آخر النشاط", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.secondary)
-                Text("طلبات عميلاتي", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
-            }
-            Text(
-                "${orders?.size ?: 0} طلب",
-                style = MaterialTheme.typography.labelMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
-        }
-
-        when {
-            orders == null -> {
-                Box(
-                    Modifier
-                        .fillMaxWidth()
-                        .height(120.dp),
-                    contentAlignment = Alignment.Center,
-                ) { CircularProgressIndicator(Modifier.size(28.dp)) }
-            }
-            orders.isEmpty() -> {
-                Column(
-                    Modifier
-                        .fillMaxWidth()
-                        .clip(RoundedCornerShape(16.dp))
-                        .background(MaterialTheme.colorScheme.surface)
-                        .border(1.dp, MaterialTheme.colorScheme.outlineVariant, RoundedCornerShape(16.dp))
-                        .padding(18.dp),
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.spacedBy(8.dp),
-                ) {
-                    Icon(Icons.Default.ShoppingBag, null, Modifier.size(34.dp), tint = MaterialTheme.colorScheme.secondary)
-                    Text("ابدئي أول عملية بيع", style = MaterialTheme.typography.titleSmall)
-                    Text(
-                        "الطلبات التي تتم من رابطك ستظهر هنا تلقائيًا.",
-                        style = MaterialTheme.typography.bodySmall,
-                        textAlign = TextAlign.Center,
-                    )
-                    TextButton(onClick = onStartOrder) { Text("تصفّحي المنتجات") }
-                }
-            }
-            else -> {
-                orders.forEach { order ->
-                    AmbassadorOrderCard(order, onCancel)
-                }
-            }
-        }
-    }
-}
-
-@Composable
 private fun AmbassadorOrderCard(order: AmbassadorOrder, onCancel: (String) -> Unit) {
     val context = LocalContext.current
+    val clipboard = LocalClipboardManager.current
     var expanded by remember { mutableStateOf(false) }
     var viewedReasonImage by remember { mutableStateOf<String?>(null) }
     val trackingLink = if (order.trackingToken.isNotBlank()) {
@@ -677,132 +607,304 @@ private fun AmbassadorOrderCard(order: AmbassadorOrder, onCancel: (String) -> Un
             java.net.URLEncoder.encode(order.orderId, "UTF-8") +
             "&token=" + java.net.URLEncoder.encode(order.trackingToken, "UTF-8")
     } else ""
-    Column(
-        Modifier
+
+    val firstLine = order.payload.items.firstOrNull()
+    val otherItemsCount = maxOf(0, order.itemsCount - 1)
+    val app = ShopApp.instance
+
+    Card(
+        modifier = Modifier
             .fillMaxWidth()
-            .clip(RoundedCornerShape(16.dp))
-            .background(MaterialTheme.colorScheme.surface)
-            .border(1.dp, MaterialTheme.colorScheme.outlineVariant, RoundedCornerShape(16.dp))
-            .clickable { expanded = !expanded }
-            .padding(14.dp),
-        verticalArrangement = Arrangement.spacedBy(5.dp),
+            .clip(RoundedCornerShape(12.dp))
+            .clickable { expanded = !expanded },
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surface,
+        ),
+        shape = RoundedCornerShape(12.dp),
+        border = androidx.compose.foundation.BorderStroke(
+            1.dp,
+            if (expanded) MaterialTheme.colorScheme.primary.copy(alpha = 0.35f)
+            else MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.7f),
+        ),
     ) {
-        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-            Text(order.customerName.ifBlank { "#${order.orderId.takeLast(6)}" }, style = MaterialTheme.typography.titleSmall)
-            StatusPill(order.status)
-        }
-        Text(
-            listOfNotNull(
-                order.customerCity.takeIf { it.isNotBlank() },
-                formatDate(order.createdAtMs).takeIf { it.isNotBlank() },
-                "${order.itemsCount} قطعة",
-            ).joinToString(" · "),
-            style = MaterialTheme.typography.labelSmall,
-        )
-        if (order.payload.items.isNotEmpty()) {
-            LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                items(order.payload.items) { line ->
-                    OrderLineThumb(line.imageUrl, line.size)
-                }
-            }
-        }
-        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-            Text(formatMoney(order.grandTotal), style = MaterialTheme.typography.titleSmall)
-            if (order.ambassadorSummary.commission > 0) {
-                Text(
-                    "عمولتك ${formatMoney(order.ambassadorSummary.commission)}",
-                    style = MaterialTheme.typography.labelMedium,
-                    color = MaterialTheme.colorScheme.primary,
-                    fontWeight = FontWeight.SemiBold,
-                )
-            }
-        }
-        val code = order.externalDelivery.referenceCode.ifBlank { order.externalDelivery.trackingNumber }
-        if (code.isNotBlank()) Text("رقم الشحنة: $code", style = MaterialTheme.typography.labelSmall)
-        Text(
-            if (expanded) "إخفاء التفاصيل" else "عرض التفاصيل",
-            style = MaterialTheme.typography.labelSmall,
-            color = MaterialTheme.colorScheme.primary,
-        )
-        AnimatedVisibility(expanded) {
-            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                if (order.customerPhone.isNotBlank()) Text("هاتف العميلة: ${order.customerPhone}", style = MaterialTheme.typography.bodySmall)
-                if (order.customerAddress.isNotBlank()) Text("العنوان: ${order.customerAddress}", style = MaterialTheme.typography.bodySmall)
-                if (order.status == "returning") {
-                    Text(
-                        "الطلب قيد الإرجاع إلى المخزن. لا تُحتسب عمولته ولا تعتبر القطع متاحة للبيع قبل الفحص.",
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.error,
-                    )
-                }
-                if (order.status == "returned") {
-                    Text(
-                        "تم استلام الشحنة المرتجعة في المخزن، وسيتم تحديد حالة القطع بعد الفحص.",
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    )
-                }
-                if (order.statusReason.isNotBlank()) {
-                    val title = when (order.status) {
-                        "postponed" -> "سبب التأجيل"
-                        "canceled" -> "سبب الإلغاء"
-                        "returning" -> "سبب الإرجاع"
-                        "returned" -> "ملاحظة المرتجع"
-                        else -> "ملاحظة الحالة"
+        Column(
+            Modifier.padding(horizontal = 12.dp, vertical = 10.dp),
+            verticalArrangement = Arrangement.spacedBy(6.dp),
+        ) {
+            // Main compact header row: Thumbnail + Details + Status + Arrow
+            Row(
+                Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                // Product Thumbnail
+                Box(
+                    Modifier
+                        .size(width = 44.dp, height = 52.dp)
+                        .clip(RoundedCornerShape(8.dp))
+                        .background(MaterialTheme.colorScheme.surfaceVariant),
+                    contentAlignment = Alignment.BottomEnd,
+                ) {
+                    val resolvedUrl = firstLine?.imageUrl?.takeIf { it.isNotBlank() }?.let { app.repository.absoluteUrl(it) }
+                    if (resolvedUrl != null) {
+                        AsyncImage(
+                            model = resolvedUrl,
+                            contentDescription = firstLine.name,
+                            contentScale = ContentScale.Crop,
+                            modifier = Modifier.fillMaxSize(),
+                        )
+                    } else {
+                        Icon(
+                            Icons.Default.ShoppingBag,
+                            null,
+                            Modifier.size(20.dp).align(Alignment.Center),
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f),
+                        )
                     }
-                    Text("$title: ${order.statusReason}", style = MaterialTheme.typography.bodySmall)
-                }
-                val reasonImages = (order.statusReasonImageUrls + order.statusReasonImageUrl)
-                    .filter { it.isNotBlank() }
-                    .distinct()
-                if (reasonImages.isNotEmpty()) {
-                    Text("صور من شركة التوصيل", style = MaterialTheme.typography.labelMedium)
-                    LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                        items(reasonImages.take(6)) { imageUrl ->
-                            AsyncImage(
-                                model = imageUrl,
-                                contentDescription = "صورة سبب الحالة",
-                                contentScale = ContentScale.Crop,
-                                modifier = Modifier
-                                    .size(width = 82.dp, height = 98.dp)
-                                    .clip(RoundedCornerShape(8.dp))
-                                    .clickable { viewedReasonImage = imageUrl },
+                    if (otherItemsCount > 0) {
+                        Box(
+                            Modifier
+                                .background(Color.Black.copy(alpha = 0.7f), RoundedCornerShape(topStart = 4.dp))
+                                .padding(horizontal = 3.dp, vertical = 1.dp),
+                        ) {
+                            Text(
+                                "+$otherItemsCount",
+                                style = MaterialTheme.typography.labelSmall.copy(fontSize = 9.sp),
+                                color = Color.White,
+                                fontWeight = FontWeight.Bold,
                             )
                         }
                     }
                 }
-                if (trackingLink.isNotBlank() || order.isCancelable) {
+
+                Spacer(Modifier.width(10.dp))
+
+                // Middle Info Column
+                Column(Modifier.weight(1f)) {
                     Row(
                         Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically,
                     ) {
-                        if (trackingLink.isNotBlank()) {
-                            OutlinedButton(
-                                onClick = {
-                                    context.startActivity(
-                                        Intent.createChooser(
-                                            Intent(Intent.ACTION_SEND).apply {
-                                                type = "text/plain"
-                                                putExtra(Intent.EXTRA_TEXT, "تابعي حالة طلبك من Carmen Karla:\n$trackingLink")
-                                            },
-                                            "مشاركة رابط تتبع الطلب",
-                                        ),
-                                    )
-                                },
-                                modifier = Modifier.height(38.dp).weight(1f),
-                                contentPadding = PaddingValues(horizontal = 8.dp, vertical = 0.dp),
-                            ) {
-                                Icon(Icons.Default.Share, null, Modifier.size(14.dp))
-                                Spacer(Modifier.width(4.dp))
-                                Text("مشاركة التتبع", style = MaterialTheme.typography.labelSmall)
+                        Text(
+                            order.customerName.ifBlank { "#${order.orderId.takeLast(6)}" },
+                            style = MaterialTheme.typography.titleSmall,
+                            fontWeight = FontWeight.Bold,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis,
+                            modifier = Modifier.weight(1f, fill = false),
+                        )
+                        StatusPill(order.status)
+                    }
+
+                    Spacer(Modifier.height(2.dp))
+
+                    Text(
+                        listOfNotNull(
+                            order.customerCity.takeIf { it.isNotBlank() },
+                            formatDate(order.createdAtMs).takeIf { it.isNotBlank() },
+                            "${order.itemsCount} قطعة",
+                        ).joinToString(" · "),
+                        style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+
+                    Spacer(Modifier.height(3.dp))
+
+                    Row(
+                        Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        Text(
+                            formatMoney(order.grandTotal),
+                            style = MaterialTheme.typography.labelLarge,
+                            fontWeight = FontWeight.SemiBold,
+                        )
+                        val commission = order.ambassadorSummary.commission
+                        if (commission > 0) {
+                            Text(
+                                if (order.status == "delivered") "عمولتك ${formatMoney(commission)}"
+                                else "عمولة متوقعة ${formatMoney(commission)}",
+                                style = MaterialTheme.typography.labelSmall,
+                                color = if (order.status == "delivered") Color(0xFF2E7D5B) else Brand.RoseDark,
+                                fontWeight = FontWeight.Bold,
+                            )
+                        }
+                    }
+                }
+
+                Spacer(Modifier.width(4.dp))
+
+                Icon(
+                    if (expanded) Icons.Default.KeyboardArrowUp else Icons.Default.KeyboardArrowDown,
+                    contentDescription = if (expanded) "إخفاء التفاصيل" else "عرض التفاصيل",
+                    Modifier.size(18.dp),
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f),
+                )
+            }
+
+            // Expanded Details Section
+            AnimatedVisibility(expanded) {
+                Column(
+                    Modifier
+                        .fillMaxWidth()
+                        .padding(top = 8.dp),
+                    verticalArrangement = Arrangement.spacedBy(8.dp),
+                ) {
+                    HorizontalDivider(
+                        thickness = 0.8.dp,
+                        color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f),
+                    )
+
+                    // Customer & Delivery Details Box
+                    Column(
+                        Modifier
+                            .fillMaxWidth()
+                            .clip(RoundedCornerShape(8.dp))
+                            .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.35f))
+                            .padding(8.dp),
+                        verticalArrangement = Arrangement.spacedBy(4.dp),
+                    ) {
+                        if (order.customerPhone.isNotBlank()) {
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Text(
+                                    "الهاتف: ${order.customerPhone}",
+                                    style = MaterialTheme.typography.bodySmall,
+                                    modifier = Modifier.weight(1f),
+                                )
+                                Icon(
+                                    Icons.Default.ContentCopy,
+                                    "نسخ الهاتف",
+                                    Modifier
+                                        .size(15.dp)
+                                        .clickable { clipboard.setText(AnnotatedString(order.customerPhone)) },
+                                    tint = Brand.Muted,
+                                )
                             }
                         }
-                        if (order.isCancelable) {
-                            OutlinedButton(
-                                onClick = { onCancel(order.orderId) },
-                                modifier = Modifier.height(38.dp).weight(1f),
-                                contentPadding = PaddingValues(horizontal = 8.dp, vertical = 0.dp),
-                            ) { Text("إلغاء الطلب", style = MaterialTheme.typography.labelSmall) }
+                        if (order.customerAddress.isNotBlank()) {
+                            Text(
+                                "العنوان: ${order.customerAddress}",
+                                style = MaterialTheme.typography.bodySmall,
+                            )
+                        }
+                        val code = order.externalDelivery.referenceCode.ifBlank { order.externalDelivery.trackingNumber }
+                        if (code.isNotBlank()) {
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Text(
+                                    "رقم الشحنة: $code",
+                                    style = MaterialTheme.typography.labelSmall,
+                                    color = Brand.Ink,
+                                    modifier = Modifier.weight(1f),
+                                )
+                                Icon(
+                                    Icons.Default.ContentCopy,
+                                    "نسخ الشحنة",
+                                    Modifier
+                                        .size(15.dp)
+                                        .clickable { clipboard.setText(AnnotatedString(code)) },
+                                    tint = Brand.Muted,
+                                )
+                            }
+                        }
+                    }
+
+                    // Product Line Thumbs List (when more than 1 product)
+                    if (order.payload.items.size > 1) {
+                        Text("القطع المطلوبة:", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.secondary)
+                        LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                            items(order.payload.items) { line ->
+                                OrderLineThumb(line.imageUrl, line.size)
+                            }
+                        }
+                    }
+
+                    // Status notes & warnings
+                    if (order.status == "returning") {
+                        Text(
+                            "الطلب قيد الإرجاع إلى المخزن. لا تُحتسب عمولته ولا تعتبر القطع متاحة للبيع قبل الفحص.",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.error,
+                        )
+                    }
+                    if (order.status == "returned") {
+                        Text(
+                            "تم استلام الشحنة المرتجعة في المخزن، وسيتم تحديد حالة القطع بعد الفحص.",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                    }
+                    if (order.statusReason.isNotBlank()) {
+                        val title = when (order.status) {
+                            "postponed" -> "سبب التأجيل"
+                            "canceled" -> "سبب الإلغاء"
+                            "returning" -> "سبب الإرجاع"
+                            "returned" -> "ملاحظة المرتجع"
+                            else -> "ملاحظة الحالة"
+                        }
+                        Text("$title: ${order.statusReason}", style = MaterialTheme.typography.bodySmall)
+                    }
+
+                    // Delivery Reason Photos (if any)
+                    val reasonImages = (order.statusReasonImageUrls + order.statusReasonImageUrl)
+                        .filter { it.isNotBlank() }
+                        .distinct()
+                    if (reasonImages.isNotEmpty()) {
+                        Text("صور من شركة التوصيل (اضغطي للتكبير)", style = MaterialTheme.typography.labelSmall, color = Brand.Rose)
+                        LazyRow(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                            items(reasonImages.take(6)) { imageUrl ->
+                                AsyncImage(
+                                    model = imageUrl,
+                                    contentDescription = "صورة سبب الحالة",
+                                    contentScale = ContentScale.Crop,
+                                    modifier = Modifier
+                                        .size(width = 72.dp, height = 86.dp)
+                                        .clip(RoundedCornerShape(6.dp))
+                                        .clickable { viewedReasonImage = imageUrl },
+                                )
+                            }
+                        }
+                    }
+
+                    // Compact Action Buttons Row
+                    if (trackingLink.isNotBlank() || order.isCancelable) {
+                        Row(
+                            Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.spacedBy(8.dp),
+                        ) {
+                            if (trackingLink.isNotBlank()) {
+                                OutlinedButton(
+                                    onClick = {
+                                        context.startActivity(
+                                            Intent.createChooser(
+                                                Intent(Intent.ACTION_SEND).apply {
+                                                    type = "text/plain"
+                                                    putExtra(Intent.EXTRA_TEXT, "تابعي حالة طلبك من Carmen Karla:\n$trackingLink")
+                                                },
+                                                "مشاركة رابط تتبع الطلب",
+                                            ),
+                                        )
+                                    },
+                                    modifier = Modifier.height(34.dp).weight(1f),
+                                    contentPadding = PaddingValues(horizontal = 6.dp, vertical = 0.dp),
+                                    shape = RoundedCornerShape(8.dp),
+                                ) {
+                                    Icon(Icons.Default.Share, null, Modifier.size(13.dp))
+                                    Spacer(Modifier.width(4.dp))
+                                    Text("مشاركة التتبع", style = MaterialTheme.typography.labelSmall.copy(fontSize = 11.sp))
+                                }
+                            }
+                            if (order.isCancelable) {
+                                OutlinedButton(
+                                    onClick = { onCancel(order.orderId) },
+                                    modifier = Modifier.height(34.dp).weight(1f),
+                                    contentPadding = PaddingValues(horizontal = 6.dp, vertical = 0.dp),
+                                    shape = RoundedCornerShape(8.dp),
+                                    colors = ButtonDefaults.outlinedButtonColors(contentColor = MaterialTheme.colorScheme.error),
+                                ) {
+                                    Text("إلغاء الطلب", style = MaterialTheme.typography.labelSmall.copy(fontSize = 11.sp))
+                                }
+                            }
                         }
                     }
                 }
