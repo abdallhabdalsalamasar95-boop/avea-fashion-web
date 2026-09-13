@@ -1,6 +1,8 @@
 package ly.carmenkarla.shop.ui.ambassador
 
+import android.content.Context
 import android.content.Intent
+import android.net.Uri
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -23,13 +25,16 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.AutoAwesome
 import androidx.compose.material.icons.filled.CheckCircle
+import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.ContentCopy
+import androidx.compose.material.icons.filled.Forum
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material.icons.filled.LocalShipping
@@ -38,17 +43,20 @@ import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Phone
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Schedule
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Share
 import androidx.compose.material.icons.filled.ShoppingBag
 import androidx.compose.material.icons.filled.SupportAgent
 import androidx.compose.material.icons.filled.TrendingUp
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FilterChip
+import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -56,15 +64,11 @@ import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.FilterChip
+import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
-import androidx.compose.material3.Tab
-import androidx.compose.material3.TabRow
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
-import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -104,27 +108,63 @@ import java.util.Date
 import java.util.Locale
 
 private data class PortalStats(
-    val sales: Double,
+    val deliveredSales: Double,
+    val totalSales: Double,
+    val earnedCommission: Double,
+    val pendingCommission: Double,
     val totalCommission: Double,
-    val pending: Double,
-    val earned: Double,
-    val delivered: Int,
+    val deliveredCount: Int,
+    val activeCount: Int,
     val deliveryRate: Double,
 )
 
 private fun statsOf(orders: List<AmbassadorOrder>): PortalStats {
-    val active = orders.filter { it.status != "canceled" }
-    val delivered = active.count { it.status == "delivered" }
-    val earned = active.filter { it.status == "delivered" }.sumOf { it.ambassadorSummary.commission }
-    val total = active.sumOf { it.ambassadorSummary.commission }
+    val delivered = orders.filter { it.status == "delivered" }
+    val active = orders.filter { it.status in setOf("pending", "processing", "shipped") }
+    
+    val deliveredSales = delivered.sumOf { it.grandTotal }
+    val activeSales = active.sumOf { it.grandTotal }
+    val totalSales = deliveredSales + activeSales
+    
+    val earned = delivered.sumOf { it.ambassadorSummary.commission }
+    val pending = active.sumOf { it.ambassadorSummary.commission }
+    val totalComm = earned + pending
+    
+    val finishedCount = orders.count { it.status in setOf("delivered", "canceled", "returned") }
+    val rate = if (finishedCount > 0) (delivered.size * 100.0 / finishedCount) else if (delivered.isNotEmpty()) 100.0 else 0.0
+    
     return PortalStats(
-        sales = active.sumOf { it.grandTotal },
-        totalCommission = total,
-        pending = total - earned,
-        earned = earned,
-        delivered = delivered,
-        deliveryRate = if (active.isEmpty()) 0.0 else delivered * 100.0 / active.size,
+        deliveredSales = deliveredSales,
+        totalSales = totalSales,
+        earnedCommission = earned,
+        pendingCommission = pending,
+        totalCommission = totalComm,
+        deliveredCount = delivered.size,
+        activeCount = active.size,
+        deliveryRate = rate,
     )
+}
+
+private fun cleanLibyanWhatsAppNumber(raw: String): String {
+    var digits = raw.filter { it.isDigit() }
+    if (digits.startsWith("00")) digits = digits.drop(2)
+    if (digits.startsWith("0")) digits = "218" + digits.drop(1)
+    else if (digits.length == 9 && (digits.startsWith("91") || digits.startsWith("92") || digits.startsWith("93") || digits.startsWith("94") || digits.startsWith("95"))) {
+        digits = "218$digits"
+    }
+    return digits
+}
+
+fun openCustomerWhatsApp(context: Context, phone: String, message: String) {
+    val digits = cleanLibyanWhatsAppNumber(phone)
+    val url = if (digits.isNotBlank()) {
+        "https://wa.me/$digits?text=" + Uri.encode(message)
+    } else {
+        "https://wa.me/?text=" + Uri.encode(message)
+    }
+    runCatching {
+        context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(url)))
+    }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -160,24 +200,108 @@ fun AmbassadorScreen(onBack: (() -> Unit)?, onStartOrder: () -> Unit) {
     Scaffold(
         containerColor = MaterialTheme.colorScheme.background,
         topBar = {
-            TopAppBar(
-                title = { Text(if (profile == null) "برنامج المندوبات" else "لوحة المندوبة") },
-                navigationIcon = {
-                    if (onBack != null) {
-                        IconButton(onClick = onBack) {
-                            Icon(Icons.AutoMirrored.Filled.ArrowBack, "رجوع")
+            Surface(
+                color = MaterialTheme.colorScheme.surface,
+                shadowElevation = 2.dp,
+                modifier = Modifier.fillMaxWidth(),
+            ) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 12.dp, vertical = 6.dp),
+                    verticalArrangement = Arrangement.spacedBy(6.dp),
+                ) {
+                    // Ultra-compact Header Row: Back + Title + Refresh
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                    ) {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            if (onBack != null) {
+                                IconButton(onClick = onBack, modifier = Modifier.size(32.dp)) {
+                                    Icon(Icons.AutoMirrored.Filled.ArrowBack, "رجوع", Modifier.size(20.dp))
+                                }
+                                Spacer(Modifier.width(4.dp))
+                            }
+                            Text(
+                                if (profile == null) "برنامج المندوبات" else "لوحة المندوبة",
+                                style = MaterialTheme.typography.titleMedium,
+                                fontWeight = FontWeight.Bold,
+                            )
+                        }
+                        if (profile != null) {
+                            IconButton(onClick = { reload++ }, modifier = Modifier.size(32.dp)) {
+                                Icon(Icons.Default.Refresh, "تحديث", Modifier.size(18.dp), tint = MaterialTheme.colorScheme.primary)
+                            }
                         }
                     }
-                },
-                actions = {
-                    if (profile != null) {
-                        IconButton(onClick = { reload++ }) { Icon(Icons.Default.Refresh, "تحديث") }
+
+                    // Compact Segmented Switcher (لوحتي / طلبات عميلاتي)
+                    if (profile != null && !editing) {
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(36.dp)
+                                .clip(RoundedCornerShape(10.dp))
+                                .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f))
+                                .padding(2.dp),
+                        ) {
+                            Box(
+                                modifier = Modifier
+                                    .weight(1f)
+                                    .fillMaxSize()
+                                    .clip(RoundedCornerShape(8.dp))
+                                    .background(if (tab == 0) Brand.Ink else Color.Transparent)
+                                    .clickable { tab = 0 },
+                                contentAlignment = Alignment.Center,
+                            ) {
+                                Text(
+                                    "لوحتي",
+                                    style = MaterialTheme.typography.labelMedium,
+                                    color = if (tab == 0) Color.White else MaterialTheme.colorScheme.onSurfaceVariant,
+                                    fontWeight = if (tab == 0) FontWeight.Bold else FontWeight.Medium,
+                                )
+                            }
+                            Box(
+                                modifier = Modifier
+                                    .weight(1f)
+                                    .fillMaxSize()
+                                    .clip(RoundedCornerShape(8.dp))
+                                    .background(if (tab == 1) Brand.Ink else Color.Transparent)
+                                    .clickable { tab = 1 },
+                                contentAlignment = Alignment.Center,
+                            ) {
+                                Row(verticalAlignment = Alignment.CenterVertically) {
+                                    Text(
+                                        "طلبات عميلاتي",
+                                        style = MaterialTheme.typography.labelMedium,
+                                        color = if (tab == 1) Color.White else MaterialTheme.colorScheme.onSurfaceVariant,
+                                        fontWeight = if (tab == 1) FontWeight.Bold else FontWeight.Medium,
+                                    )
+                                    val count = orders?.size ?: 0
+                                    if (count > 0) {
+                                        Spacer(Modifier.width(6.dp))
+                                        Box(
+                                            modifier = Modifier
+                                                .clip(CircleShape)
+                                                .background(if (tab == 1) Brand.Gold else MaterialTheme.colorScheme.outlineVariant)
+                                                .padding(horizontal = 6.dp, vertical = 1.dp),
+                                        ) {
+                                            Text(
+                                                count.toString(),
+                                                style = MaterialTheme.typography.labelSmall.copy(fontSize = 10.sp),
+                                                color = if (tab == 1) Brand.Ink else MaterialTheme.colorScheme.onSurfaceVariant,
+                                                fontWeight = FontWeight.Bold,
+                                            )
+                                        }
+                                    }
+                                }
+                            }
+                        }
                     }
-                },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.surface,
-                ),
-            )
+                }
+            }
         },
     ) { padding ->
         Box(Modifier.padding(padding)) {
@@ -192,68 +316,59 @@ fun AmbassadorScreen(onBack: (() -> Unit)?, onStartOrder: () -> Unit) {
                 return@Box
             }
 
-            Column(Modifier.fillMaxSize()) {
-                TabRow(
-                    selectedTabIndex = tab,
-                    containerColor = MaterialTheme.colorScheme.surface,
-                ) {
-                    Tab(tab == 0, { tab = 0 }, text = { Text("لوحتي") })
-                    Tab(tab == 1, { tab = 1 }, text = { Text("طلبات عميلاتي") })
-                }
-                when (tab) {
-                    0 -> DashboardTab(
-                        profile = profile,
-                        orders = orders,
-                        wallet = wallet,
-                        message = message,
-                        onStartOrder = onStartOrder,
-                        onEditProfile = { editing = true },
-                        onShare = {
-                            scope.launch {
-                                message = ""
-                                val token = app.account.idToken()
-                                runCatching { app.repository.ambassadorShareLink(token) }
-                                    .onSuccess { link ->
-                                        val intent = Intent(Intent.ACTION_SEND).apply {
-                                            type = "text/plain"
-                                            putExtra(
-                                                Intent.EXTRA_TEXT,
-                                                "تسوّقي من كارمن كارلا عبر رابطي:\n$link",
-                                            )
-                                        }
-                                        context.startActivity(Intent.createChooser(intent, "مشاركة الرابط"))
+            when (tab) {
+                0 -> DashboardTab(
+                    profile = profile,
+                    orders = orders,
+                    wallet = wallet,
+                    message = message,
+                    onStartOrder = onStartOrder,
+                    onEditProfile = { editing = true },
+                    onShare = {
+                        scope.launch {
+                            message = ""
+                            val token = app.account.idToken()
+                            runCatching { app.repository.ambassadorShareLink(token) }
+                                .onSuccess { link ->
+                                    val intent = Intent(Intent.ACTION_SEND).apply {
+                                        type = "text/plain"
+                                        putExtra(
+                                            Intent.EXTRA_TEXT,
+                                            "تسوّقي من كارمن كارلا عبر رابطي:\n$link",
+                                        )
                                     }
-                                    .onFailure { message = it.message.orEmpty() }
-                            }
-                        },
-                        onWithdraw = {
-                            scope.launch {
-                                message = ""
-                                val token = app.account.idToken()
-                                runCatching { app.repository.requestWithdrawal(token) }
-                                    .onSuccess {
-                                        wallet = it
-                                        message = "طلب السحب وصل إلى الإدارة وهو قيد المراجعة."
-                                    }
-                                    .onFailure { message = it.message.orEmpty() }
-                            }
-                        },
-                    )
-                    else -> OrdersTab(
-                        orders = orders,
-                        message = message,
-                        onStartOrder = onStartOrder,
-                        onCancel = { orderId ->
-                            scope.launch {
-                                message = ""
-                                val token = app.account.idToken()
-                                runCatching { app.repository.cancelAmbassadorOrder(token, orderId) }
-                                    .onSuccess { reload++ }
-                                    .onFailure { message = it.message.orEmpty() }
-                            }
-                        },
-                    )
-                }
+                                    context.startActivity(Intent.createChooser(intent, "مشاركة الرابط"))
+                                }
+                                .onFailure { message = it.message.orEmpty() }
+                        }
+                    },
+                    onWithdraw = {
+                        scope.launch {
+                            message = ""
+                            val token = app.account.idToken()
+                            runCatching { app.repository.requestWithdrawal(token) }
+                                .onSuccess {
+                                    wallet = it
+                                    message = "طلب السحب وصل إلى الإدارة وهو قيد المراجعة."
+                                }
+                                .onFailure { message = it.message.orEmpty() }
+                        }
+                    },
+                )
+                else -> OrdersTab(
+                    orders = orders,
+                    message = message,
+                    onStartOrder = onStartOrder,
+                    onCancel = { orderId ->
+                        scope.launch {
+                            message = ""
+                            val token = app.account.idToken()
+                            runCatching { app.repository.cancelAmbassadorOrder(token, orderId) }
+                            .onSuccess { reload++ }
+                            .onFailure { message = it.message.orEmpty() }
+                        }
+                    },
+                )
             }
         }
     }
@@ -315,16 +430,16 @@ private fun DashboardTab(
             Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
                 StatCard(
                     Icons.Default.TrendingUp,
-                    "إجمالي المبيعات",
-                    formatMoney(stats.sales),
-                    "${orders.orEmpty().size} طلب",
+                    "المبيعات المسلّمة",
+                    formatMoney(stats.deliveredSales),
+                    "${stats.deliveredCount} طلب مسلّم",
                     Modifier.weight(1f),
                 )
                 StatCard(
                     Icons.Default.Payments,
-                    "إجمالي أرباحك",
-                    formatMoney(stats.totalCommission),
-                    "من كل الطلبات النشطة",
+                    "العمولة المعتمدة",
+                    formatMoney(stats.earnedCommission),
+                    "جاهزة للسحب",
                     Modifier.weight(1f),
                     highlight = true,
                 )
@@ -334,16 +449,16 @@ private fun DashboardTab(
             Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
                 StatCard(
                     Icons.Default.Schedule,
-                    "عمولة معلقة",
-                    formatMoney(stats.pending),
-                    "المعتمد: ${formatMoney(stats.earned)}",
+                    "عمولة قيد التوصيل",
+                    formatMoney(stats.pendingCommission),
+                    "${stats.activeCount} طلب نشط",
                     Modifier.weight(1f),
                 )
                 StatCard(
                     Icons.Default.LocalShipping,
                     "نسبة نجاح التوصيل",
                     "${stats.deliveryRate.toInt()}%",
-                    "${stats.delivered} طلب موصّل",
+                    "${orders.orEmpty().size} إجمالي الطلبات",
                     Modifier.weight(1f),
                 )
             }
@@ -866,38 +981,61 @@ private fun AmbassadorOrderCard(order: AmbassadorOrder, onCancel: (String) -> Un
                         }
                     }
 
-                    // Compact Action Buttons Row
+                    // Dual Tracking Share Buttons: WhatsApp to Customer & General Share
                     if (trackingLink.isNotBlank() || order.isCancelable) {
-                        Row(
-                            Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.spacedBy(8.dp),
-                        ) {
+                        Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
                             if (trackingLink.isNotBlank()) {
-                                OutlinedButton(
-                                    onClick = {
-                                        context.startActivity(
-                                            Intent.createChooser(
-                                                Intent(Intent.ACTION_SEND).apply {
-                                                    type = "text/plain"
-                                                    putExtra(Intent.EXTRA_TEXT, "تابعي حالة طلبك من Carmen Karla:\n$trackingLink")
-                                                },
-                                                "مشاركة رابط تتبع الطلب",
-                                            ),
-                                        )
-                                    },
-                                    modifier = Modifier.height(34.dp).weight(1f),
-                                    contentPadding = PaddingValues(horizontal = 6.dp, vertical = 0.dp),
-                                    shape = RoundedCornerShape(8.dp),
+                                Row(
+                                    Modifier.fillMaxWidth(),
+                                    horizontalArrangement = Arrangement.spacedBy(6.dp),
                                 ) {
-                                    Icon(Icons.Default.Share, null, Modifier.size(13.dp))
-                                    Spacer(Modifier.width(4.dp))
-                                    Text("مشاركة التتبع", style = MaterialTheme.typography.labelSmall.copy(fontSize = 11.sp))
+                                    // 1. WhatsApp directly to customer
+                                    Button(
+                                        onClick = {
+                                            val name = order.customerName.ifBlank { "عزيزتي" }
+                                            val msg = "مرحبًا $name، يمكنكِ متابعة حالة طلبك من Carmen Karla عبر الرابط التالي:\n$trackingLink"
+                                            openCustomerWhatsApp(context, order.customerPhone, msg)
+                                        },
+                                        modifier = Modifier.height(34.dp).weight(1f),
+                                        contentPadding = PaddingValues(horizontal = 6.dp, vertical = 0.dp),
+                                        shape = RoundedCornerShape(8.dp),
+                                        colors = ButtonDefaults.buttonColors(
+                                            containerColor = Color(0xFF25D366),
+                                            contentColor = Color.White,
+                                        ),
+                                    ) {
+                                        Icon(Icons.Default.Forum, null, Modifier.size(13.dp))
+                                        Spacer(Modifier.width(4.dp))
+                                        Text("واتساب للعميلة", style = MaterialTheme.typography.labelSmall.copy(fontSize = 11.sp), fontWeight = FontWeight.Bold)
+                                    }
+
+                                    // 2. General Share (Facebook, Copy, Telegram, etc.)
+                                    OutlinedButton(
+                                        onClick = {
+                                            context.startActivity(
+                                                Intent.createChooser(
+                                                    Intent(Intent.ACTION_SEND).apply {
+                                                        type = "text/plain"
+                                                        putExtra(Intent.EXTRA_TEXT, "تابعي حالة طلبك من Carmen Karla:\n$trackingLink")
+                                                    },
+                                                    "مشاركة رابط تتبع الطلب",
+                                                ),
+                                            )
+                                        },
+                                        modifier = Modifier.height(34.dp).weight(1f),
+                                        contentPadding = PaddingValues(horizontal = 6.dp, vertical = 0.dp),
+                                        shape = RoundedCornerShape(8.dp),
+                                    ) {
+                                        Icon(Icons.Default.Share, null, Modifier.size(13.dp))
+                                        Spacer(Modifier.width(4.dp))
+                                        Text("مشاركة عامة", style = MaterialTheme.typography.labelSmall.copy(fontSize = 11.sp))
+                                    }
                                 }
                             }
                             if (order.isCancelable) {
                                 OutlinedButton(
                                     onClick = { onCancel(order.orderId) },
-                                    modifier = Modifier.height(34.dp).weight(1f),
+                                    modifier = Modifier.fillMaxWidth().height(32.dp),
                                     contentPadding = PaddingValues(horizontal = 6.dp, vertical = 0.dp),
                                     shape = RoundedCornerShape(8.dp),
                                     colors = ButtonDefaults.outlinedButtonColors(contentColor = MaterialTheme.colorScheme.error),
@@ -960,6 +1098,7 @@ private fun OrdersTab(
     var statusFilter by remember { mutableStateOf("all") }
     var timeframe by remember { mutableStateOf("all") }
     var sortOrder by remember { mutableStateOf("newest") }
+
     if (orders == null) {
         Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
             CircularProgressIndicator(Modifier.size(30.dp))
@@ -989,6 +1128,18 @@ private fun OrdersTab(
             Button(onClick = onStartOrder) { Text("تصفّحي المنتجات") }
         }
         return
+    }
+
+    // Live counts for status chips
+    val counts = remember(orders) {
+        mapOf(
+            "all" to orders.size,
+            "active" to orders.count { it.status in setOf("pending", "processing", "shipped", "returning") },
+            "completed" to orders.count { it.status in setOf("delivered", "returned") },
+            "returning" to orders.count { it.status == "returning" },
+            "postponed" to orders.count { it.status == "postponed" },
+            "canceled" to orders.count { it.status == "canceled" },
+        )
     }
 
     val now = System.currentTimeMillis()
@@ -1027,62 +1178,171 @@ private fun OrdersTab(
             },
         )
 
+    val hasActiveFilters = query.isNotBlank() || statusFilter != "all" || timeframe != "all" || sortOrder != "newest"
+
     LazyColumn(
         Modifier.fillMaxSize(),
-        contentPadding = PaddingValues(16.dp),
-        verticalArrangement = Arrangement.spacedBy(10.dp),
+        contentPadding = PaddingValues(12.dp),
+        verticalArrangement = Arrangement.spacedBy(8.dp),
     ) {
         if (message.isNotEmpty()) {
             item {
                 Text(message, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.error)
             }
         }
+
+        // 1. Ultra-compact Search Box
         item {
             OutlinedTextField(
                 value = query,
                 onValueChange = { query = it },
-                label = { Text("بحث برقم الطلب أو العميلة أو القطعة") },
+                placeholder = { Text("بحث بالاسم، الهاتف، الشحنة، القطعة...", style = MaterialTheme.typography.bodySmall.copy(fontSize = 12.sp)) },
+                leadingIcon = { Icon(Icons.Default.Search, null, Modifier.size(18.dp), tint = MaterialTheme.colorScheme.onSurfaceVariant) },
+                trailingIcon = {
+                    if (query.isNotBlank()) {
+                        IconButton(onClick = { query = "" }, modifier = Modifier.size(28.dp)) {
+                            Icon(Icons.Default.Clear, "مسح", Modifier.size(16.dp))
+                        }
+                    }
+                },
                 singleLine = true,
-                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(10.dp),
+                colors = OutlinedTextFieldDefaults.colors(
+                    unfocusedContainerColor = MaterialTheme.colorScheme.surface,
+                    focusedContainerColor = MaterialTheme.colorScheme.surface,
+                ),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(48.dp),
             )
         }
+
+        // 2. Single Compact Scrollable Status Filter Row
         item {
-            Row(Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                listOf("all" to "الكل", "active" to "النشطة", "completed" to "المكتملة", "postponed" to "المؤجلة", "returning" to "قيد الإرجاع", "canceled" to "الملغاة").forEach { (id, label) ->
-                    FilterChip(selected = statusFilter == id, onClick = { statusFilter = id }, label = { Text(label) })
+            Row(
+                Modifier
+                    .fillMaxWidth()
+                    .horizontalScroll(rememberScrollState()),
+                horizontalArrangement = Arrangement.spacedBy(6.dp),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                listOf(
+                    "all" to "الكل",
+                    "active" to "النشطة",
+                    "completed" to "المسلّمة",
+                    "returning" to "قيد الإرجاع",
+                    "postponed" to "المؤجلة",
+                    "canceled" to "الملغاة",
+                ).forEach { (id, label) ->
+                    val chipCount = counts[id] ?: 0
+                    FilterChip(
+                        selected = statusFilter == id,
+                        onClick = { statusFilter = id },
+                        label = {
+                            Text(
+                                "$label ($chipCount)",
+                                style = MaterialTheme.typography.labelSmall.copy(fontSize = 11.sp),
+                                fontWeight = if (statusFilter == id) FontWeight.Bold else FontWeight.Normal,
+                            )
+                        },
+                        shape = RoundedCornerShape(8.dp),
+                        colors = FilterChipDefaults.filterChipColors(
+                            selectedContainerColor = Brand.Ink,
+                            selectedLabelColor = Color.White,
+                        ),
+                        modifier = Modifier.height(30.dp),
+                    )
                 }
             }
         }
+
+        // 3. Compact Secondary Filter Controls (Timeframe & Sort) in one row
         item {
-            Row(Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                listOf("all" to "كل الفترات", "today" to "اليوم", "week" to "7 أيام", "month" to "30 يوم", "three_months" to "3 أشهر").forEach { (id, label) ->
-                    FilterChip(selected = timeframe == id, onClick = { timeframe = id }, label = { Text(label) })
+            Row(
+                Modifier
+                    .fillMaxWidth()
+                    .horizontalScroll(rememberScrollState()),
+                horizontalArrangement = Arrangement.spacedBy(6.dp),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                // Timeframe Chips
+                listOf(
+                    "all" to "كل الفترات",
+                    "today" to "اليوم",
+                    "week" to "7 أيام",
+                    "month" to "30 يوم",
+                ).forEach { (id, label) ->
+                    FilterChip(
+                        selected = timeframe == id,
+                        onClick = { timeframe = id },
+                        label = { Text(label, style = MaterialTheme.typography.labelSmall.copy(fontSize = 10.sp)) },
+                        shape = RoundedCornerShape(6.dp),
+                        modifier = Modifier.height(26.dp),
+                    )
+                }
+
+                Spacer(Modifier.width(4.dp))
+                Box(Modifier.width(1.dp).height(16.dp).background(MaterialTheme.colorScheme.outlineVariant))
+                Spacer(Modifier.width(4.dp))
+
+                // Sort Chips
+                listOf(
+                    "newest" to "الأحدث",
+                    "highest_price" to "الأعلى قيمة",
+                ).forEach { (id, label) ->
+                    FilterChip(
+                        selected = sortOrder == id,
+                        onClick = { sortOrder = id },
+                        label = { Text(label, style = MaterialTheme.typography.labelSmall.copy(fontSize = 10.sp)) },
+                        shape = RoundedCornerShape(6.dp),
+                        modifier = Modifier.height(26.dp),
+                    )
                 }
             }
         }
+
+        // 4. Counter & Reset inline row
         item {
-            Row(Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                listOf("newest" to "الأحدث", "oldest" to "الأقدم", "highest_price" to "الأعلى قيمة").forEach { (id, label) ->
-                    FilterChip(selected = sortOrder == id, onClick = { sortOrder = id }, label = { Text(label) })
+            Row(
+                Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Text(
+                    "عرض ${visibleOrders.size} من ${orders.size} طلب",
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+                if (hasActiveFilters) {
+                    TextButton(
+                        onClick = {
+                            query = ""
+                            statusFilter = "all"
+                            timeframe = "all"
+                            sortOrder = "newest"
+                        },
+                        contentPadding = PaddingValues(horizontal = 4.dp, vertical = 0.dp),
+                        modifier = Modifier.height(24.dp),
+                    ) {
+                        Text("إعادة ضبط الفلاتر", style = MaterialTheme.typography.labelSmall.copy(fontSize = 10.sp), color = Brand.Rose)
+                    }
                 }
             }
         }
-        item {
-            Text("${visibleOrders.size} من ${orders.size} طلب", style = MaterialTheme.typography.labelMedium)
-        }
-        if (query.isNotBlank() || statusFilter != "all" || timeframe != "all" || sortOrder != "newest") {
-            item {
-                TextButton(onClick = {
-                    query = ""
-                    statusFilter = "all"
-                    timeframe = "all"
-                    sortOrder = "newest"
-                }) { Text("إعادة ضبط الفلاتر") }
-            }
-        }
+
         if (visibleOrders.isEmpty()) {
-            item { Text("لا توجد طلبات تطابق البحث أو الفلاتر.", style = MaterialTheme.typography.bodyMedium) }
+            item {
+                Box(
+                    Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 32.dp),
+                    contentAlignment = Alignment.Center,
+                ) {
+                    Text("لا توجد طلبات تطابق البحث أو الفلاتر المحددة.", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                }
+            }
         }
+
         items(visibleOrders, key = { it.orderId }) { order ->
             AmbassadorOrderCard(order, onCancel)
         }
