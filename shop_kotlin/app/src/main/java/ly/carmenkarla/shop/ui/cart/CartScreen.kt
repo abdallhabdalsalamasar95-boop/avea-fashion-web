@@ -29,6 +29,7 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -82,6 +83,45 @@ fun CartScreen(onCheckout: () -> Unit, onContinueShopping: () -> Unit) {
     }
 
     Column(Modifier.fillMaxSize()) {
+        val activeAmbassador = app.activeAmbassador
+        if (activeAmbassador != null) {
+            val estimatedComm = app.cart.sumOf { line ->
+                app.commission.amountFor(
+                    ly.carmenkarla.shop.data.Product(
+                        id = line.productId,
+                        price = line.unitPrice,
+                        commissionPercent = if (line.usesWholesale) 0.0 else -1.0,
+                    ),
+                    line.quantity,
+                )
+            }
+            Surface(
+                color = Brand.RoseSoft,
+                modifier = Modifier.fillMaxWidth(),
+            ) {
+                Row(
+                    Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 14.dp, vertical = 8.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                ) {
+                    Text(
+                        "طلب لعميلة (وضع المندوبة)",
+                        style = MaterialTheme.typography.labelSmall,
+                        color = Brand.RoseDark,
+                        fontWeight = FontWeight.Bold,
+                    )
+                    Text(
+                        "العمولة المتوقعة: ${formatMoney(estimatedComm)}",
+                        style = MaterialTheme.typography.labelSmall,
+                        color = Brand.RoseDark,
+                        fontWeight = FontWeight.Bold,
+                    )
+                }
+            }
+        }
+
         LazyColumn(
             Modifier.weight(1f),
             contentPadding = PaddingValues(12.dp),
@@ -131,7 +171,7 @@ fun CartScreen(onCheckout: () -> Unit, onContinueShopping: () -> Unit) {
                     onClick = {
                         sharing = true
                         scope.launch {
-                            val ambassador = app.ambassador
+                            val ambassador = app.activeAmbassador
                             val token = if (ambassador == null) "" else
                                 app.repository.shareToken(app.account.idToken())
                             val link = app.repository.sharedCartLink(app.cart.toList(), token)

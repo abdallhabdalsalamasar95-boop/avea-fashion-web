@@ -259,7 +259,7 @@ fun ProductScreen(
                             Text(item.description, style = MaterialTheme.typography.bodyMedium)
                         }
 
-                        val ambassador = app.ambassador
+                        val ambassador = app.activeAmbassador
                         if (ambassador != null) {
                             Row(
                                 Modifier
@@ -275,7 +275,7 @@ fun ProductScreen(
                             ) {
                                 Column(Modifier.weight(1f)) {
                                     Text(
-                                        "عمولتك على القطعة",
+                                        "عمولتك على القطعة (وضع المندوبة)",
                                         style = MaterialTheme.typography.labelSmall,
                                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                                     )

@@ -319,6 +319,33 @@ private fun ShopRoot(incomingLink: MutableState<Uri?>) {
                         containerColor = MaterialTheme.colorScheme.surface,
                     ),
                 )
+                val activeAmbassador = ShopApp.instance.activeAmbassador
+                if (activeAmbassador != null) {
+                    Surface(
+                        color = ly.carmenkarla.shop.ui.theme.Brand.Ink,
+                        modifier = Modifier.fillMaxWidth(),
+                    ) {
+                        Row(
+                            Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = 14.dp, vertical = 4.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                        ) {
+                            Text(
+                                "وضع المندوبة مفعّل ✨",
+                                style = MaterialTheme.typography.labelSmall,
+                                color = ly.carmenkarla.shop.ui.theme.Brand.Gold,
+                                fontWeight = androidx.compose.ui.text.font.FontWeight.Bold,
+                            )
+                            Text(
+                                activeAmbassador.ambassadorName,
+                                style = MaterialTheme.typography.labelSmall,
+                                color = Color.White.copy(alpha = 0.8f),
+                            )
+                        }
+                    }
+                }
                 HorizontalDivider(color = MaterialTheme.colorScheme.outline)
             }
         },

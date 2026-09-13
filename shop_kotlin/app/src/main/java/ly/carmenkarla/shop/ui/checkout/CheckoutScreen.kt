@@ -49,12 +49,14 @@ import ly.carmenkarla.shop.ui.formatMoney
 fun CheckoutScreen(onBack: () -> Unit, onDone: () -> Unit) {
     val app = ShopApp.instance
     val scope = rememberCoroutineScope()
+    val isAmbassadorOrder = app.activeAmbassador != null
 
-    var name by remember { mutableStateOf(app.customer.value.name) }
-    var phone by remember { mutableStateOf(app.customer.value.phone) }
-    var city by remember { mutableStateOf(app.customer.value.city) }
-    var area by remember { mutableStateOf(app.customer.value.area) }
-    var address by remember { mutableStateOf(app.customer.value.address) }
+    // In customer mode, prefill saved details. In ambassador mode, start with clean client fields.
+    var name by remember { mutableStateOf(if (isAmbassadorOrder) "" else app.customer.value.name) }
+    var phone by remember { mutableStateOf(if (isAmbassadorOrder) "" else app.customer.value.phone) }
+    var city by remember { mutableStateOf(if (isAmbassadorOrder) "" else app.customer.value.city) }
+    var area by remember { mutableStateOf(if (isAmbassadorOrder) "" else app.customer.value.area) }
+    var address by remember { mutableStateOf(if (isAmbassadorOrder) "" else app.customer.value.address) }
     var note by remember { mutableStateOf("") }
 
     var destinations by remember { mutableStateOf<Map<String, List<String>>>(emptyMap()) }
@@ -98,7 +100,7 @@ fun CheckoutScreen(onBack: () -> Unit, onDone: () -> Unit) {
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("إتمام الطلب") },
+                title = { Text(if (isAmbassadorOrder) "إتمام الطلب (وضع المندوبة)" else "إتمام الطلب") },
                 navigationIcon = { IconButton(onClick = onBack) { Icon(Icons.Default.ArrowBack, "رجوع") } },
             )
         },
@@ -111,7 +113,33 @@ fun CheckoutScreen(onBack: () -> Unit, onDone: () -> Unit) {
                 .padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp),
         ) {
-            Text("بيانات التوصيل", style = MaterialTheme.typography.titleMedium)
+            if (isAmbassadorOrder) {
+                Card(
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = androidx.compose.material3.CardDefaults.cardColors(
+                        containerColor = ly.carmenkarla.shop.ui.theme.Brand.RoseSoft,
+                    ),
+                ) {
+                    Column(Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                        Text(
+                            "طلب مسجّل باسم المندوبة ${app.activeAmbassador?.ambassadorName ?: ""}",
+                            style = MaterialTheme.typography.titleSmall,
+                            color = ly.carmenkarla.shop.ui.theme.Brand.RoseDark,
+                            fontWeight = androidx.compose.ui.text.font.FontWeight.Bold,
+                        )
+                        Text(
+                            "أدخلي بيانات العميلة المستلمة. لن يتم تغيير بيانات ملفكِ الشخصي المحفوظ.",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = ly.carmenkarla.shop.ui.theme.Brand.Ink,
+                        )
+                    }
+                }
+            }
+
+            Text(
+                if (isAmbassadorOrder) "بيانات العميلة والتوصيل" else "بيانات التوصيل",
+                style = MaterialTheme.typography.titleMedium,
+            )
 
             OutlinedTextField(
                 value = name,
@@ -232,6 +260,31 @@ fun CheckoutScreen(onBack: () -> Unit, onDone: () -> Unit) {
                             color = MaterialTheme.colorScheme.primary,
                         )
                     }
+                    if (isAmbassadorOrder) {
+                        val estimatedComm = app.cart.sumOf { line ->
+                            app.commission.amountFor(
+                                ly.carmenkarla.shop.data.Product(
+                                    id = line.productId,
+                                    price = line.unitPrice,
+                                    commissionPercent = if (line.usesWholesale) 0.0 else -1.0,
+                                ),
+                                line.quantity,
+                            )
+                        }
+                        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                            Text(
+                                "عمولتك المتوقعة",
+                                style = MaterialTheme.typography.labelSmall,
+                                color = ly.carmenkarla.shop.ui.theme.Brand.RoseDark,
+                            )
+                            Text(
+                                "${formatMoney(estimatedComm)} (تُعتمد بعد التوصيل)",
+                                style = MaterialTheme.typography.labelSmall,
+                                color = ly.carmenkarla.shop.ui.theme.Brand.RoseDark,
+                                fontWeight = androidx.compose.ui.text.font.FontWeight.Bold,
+                            )
+                        }
+                    }
                     Text(
                         "الدفع عند الاستلام",
                         style = MaterialTheme.typography.labelMedium,
@@ -279,7 +332,9 @@ fun CheckoutScreen(onBack: () -> Unit, onDone: () -> Unit) {
                             )
                         }
                             .onSuccess { result ->
-                                app.rememberCustomer(details)
+                                if (!isAmbassadorOrder) {
+                                    app.rememberCustomer(details)
+                                }
                                 if (sharedToken.isNotBlank()) app.clearSharedAmbassadorToken()
                                 app.rememberOrder(
                                     ly.carmenkarla.shop.data.SavedOrder(

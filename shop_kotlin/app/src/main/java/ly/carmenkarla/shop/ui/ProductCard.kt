@@ -135,7 +135,7 @@ fun ProductCard(product: Product, modifier: Modifier = Modifier, onClick: () -> 
             }
         }
 
-        if (app.ambassador != null) {
+        if (app.activeAmbassador != null) {
             Spacer(Modifier.height(5.dp))
             CommissionPill(app.commission.amountFor(product))
         }
