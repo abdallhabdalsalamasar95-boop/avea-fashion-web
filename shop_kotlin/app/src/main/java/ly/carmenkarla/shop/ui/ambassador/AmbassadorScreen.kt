@@ -15,6 +15,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -41,6 +42,7 @@ import androidx.compose.material.icons.filled.TrendingUp
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -669,6 +671,12 @@ private fun AmbassadorOrdersSection(
 private fun AmbassadorOrderCard(order: AmbassadorOrder, onCancel: (String) -> Unit) {
     val context = LocalContext.current
     var expanded by remember { mutableStateOf(false) }
+    var viewedReasonImage by remember { mutableStateOf<String?>(null) }
+    val trackingLink = if (order.trackingToken.isNotBlank()) {
+        "${ly.carmenkarla.shop.data.STOREFRONT_URL}/track/?order=" +
+            java.net.URLEncoder.encode(order.orderId, "UTF-8") +
+            "&token=" + java.net.URLEncoder.encode(order.trackingToken, "UTF-8")
+    } else ""
     Column(
         Modifier
             .fillMaxWidth()
@@ -756,38 +764,65 @@ private fun AmbassadorOrderCard(order: AmbassadorOrder, onCancel: (String) -> Un
                                 contentDescription = "صورة سبب الحالة",
                                 contentScale = ContentScale.Crop,
                                 modifier = Modifier
-                                    .size(width = 100.dp, height = 120.dp)
-                                    .clip(RoundedCornerShape(8.dp)),
+                                    .size(width = 82.dp, height = 98.dp)
+                                    .clip(RoundedCornerShape(8.dp))
+                                    .clickable { viewedReasonImage = imageUrl },
                             )
+                        }
+                    }
+                }
+                if (trackingLink.isNotBlank() || order.isCancelable) {
+                    Row(
+                        Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    ) {
+                        if (trackingLink.isNotBlank()) {
+                            OutlinedButton(
+                                onClick = {
+                                    context.startActivity(
+                                        Intent.createChooser(
+                                            Intent(Intent.ACTION_SEND).apply {
+                                                type = "text/plain"
+                                                putExtra(Intent.EXTRA_TEXT, "تابعي حالة طلبك من Carmen Karla:\n$trackingLink")
+                                            },
+                                            "مشاركة رابط تتبع الطلب",
+                                        ),
+                                    )
+                                },
+                                modifier = Modifier.height(38.dp).weight(1f),
+                                contentPadding = PaddingValues(horizontal = 8.dp, vertical = 0.dp),
+                            ) {
+                                Icon(Icons.Default.Share, null, Modifier.size(14.dp))
+                                Spacer(Modifier.width(4.dp))
+                                Text("مشاركة التتبع", style = MaterialTheme.typography.labelSmall)
+                            }
+                        }
+                        if (order.isCancelable) {
+                            OutlinedButton(
+                                onClick = { onCancel(order.orderId) },
+                                modifier = Modifier.height(38.dp).weight(1f),
+                                contentPadding = PaddingValues(horizontal = 8.dp, vertical = 0.dp),
+                            ) { Text("إلغاء الطلب", style = MaterialTheme.typography.labelSmall) }
                         }
                     }
                 }
             }
         }
-        if (order.trackingToken.isNotBlank()) {
-            OutlinedButton(
-                onClick = {
-                    val link = "${ly.carmenkarla.shop.data.STOREFRONT_URL}/track/?order=" +
-                        java.net.URLEncoder.encode(order.orderId, "UTF-8") +
-                        "&token=" + java.net.URLEncoder.encode(order.trackingToken, "UTF-8")
-                    context.startActivity(
-                        Intent.createChooser(
-                            Intent(Intent.ACTION_SEND).apply {
-                                type = "text/plain"
-                                putExtra(Intent.EXTRA_TEXT, "تابعي حالة طلبك من Carmen Karla:\n$link")
-                            },
-                            "مشاركة رابط تتبع الطلب",
-                        ),
-                    )
-                },
-                modifier = Modifier.fillMaxWidth(),
-            ) {
-                Icon(Icons.Default.Share, null, Modifier.size(16.dp))
-                Spacer(Modifier.width(6.dp))
-                Text("مشاركة التتبع")
-            }
-        }
-        if (order.isCancelable) OutlinedButton(onClick = { onCancel(order.orderId) }) { Text("إلغاء الطلب") }
+    }
+    viewedReasonImage?.let { imageUrl ->
+        AlertDialog(
+            onDismissRequest = { viewedReasonImage = null },
+            confirmButton = { TextButton(onClick = { viewedReasonImage = null }) { Text("إغلاق") } },
+            title = { Text("صورة من شركة التوصيل") },
+            text = {
+                AsyncImage(
+                    model = imageUrl,
+                    contentDescription = "صورة سبب الحالة بالحجم الكامل",
+                    contentScale = ContentScale.Fit,
+                    modifier = Modifier.fillMaxWidth().heightIn(max = 520.dp),
+                )
+            },
+        )
     }
 }
 
