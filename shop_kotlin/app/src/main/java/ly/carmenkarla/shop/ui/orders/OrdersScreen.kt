@@ -27,6 +27,7 @@ import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.outlined.ContentCopy
 import androidx.compose.material.icons.outlined.ReceiptLong
 import androidx.compose.material.icons.outlined.Refresh
+import androidx.compose.material.icons.outlined.Share
 import androidx.compose.material.icons.outlined.SupportAgent
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.HorizontalDivider
@@ -282,23 +283,25 @@ private fun OrderRow(
             "${ly.carmenkarla.shop.data.STOREFRONT_URL}/track/?order=${java.net.URLEncoder.encode(order.orderId, "UTF-8")}"
         }
 
-        OutlinedButton(
-            onClick = {
-                context.startActivity(
-                    Intent.createChooser(
-                        Intent(Intent.ACTION_SEND).apply {
-                            type = "text/plain"
-                            putExtra(Intent.EXTRA_TEXT, "تابعي حالة طلبي من Carmen Karla:\n$trackingLink")
-                        },
-                        "متابعة الطلبية ومشاركة الرابط",
-                    ),
-                )
-            },
-            modifier = Modifier.fillMaxWidth(),
-        ) {
-            Icon(Icons.Outlined.ContentCopy, null, Modifier.size(15.dp))
-            Spacer(Modifier.width(5.dp))
-            Text("متابعة الطلبية ومشاركة الرابط")
+        if (activeToken.isNotBlank()) {
+            OutlinedButton(
+                onClick = {
+                    context.startActivity(
+                        Intent.createChooser(
+                            Intent(Intent.ACTION_SEND).apply {
+                                type = "text/plain"
+                                putExtra(Intent.EXTRA_TEXT, "تابعي حالة طلبي من Carmen Karla:\n$trackingLink")
+                            },
+                            "مشاركة رابط تتبع الطلب",
+                        ),
+                    )
+                },
+                modifier = Modifier.fillMaxWidth(),
+            ) {
+                Icon(Icons.Outlined.Share, null, Modifier.size(15.dp))
+                Spacer(Modifier.width(5.dp))
+                Text("مشاركة التتبع")
+            }
         }
 
         val needsHelp = status in setOf("canceled", "returned", "returning", "postponed")

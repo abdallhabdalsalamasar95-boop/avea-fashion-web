@@ -38,6 +38,7 @@ import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.delay
 import ly.carmenkarla.admin.AdminApp
 import ly.carmenkarla.admin.data.DashboardSummary
+import ly.carmenkarla.admin.data.OperationalDashboardSummary
 import ly.carmenkarla.admin.data.PresenceResponse
 import ly.carmenkarla.admin.ui.ErrorBox
 import ly.carmenkarla.admin.ui.LoadingBox
@@ -71,6 +72,43 @@ private fun HeroMetric(label: String, value: String) {
     Column(horizontalAlignment = Alignment.CenterHorizontally) {
         Text(value, style = MaterialTheme.typography.headlineSmall, color = MaterialTheme.colorScheme.onPrimaryContainer)
         Text(label, style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onPrimaryContainer)
+    }
+}
+
+@Composable
+private fun OperationalSummaryCard(data: OperationalDashboardSummary) {
+    Card(
+        Modifier.fillMaxWidth(),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.55f)),
+    ) {
+        Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
+            Text("مركز الإجراء اليوم", style = MaterialTheme.typography.titleMedium)
+            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                HeroMetric("تحتاج قبول", data.needsAcceptance.size.toString())
+                HeroMetric("متأخرة", data.overdue.size.toString())
+                HeroMetric("قيد الإرجاع", data.returning.size.toString())
+            }
+            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                HeroMetric("مبيعات مسلّمة", "${data.deliveredSalesTotal} د.ل")
+                HeroMetric("عمولات", "${data.ambassadorCommissionDelivered} د.ل")
+                HeroMetric("قيمة المخزون", "${data.inventoryValue} د.ل")
+            }
+            if (data.alerts.isNotEmpty()) {
+                Text("تنبيهات مهمة", style = MaterialTheme.typography.titleSmall)
+                data.alerts.take(4).forEach { alert ->
+                    Text(
+                        "• ${alert.message}",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = when (alert.level) {
+                            "urgent" -> MaterialTheme.colorScheme.error
+                            else -> MaterialTheme.colorScheme.onSurfaceVariant
+                        },
+                    )
+                }
+            } else {
+                Text("لا توجد تنبيهات تشغيلية حالياً", style = MaterialTheme.typography.bodySmall)
+            }
+        }
     }
 }
 
@@ -182,6 +220,7 @@ fun DashboardScreen(
 ) {
     val repository = AdminApp.instance.repository
     var summary by remember { mutableStateOf<DashboardSummary?>(null) }
+    var operationalSummary by remember { mutableStateOf<OperationalDashboardSummary?>(null) }
     var presence by remember { mutableStateOf<PresenceResponse?>(null) }
     var error by remember { mutableStateOf("") }
     var reload by remember { mutableStateOf(0) }
@@ -192,6 +231,8 @@ fun DashboardScreen(
         runCatching { repository.dashboard() }
             .onSuccess { summary = it }
             .onFailure { error = it.message ?: "تعذر تحميل الإحصائيات" }
+        runCatching { repository.operationalDashboard() }
+            .onSuccess { operationalSummary = it }
     }
 
     LaunchedEffect(Unit) {
@@ -227,6 +268,9 @@ fun DashboardScreen(
                 horizontalArrangement = Arrangement.spacedBy(12.dp),
                 verticalArrangement = Arrangement.spacedBy(12.dp),
             ) {
+                operationalSummary?.let { data ->
+                    item(span = { GridItemSpan(2) }) { OperationalSummaryCard(data) }
+                }
                 item(span = { GridItemSpan(2) }) { DashboardHeroCard(data, presence) }
                 item(span = { GridItemSpan(2) }) { LiveVisitorsCard(presence, onOpenLiveVisitors) }
                 item(span = { GridItemSpan(2) }) {

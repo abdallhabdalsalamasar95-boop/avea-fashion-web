@@ -128,6 +128,55 @@ data class DashboardSummary(
     val devices: DeviceStats = DeviceStats(),
 )
 
+@Serializable
+data class OperationalDashboardSummary(
+    val ok: Boolean = true,
+    val totalOrders: Int = 0,
+    val counts: OperationalOrderCounts = OperationalOrderCounts(),
+    val deliveredSalesTotal: Double = 0.0,
+    val ambassadorCommissionDelivered: Double = 0.0,
+    val inventoryValue: Double = 0.0,
+    val needsAcceptance: List<OperationalOrder> = emptyList(),
+    val overdue: List<OperationalOrder> = emptyList(),
+    val returning: List<OperationalOrder> = emptyList(),
+    val lowStock: List<LowStockItem> = emptyList(),
+    val alerts: List<DashboardAlert> = emptyList(),
+)
+
+@Serializable
+data class OperationalOrderCounts(
+    val pending: Int = 0,
+    val processing: Int = 0,
+    val shipped: Int = 0,
+    val postponed: Int = 0,
+    val delivered: Int = 0,
+    val canceled: Int = 0,
+    val returning: Int = 0,
+    val returned: Int = 0,
+)
+
+@Serializable
+data class OperationalOrder(
+    val orderId: String = "",
+    val status: String = "",
+    val grandTotal: Double = 0.0,
+    val stuckForHours: Double = 0.0,
+)
+
+@Serializable
+data class LowStockItem(
+    val productId: String = "",
+    val name: String = "",
+    val size: String = "",
+    val remaining: Int = 0,
+)
+
+@Serializable
+data class DashboardAlert(
+    val level: String = "",
+    val message: String = "",
+)
+
 /** Scrolling ticker at the very top of every storefront page. */
 @Serializable
 data class Announcement(

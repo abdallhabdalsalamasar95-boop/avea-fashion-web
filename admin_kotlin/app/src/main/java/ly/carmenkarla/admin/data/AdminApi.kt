@@ -35,6 +35,9 @@ interface AdminApi {
     @GET("dashboard/summary")
     suspend fun dashboard(): DashboardSummary
 
+    @GET("admin/dashboard/summary")
+    suspend fun operationalDashboard(): OperationalDashboardSummary
+
     @GET("admin/presence")
     suspend fun presence(): PresenceResponse
 

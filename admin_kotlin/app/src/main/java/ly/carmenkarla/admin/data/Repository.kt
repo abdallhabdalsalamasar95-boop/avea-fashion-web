@@ -84,6 +84,10 @@ class Repository(private val context: Context) {
 
     suspend fun dashboard(): DashboardSummary = withContext(Dispatchers.IO) { api().dashboard() }
 
+    suspend fun operationalDashboard(): OperationalDashboardSummary = withContext(Dispatchers.IO) {
+        api().operationalDashboard()
+    }
+
     suspend fun orders(status: String = "", forceRefresh: Boolean = false): List<Order> = withContext(Dispatchers.IO) {
         if (!forceRefresh && status.isBlank() && !cachedOrders.isNullOrEmpty()) {
             return@withContext cachedOrders!!
