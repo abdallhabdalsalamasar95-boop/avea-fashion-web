@@ -302,7 +302,8 @@ fun CheckoutScreen(onBack: () -> Unit, onDone: () -> Unit) {
                     error = when {
                         name.isBlank() -> "أدخلي الاسم الكامل"
                         phone.length < 8 -> "أدخلي رقم هاتف صحيح"
-                        city.isBlank() -> "اختاري المدينة والمنطقة"
+                        city.isBlank() -> "اختاري المدينة من القائمة"
+                        area.isBlank() -> "اختاري المنطقة من القائمة"
                         address.isBlank() -> "أدخلي العنوان بالتفصيل"
                         else -> ""
                     }
@@ -336,33 +337,35 @@ fun CheckoutScreen(onBack: () -> Unit, onDone: () -> Unit) {
                                     app.rememberCustomer(details)
                                 }
                                 if (sharedToken.isNotBlank()) app.clearSharedAmbassadorToken()
-                                app.rememberOrder(
-                                    ly.carmenkarla.shop.data.SavedOrder(
-                                        orderId = result.orderId,
-                                        trackingToken = result.trackingToken,
-                                        total = subtotal,
-                                        itemCount = lines.sumOf { it.quantity },
-                                        createdAtMs = System.currentTimeMillis(),
-                                        summary = lines.joinToString("، ") { it.name },
-                                        city = details.city,
-                                        address = listOf(details.area, details.address)
-                                            .filter { it.isNotBlank() }
-                                            .joinToString(" · "),
-                                        shipping = shipping,
-                                        items = lines.map {
-                                            ly.carmenkarla.shop.data.SavedOrderLine(
-                                                productId = it.productId,
-                                                productCode = it.productCode,
-                                                name = it.name,
-                                                imageUrl = it.imageUrl,
-                                                size = it.size,
-                                                color = it.color,
-                                                quantity = it.quantity,
-                                                price = it.price,
-                                            )
-                                        },
-                                    ),
-                                )
+                                if (!isAmbassadorOrder) {
+                                    app.rememberOrder(
+                                        ly.carmenkarla.shop.data.SavedOrder(
+                                            orderId = result.orderId,
+                                            trackingToken = result.trackingToken,
+                                            total = subtotal,
+                                            itemCount = lines.sumOf { it.quantity },
+                                            createdAtMs = System.currentTimeMillis(),
+                                            summary = lines.joinToString("، ") { it.name },
+                                            city = details.city,
+                                            address = listOf(details.area, details.address)
+                                                .filter { it.isNotBlank() }
+                                                .joinToString(" · "),
+                                            shipping = shipping,
+                                            items = lines.map {
+                                                ly.carmenkarla.shop.data.SavedOrderLine(
+                                                    productId = it.productId,
+                                                    productCode = it.productCode,
+                                                    name = it.name,
+                                                    imageUrl = it.imageUrl,
+                                                    size = it.size,
+                                                    color = it.color,
+                                                    quantity = it.quantity,
+                                                    price = it.price,
+                                                )
+                                            }
+                                        ),
+                                    )
+                                }
                                 app.clearCart()
                                 placedOrderId = result.orderId
                             }
