@@ -453,6 +453,23 @@ private fun OrderCard(
                 style = MaterialTheme.typography.labelSmall,
                 color = MaterialTheme.colorScheme.secondary,
             )
+            if (order.status == "returning") {
+                Card(
+                    Modifier.fillMaxWidth(),
+                    colors = CardDefaults.cardColors(
+                        containerColor = MaterialTheme.colorScheme.errorContainer,
+                    ),
+                ) {
+                    Text(
+                        order.physicalWarehouseMessage.ifBlank {
+                            "الشحنة راجعة وليست في المخزن فعليًا حتى الآن. تمت إعادة كميتها إلى مخزون البيع حسب سياسة المتجر."
+                        },
+                        Modifier.padding(10.dp),
+                        style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.onErrorContainer,
+                    )
+                }
+            }
             Text(
                 "${order.itemsCount} قطعة · ${"%.2f".format(order.grandTotal)} د.ل",
                 style = MaterialTheme.typography.titleSmall,

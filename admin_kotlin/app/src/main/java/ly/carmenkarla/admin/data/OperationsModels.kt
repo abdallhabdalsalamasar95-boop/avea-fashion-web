@@ -70,6 +70,9 @@ data class Order(
     val payload: OrderPayload = OrderPayload(),
     val ambassadorSummary: AmbassadorSummary = AmbassadorSummary(),
     val commission: OrderCommission = OrderCommission(),
+    val inventoryRestoredAtMs: Long = 0,
+    val physicalWarehouseStatus: String = "",
+    val physicalWarehouseMessage: String = "",
     val externalDelivery: ExternalDelivery = ExternalDelivery(),
     val trackingToken: String = "",
 ) {
@@ -82,7 +85,7 @@ data class Order(
                 "shipped" -> if (provider.contains("assigned") || provider.contains("picked") || provider.contains("courier") || provider.contains("driver")) "الطلب عند المندوب" else "الطلب لدى شركة التوصيل • قيد التوصيل"
                 "postponed" -> "مؤجل من شركة التوصيل"
                 "delivered" -> "تم تسليم المنتج للزبونة"
-                "returning" -> "الطلب راجع مع المندوب"
+                "returning" -> "الشحنة راجعة وليست في المخزن فعليًا"
                 "returned" -> "المرتجع وصل إلى المخزن"
                 "canceled" -> "الطلب ملغي والمنتج عاد للمخزون"
                 else -> if (externalDelivery.status == "created") "الطلب لدى شركة التوصيل" else "لم يُرسل لشركة التوصيل"
